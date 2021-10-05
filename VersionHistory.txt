@@ -1,0 +1,9 @@
+0.03.0 - Fix some namespaces lengths
+		- Add support for multiple action namespaces
+		- Add support for multiple threads
+		- Update documentation 
+0.02.0 - Add activeThread information to output
+0.01.0 - Initial release!
+0.00.2 - pre-release
+0.00.1 - pre-release
+

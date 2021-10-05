@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?AutomationStudio Version=4.5.5.113 SP?>
+<Library Version="0.03.0" SubType="ANSIC" Description="A new source library" xmlns="http://br-automation.co.at/AS/Library">
+  <Files>
+    <File>VersionHistory.txt</File>
+    <File>License.txt</File>
+    <File>ReadMe.md</File>
+    <File>atn.typ</File>
+    <File>atn.var</File>
+    <File>atn.fun</File>
+    <File>atnGlobal.h</File>
+    <File>atn_fn_Cyclic.c</File>
+    <File>atn_checkResponses.c</File>
+    <File>atn_handleResponseState.c</File>
+    <File>atn_setCommand.c</File>
+    <File>atn_threadState.c</File>
+    <File>atn_prepareRequest.c</File>
+  </Files>
+  <Dependencies>
+    <Dependency ObjectName="StringExt" />
+    <Dependency ObjectName="VarTools" />
+  </Dependencies>
+</Library>

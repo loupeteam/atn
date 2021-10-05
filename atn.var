@@ -1,0 +1,17 @@
+(*/********************************************************************
+ * COPYRIGHT -- Loupe 
+ ********************************************************************
+ * Library: All Together Now -atn
+ * Author: Josh Polansky
+ * Created: April 7, 2020
+ ********************************************************************
+ * Implementation of library All Together now
+ ********************************************************************/*)
+VAR CONSTANT
+	MAI_ATN_ACTIONS : USINT := 99;
+	MAI_ATN_ACTIONLISTS : USINT := 9;
+	MAI_ATN_ACT_ACTIONS : USINT := 10;
+	MAI_ATN_ACT_THREADS : USINT := 0;
+	ATN_ACTION_NAME_LEN : USINT := 20;
+	ATN_NAMESPACE_LEN : USINT := 20;
+END_VAR
