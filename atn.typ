@@ -9,6 +9,10 @@
  ********************************************************************/*)
 
 TYPE
+	ATN_SST_enum : 
+		(
+		ATN_SS_INIT (*0*)
+		);
 	ATN_ST_enum : 
 		(
 		ATN_IDLE, (*0*)
@@ -84,11 +88,14 @@ TYPE
 		request : AtnActionCmdData_typ;
 		activeRequest : AtnActionCmdData_typ;
 		state : ATN_ST_enum;
+		substate : UDINT;
+		nextSubState : UDINT;
 		abort : BOOL;
 		forceQuit : BOOL;
 		responseStatus : ATN_RESPONSE_ST;
 		actions : UDINT;
 		actionCount : UDINT;
+		substateRequestModule : UDINT;
 		busyModule : ARRAY[0..MAI_ATN_ACT_ACTIONS]OF UDINT;
 		blockingModule : ARRAY[0..MAI_ATN_ACT_ACTIONS]OF UDINT;
 		errorModule : ARRAY[0..MAI_ATN_ACT_ACTIONS]OF UDINT;
@@ -101,6 +108,8 @@ TYPE
 		request : STRING[ATN_ACTION_NAME_LEN];
 		state : ATN_ST_enum;
 		response : ATN_ST_enum;
+		subState : UDINT;
+		subStateReq : UDINT;
 		moduleBypass : BOOL;
 		moduleIsBypassed : BOOL;
 		activeThread : UDINT;
