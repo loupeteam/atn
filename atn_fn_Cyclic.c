@@ -38,7 +38,7 @@ plcbit atnCyclic(struct Atn_typ * director)
 	// Assign the actions to the threads so the thread can look them up
 
 	
-	AtnActionList_typ *actionList = atnGetActionList( director->in.par.namespace );
+	AtnActionList_typ *actionList = atnGetActionList( director->in.par.category );
 	if( actionList != 0 ){
 		//Maybe we should make this use the action structure directly
 		// For now let's try not to break things.
@@ -89,6 +89,8 @@ plcbit atnThreadFn(struct AtnThread_typ* thread){
 
 	return 0;
 }
+
+#ifndef _NOT_BR
 
 // Add a behavior as a new action by looking up it's local PV name. This will lookup and append the task name
 unsigned char atnRegisterActionPVLocal( plcstring* namespace, plcstring* name, plcstring* actionPv, plcstring* paramName){
@@ -162,8 +164,10 @@ unsigned char atnRegisterActionPV( plcstring* namespace, plcstring* name, plcstr
 	
 }
 
+#endif
+
 // Add a behavior as a new action
-unsigned char atnRegisterAction( plcstring* namespace, plcstring* name, struct AtnAPI_typ* pAction, unsigned long pParameters, unsigned long parameterSize){
+unsigned char atnRegisterAction( plcstring* namespace, plcstring* name, struct AtnAPI_typ* pAction, void * pParameters, unsigned long parameterSize){
 
 	AtnActionList_typ *actionList = atnGetActionList(  namespace );
 	
@@ -180,7 +184,7 @@ unsigned char atnRegisterAction( plcstring* namespace, plcstring* name, struct A
 		pActions[a].pAction = pAction;
 		stringlcpy( pActions[a].name, name, sizeof(pActions[0].name) );
 		pActions[a].pParameters = pParameters;
-		pActions[a].parametersSize = parameterSize;
+		pActions[a].sParameters = parameterSize;
 		return ATN_ERROR_OK;
 	}
 	else{
@@ -190,7 +194,7 @@ unsigned char atnRegisterAction( plcstring* namespace, plcstring* name, struct A
 }
 
 // Add a behavior as a new action
-unsigned char atnRunAction(struct Atn_typ* director, plcstring* action, unsigned long pParameters, unsigned long parameterSize, struct AtnApiStatus_typ* status){
+unsigned char atnRunAction(struct Atn_typ* director, plcstring* action, void* pParameters, unsigned long parameterSize, struct AtnApiStatus_typ* status){
 
 	//Abort any unacknowledged requests
 	atn_setStatus( &director->internal.thread.request, ATN_ERROR_ABORTED);
@@ -199,7 +203,7 @@ unsigned char atnRunAction(struct Atn_typ* director, plcstring* action, unsigned
 	// This will overwrite any request that was made and not processed.	
 	stringlcpy( director->internal.thread.request.name, action, sizeof(director->internal.thread.request.name) );
 	director->internal.thread.request.pParameters = pParameters;
-	director->internal.thread.request.parametersSize = parameterSize;
+	director->internal.thread.request.sParameters = parameterSize;
 	director->internal.thread.request.pStatusStructure = status;
 
 	//Set the status of the new request to busy
@@ -275,7 +279,7 @@ unsigned long atnGetActionList(plcstring* actionListName){
 		//Found an empty one
 		if( strcmp( internActionList[l].name, "" ) == 0 ) {
 			//Init the name
-			brsstrcpy( internActionList[l].name, actionListName );
+			strcpy( internActionList[l].name, actionListName );
 			return &internActionList[l];
 		}
 	} while ( ++l <= MAI_ATN_ACTIONLISTS);		
@@ -310,7 +314,7 @@ plcbit atnSetActionList(plcstring* namespace, struct AtnActionData_typ* pNewActi
 }
 
 void initGlobalActionList( void ){
-	brsstrcpy( internActionList[0].name, "global" ); 
+	strcpy( internActionList[0].name, "global" ); 
 	int i=0;
 	for( i=0; i <= MAI_ATN_ACTIONLISTS; i++ ){
 		internActionList[i].maxActions = MAI_ATN_ACTIONS  + 1;
