@@ -2,7 +2,7 @@
 #include <cstring>
 #include <thread>
 #include <unistd.h>
-
+#include "systemcommands.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -28,180 +28,115 @@ typedef struct MovePinPars_typ
 	float moveTime;
 } MovePinPars_typ;
 
-
-const std::string stop = "stopall";
-const std::string runpump = "runpump";
-const std::string runvfd = "runvfd";
-const std::string runpumpandvfd = "runpumpandvfd";
-const std::string running = "running";
-const std::string enableHeater = "enableHeater";
-const std::string disableHeater = "disableHeater";
-const std::string startall = "startall";
-const std::string startallfail = "startallfail";
-
 atn::Director director;
-
-void vfd(){
-	//Start commands
-	AtnAPI_typ runvfdBehavior = {};
-	director.addBehavior( startall, 	&runvfdBehavior, 0, 0);
-	director.addBehavior( runvfd, 		 &runvfdBehavior, 0, 0);
-	director.addBehavior( runpumpandvfd, &runvfdBehavior, 0, 0);
-	director.addBehavior( startallfail, &runvfdBehavior, 0, 0);
-	
-
-	//Stop Command
-	AtnAPI_typ stopVfd = {};
-	director.addBehavior( stop, &stopVfd, 0, 0);
-
-
-	//Check state
-	AtnAPICheck_typ vfdRunning = {};
-	director.addState( running,  &vfdRunning, 0, 0);
-
-	strcpy(runvfdBehavior.moduleName, "vfd");
-	strcpy(stopVfd.moduleName, "vfd");
-	strcpy(vfdRunning.moduleName, "vfd");
-
-	while( 1 ){
-		switch (runvfdBehavior.state)
-		{
-			case ATN_EXECUTE:
-				std::cout << "Run vfd executed\n";
-				strcpy(runvfdBehavior.moduleStatus, "running");
-				vfdRunning.active = true;
-				runvfdBehavior.response = runvfdBehavior.state;
-				break;
-			case ATN_ABORT:
-				std::cout << "Run vfd aborted\n";
-				vfdRunning.active = false;
-				strcpy(runvfdBehavior.moduleStatus, "not running");				
-				runvfdBehavior.response = runvfdBehavior.state;
-				break;
-			default:
-				runvfdBehavior.response = runvfdBehavior.state;
-				break;
-		}
-		switch (stopVfd.state)
-		{
-			case ATN_EXECUTE:
-				std::cout << "stop vfd executed\n";
-				strcpy(stopVfd.moduleStatus, "not running");
-				vfdRunning.active = false;
-			default:
-				stopVfd.response = stopVfd.state;
-				break;
-		}
-		usleep(  10000 );
-	}	
-}
-
-void pump( ){
-
-	AtnAPI_typ runpumpBehavior = {};
-	AtnAPI_typ stoppumpBehavior = {};
-
-	director.addBehavior( runpump, 			&runpumpBehavior, 0, 0);
-	director.addBehavior( runpumpandvfd, 	&runpumpBehavior, 0, 0);
-	director.addBehavior( startall, 		&runpumpBehavior, 0, 0);
-	director.addBehavior( startallfail, 	&runpumpBehavior, 0, 0);
-	director.addBehavior( stop, 			&stoppumpBehavior, 0, 0);
-
-	AtnAPICheck_typ pumpRunning = {};
-	director.addState( running,  &pumpRunning, 0, 0);
-
-	strcpy(runpumpBehavior.moduleName, "pump");
-	strcpy(stoppumpBehavior.moduleName, "pump");
-	strcpy(pumpRunning.moduleName, "pump");
-
-	while ( 1 )
-	{
-		switch (runpumpBehavior.state)
-		{
-			case ATN_EXECUTE:
-				std::cout << "Run pump executed\n";
-				pumpRunning.active = true;
-				strcpy(runpumpBehavior.moduleStatus, "running");
-				runpumpBehavior.response = runpumpBehavior.state;
-				break;
-			case ATN_ABORT:
-				std::cout << "Run pump aborted\n";
-				pumpRunning.active = false;
-				strcpy(runpumpBehavior.moduleStatus, "not running");				
-			default:
-				runpumpBehavior.response = runpumpBehavior.state;
-				break;
-		}
-
-		switch (stoppumpBehavior.state)
-		{
-			case ATN_EXECUTE:
-				std::cout << "Stop pump executed\n";
-				pumpRunning.active = false;
-				strcpy(stoppumpBehavior.moduleStatus, "not running");
-			default:
-				stoppumpBehavior.response = stoppumpBehavior.state;
-				break;
-		}
-
-		usleep(  20000 );	
-	}
-
-}
-
-void heater(){
-	AtnAPI_typ enableHeaterBehavior = {};
-	AtnAPI_typ enableHeaterFailBehavior = {};
-	AtnAPI_typ disableHeaterBehavior = {};
-
-	AtnAPICheck_typ heaterCheck = {};
-	registerBehavior( enableHeater.c_str(), "Heater", 	&enableHeaterBehavior, 0, 0);
-	registerBehavior( startallfail.c_str(), "Heater", 	&enableHeaterFailBehavior, 0, 0);
-	registerBehavior( disableHeater.c_str(), "Heater", 	&disableHeaterBehavior, 0, 0);
-	registerBehavior( startall.c_str(), "Heater", 		&enableHeaterBehavior, 0, 0);
-	registerBehavior( stop.c_str(), "Heater", 			&disableHeaterBehavior, 0, 0);
-
-	registerState( enableHeater.c_str(), "Heater", &heaterCheck, 0, 0);
-	while( 1 ){
-
-		if( oneShotStatus( &enableHeaterBehavior, "Heating") ){
-			std::cout << "Heater Started";
-			heaterCheck.active = true;
-		}		
-
-		if( oneShotStatus( &disableHeaterBehavior, "stop heating") ){
-			std::cout << "Heater Stopped";
-			heaterCheck.active = false;
-		}
-
-		switch ( enableHeaterFailBehavior.state  )
-		{
-			case ATN_EXECUTE:
-				enableHeaterFailBehavior.response = ATN_ABORT;
-				break;
-			case ATN_ABORT:
-				strncpy( enableHeaterBehavior.moduleStatus, "Abort Heating", sizeof(enableHeaterBehavior.moduleStatus));
-				std::cout << "Heater Stopped";
-				heaterCheck.active = false;
-				enableHeaterFailBehavior.response = enableHeaterFailBehavior.state;
-				break;
-			default:
-				enableHeaterFailBehavior.response = enableHeaterFailBehavior.state;
-				break;
-		}
-
-		usleep(  20000 );	
-	}
-}
+void vfd();
+void pump();
+void heater();
 
 void machine( ){
 
 	while(1){
 		director.cyclic();
-
 		director.printState();
+		usleep(  10000 );
+	}
+
+}
+
+void processControl(){
+
+	struct CMD_typ {		
+		bool start;
+		bool stop;
+		bool pause;
+	};
+	struct internal_typ {		
+		int state;
+		AtnApiStatusLocal_typ status;
+	};
+	struct{		
+		CMD_typ cmd;
+		internal_typ internal;
+	} processControl = {};
+
+	struct processApi
+	{
+		AtnAPI_typ startProcess;
+		AtnAPI_typ pauseProcess;
+		AtnAPI_typ stopProcess;
+	} processApi = {};
+	
+	registerBehavior( startprocess.c_str(), "ProcessControl", &processApi.startProcess, 0, 0);
+	registerBehavior( stopprocess.c_str(), "ProcessControl", &processApi.stopProcess, 0, 0);
+	registerBehavior( pauseprocess.c_str(), "ProcessControl", &processApi.pauseProcess, 0, 0);
+
+	while(1){
+
+
+		//Handle incoming commands
+		if( oneShotReset( &processApi.startProcess,  &processControl.cmd.start ) ){
+			//Do something if you want
+		}
+		oneShotReset( &processApi.stopProcess,  &processControl.cmd.stop );
+		oneShotReset( &processApi.pauseProcess,  &processControl.cmd.pause );
+
+
+		//Handle outgoing command statuses by updating the local call state and clearing the remote state
+		readCallState( &processControl.internal.status );
+
+		//Handle any general error
+		if( processControl.internal.status.error ){
+			processControl.internal.state = 99;
+			executeAction( stop.c_str() );
+		}
+
+		
+		switch ( processControl.internal.state )
+		{
+
+		case 0:
+			if( processControl.cmd.start ){
+				processControl.internal.state = 1;				
+			}
+			break;
+			
+		case 1:
+			if( processControl.internal.status.done ){
+				processControl.internal.state = 2;
+			}
+			else if( processControl.internal.status.aborted ){
+				processControl.internal.state = 0;
+			}
+			else if(!processControl.internal.status.busy ){
+				executeActionReport( startall.c_str(), &processControl.internal.status);
+			}
+			break;
+
+		case 2:
+
+			if( processControl.internal.status.done ){
+				processControl.internal.state =0;
+			}
+			else if( processControl.internal.status.aborted ){
+				processControl.internal.state = 0;
+			}
+			else if(!processControl.internal.status.busy ){
+				executeActionReport( startall.c_str(), &processControl.internal.status);
+			}
+
+		break;		
+		case 99:
+		
+		break;
+		default:
+		break;
+		}
+
+
+		memset( &processControl.cmd, 0, sizeof(processControl.cmd));
 
 		usleep(  10000 );
+
 	}
 
 }
@@ -211,14 +146,23 @@ void cyclicInput(  ){
 	while( 1 ){
 		std::string command;
 		std::cin >> command;
+		atn::State *state;
 		switch (command[0])
 		{
 		case '?':
 			director.printActions();
 			director.printStates();
+		case ':':
+			state = director.getState( &command[1] );
+			if( state ){
+				state->print();
+			}
+			break;
+		case '/':	
+			director.executeAction( &command[1], 0, 0, 0);
+			director.printState();
 			break;
 		default:
-			director.executeAction( command, 0, 0, 0);
 			director.printState();
 			break;
 		}
@@ -226,7 +170,6 @@ void cyclicInput(  ){
 
 	}
 }
-
 
 int main(int argc, char const *argv[]) {
 
@@ -249,6 +192,8 @@ int main(int argc, char const *argv[]) {
 	std::thread pumpth3( pump );
 	usleep(  20000 );	
 	std::thread machineth( machine );
+	usleep(  20000 );	
+	std::thread processControlth( processControl );
 	usleep(  20000 );	
 	std::thread inputth( cyclicInput );
 

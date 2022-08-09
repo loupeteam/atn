@@ -13,6 +13,25 @@ bool oneShot( AtnAPI_typ *Behavior ){
     }
     return false;
 }
+
+bool oneShotReset( AtnAPI_typ *Behavior, bool *cmd ){
+    if( Behavior->response != Behavior->state ){
+        Behavior->response = Behavior->state;
+        if( cmd ){
+            Behavior->oneShot = true;
+            *cmd = true;
+        }
+        return Behavior->state == ATN_EXECUTE;
+    }
+    if( Behavior->oneShot ){
+        Behavior->oneShot = false;
+        if( cmd ){
+            *cmd = false;
+        }        
+    }
+    return false;
+}
+
 bool oneShotStatus( AtnAPI_typ *Behavior, STRING *status){
     if( Behavior->response != Behavior->state ){
         Behavior->response = Behavior->state;
@@ -40,6 +59,9 @@ void registerBehavior( const STRING *action, const STRING *moduleName, AtnAPI_ty
 
     globalDirector->addBehavior( std::string((char*)action), behavior, _pParameters, _sParameters );
 }
+void executeActionReport( const STRING *action, AtnApiStatusLocal_typ *api){
+    globalDirector->executeAction( std::string((char*)action), &api->remote, 0, 0);
+}
 
 void executeAction( const STRING *action ){
     globalDirector->executeAction( std::string((char*)action), 0, 0, 0);
@@ -58,5 +80,15 @@ bool stateAllTrue( const STRING *state, bool fallback ){
     }
     else{
         return fallback;
+    }
+}
+
+void readCallState( AtnApiStatusLocal_typ *status){
+    if( status ){
+        memcpy( status, &(status->remote), sizeof(AtnApiStatus_typ));
+        if( status->remote.busy ){
+            return;
+        }
+        memset( &(status->remote), 0, sizeof(AtnApiStatus_typ));
     }
 }
