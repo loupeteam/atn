@@ -1,6 +1,7 @@
-#include "atnApi.h"
-#include "Director.h"
+#include "../includes/atnApi.h"
+#include "../includes/Director.h"
 #include <string>
+#include <cstring>
 
 using namespace atn;
 
@@ -67,7 +68,7 @@ void executeAction( const STRING *action ){
     globalDirector->executeAction( std::string((char*)action), 0, 0, 0);
 }
 
-void registerState( const STRING *state, const STRING *moduleName, AtnAPICheck_typ *api, UDINT *_pParameters, UDINT _sParameters){
+void registerState( const STRING *state, const STRING *moduleName, AtnAPIState_typ *api, UDINT *_pParameters, UDINT _sParameters){
 
     strncpy( api->moduleName, (char*)moduleName, sizeof(api->moduleName) );
     globalDirector->addState( std::string((char*)state), api, _pParameters, _sParameters);

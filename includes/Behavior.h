@@ -6,9 +6,9 @@ namespace atn{
     class Behavior
     {
     public:
-        void * pParameters = 0;
-        size_t sParameters = 0;
-        struct AtnAPI_typ* pAction  = 0;
+        void * pParameters;
+        size_t sParameters;
+        struct AtnAPI_typ* pAction;
         Behavior( );
         Behavior( void * pParameters, size_t parameterSize, struct AtnAPI_typ* pAction);
         ~Behavior();

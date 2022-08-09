@@ -18,7 +18,7 @@ namespace atn{
         void cyclic();
 
         //
-        void addState( const std::string state, AtnAPICheck_typ *check, void *_pParameters, size_t _sParameters );
+        void addState( const std::string state, AtnAPIState_typ *check, void *_pParameters, size_t _sParameters );
         void addBehavior( const std::string action, AtnAPI_typ *behavior, void *_pParameters, size_t _sParameters );
 
         //

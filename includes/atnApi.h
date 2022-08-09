@@ -16,7 +16,7 @@ bool oneShotStatus( AtnAPI_typ *Behavior, STRING *status);
 // bool oneShot( AtnAPI_typ *Behavior, bool *cmd, STRING *status );
 ATN_ST_enum respond( AtnAPI_typ *Behavior );
 
-void registerState( const STRING *start, const STRING *moduleName, AtnAPICheck_typ *api, UDINT *_pParameters, UDINT _sParameters);
+void registerState( const STRING *start, const STRING *moduleName, AtnAPIState_typ *api, UDINT *_pParameters, UDINT _sParameters);
 bool stateAllTrue( const STRING *state );
 
 void executeAction( const STRING *action );

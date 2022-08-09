@@ -167,7 +167,7 @@ unsigned char atnRegisterActionPV( plcstring* namespace, plcstring* name, plcstr
 #endif
 
 // Add a behavior as a new action
-unsigned char atnRegisterAction( plcstring* namespace, plcstring* name, struct AtnAPI_typ* pAction, void * pParameters, unsigned long parameterSize){
+unsigned char atnRegisterAction( plcstring* namespace, plcstring* name, struct AtnAPI_typ* pAction, unsigned long * pParameters, unsigned long parameterSize){
 
 	AtnActionList_typ *actionList = atnGetActionList(  namespace );
 	
@@ -194,7 +194,7 @@ unsigned char atnRegisterAction( plcstring* namespace, plcstring* name, struct A
 }
 
 // Add a behavior as a new action
-unsigned char atnRunAction(struct Atn_typ* director, plcstring* action, void* pParameters, unsigned long parameterSize, struct AtnApiStatus_typ* status){
+unsigned char atnRunAction(struct Atn_typ* director, plcstring* action, unsigned long* pParameters, unsigned long parameterSize, struct AtnApiStatus_typ* status){
 
 	//Abort any unacknowledged requests
 	atn_setStatus( &director->internal.thread.request, ATN_ERROR_ABORTED);

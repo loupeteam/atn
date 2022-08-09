@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Inhibit.h"
+#include "../Includes/Inhibit.h"
 
 using namespace atn;
 
@@ -10,7 +10,11 @@ Inhibit::Inhibit( void * pParameters, size_t sParameter, struct AtnAPIState_typ*
     this->pCheck = pCheck;
 
 }
-Inhibit::Inhibit( ){};
+Inhibit::Inhibit( ){
+	pParameters = 0;
+	sParameters = 0;
+	pCheck  = 0;
+};
 Inhibit::~Inhibit( ){};
 
 bool Inhibit::isTrue(){

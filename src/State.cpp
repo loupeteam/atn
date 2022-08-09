@@ -1,17 +1,20 @@
 #include <iostream>
 
-#include "State.h"
+#include "../Includes/State.h"
 
 using namespace atn;
 
 State::State( std:: string name ){
 
     this->name = name;
+	pStatus = 0;
+	pParameters = 0;
+	sParameters = 0;
 
 }
 State::~State(){};
 
-void State::subscribe( AtnAPICheck_typ* api, void *_pParameters, size_t _sParameters ){
+void State::subscribe( AtnAPIState_typ* api, void *_pParameters, size_t _sParameters ){
 
     this->inhibits.push_back( Inhibit(pParameters, sParameters, api) );
 

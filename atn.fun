@@ -33,7 +33,7 @@ FUNCTION atnRunAction : USINT
 	VAR_INPUT
 		director : Atn_typ;
 		action : STRING[ATN_ACTION_NAME_LEN];
-		pParameters : UDINT;
+		pParameters : REFERENCE TO UDINT;
 		parameterSize : UDINT;
 		status : AtnApiStatus_typ;
 	END_VAR
@@ -47,7 +47,7 @@ END_FUNCTION
 
 FUNCTION atnRegisterActionPV : USINT
 	VAR_INPUT
-		namespace : STRING[ATN_NAMESPACE_LEN];
+		category : STRING[ATN_NAMESPACE_LEN];
 		name : STRING[ATN_ACTION_NAME_LEN];
 		actionPv : STRING[80];
 		parameterPv : STRING[80];
@@ -56,7 +56,7 @@ END_FUNCTION
 
 FUNCTION atnRegisterActionPVLocal : USINT
 	VAR_INPUT
-		namespace : STRING[ATN_NAMESPACE_LEN];
+		category : STRING[ATN_NAMESPACE_LEN];
 		name : STRING[ATN_ACTION_NAME_LEN];
 		actionPv : STRING[80];
 		parameterPv : STRING[80];
@@ -65,23 +65,23 @@ END_FUNCTION
 
 FUNCTION atnRegisterAction : USINT
 	VAR_INPUT
-		namespace : STRING[ATN_NAMESPACE_LEN];
+		category : STRING[ATN_NAMESPACE_LEN];
 		name : STRING[ATN_ACTION_NAME_LEN];
 		pAction : AtnAPI_typ;
-		pParameters : UDINT;
+		pParameters : REFERENCE TO UDINT;
 		parameterSize : UDINT;
 	END_VAR
 END_FUNCTION
 
 FUNCTION atnGetActionList : UDINT
 	VAR_INPUT
-		namespace : STRING[ATN_NAMESPACE_LEN];
+		gategory : STRING[ATN_NAMESPACE_LEN];
 	END_VAR
 END_FUNCTION
 
 FUNCTION atnSetActionList : BOOL
 	VAR_INPUT
-		namespace : STRING[ATN_NAMESPACE_LEN];
+		gategory : STRING[ATN_NAMESPACE_LEN];
 		pActions : AtnActionData_typ;
 		size : UDINT;
 	END_VAR

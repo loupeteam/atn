@@ -6,13 +6,15 @@ namespace atn{
     {
     private:
         std::string name;
-        ATN_ST_enum actionState = ATN_IDLE;
-        int substate = 0;
-        std::vector<Behavior> behaviors; 
+
+		ATN_ST_enum actionState;
+		AtnApiStatus_typ * pStatus;
+		void * pParameters;
+		size_t sParameters;
+		int substate;
+        
+		std::vector<Behavior> behaviors; 
         void updateState( int state );
-        AtnApiStatus_typ * pStatus = 0;
-        void * pParameters = 0;
-        size_t sParameters = 0;
     public:
 
         Action( std:: string name);    

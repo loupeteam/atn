@@ -1,8 +1,10 @@
 #include <iostream>
 
-#include "Director.h"
+#include "../Includes/Director.h"
 
 using namespace atn;
+
+unsigned long bur_heap_size = 0xfffff;
 
 Director::Director(/* args */)
 {
@@ -32,7 +34,7 @@ void Director::addBehavior( const std::string action,  AtnAPI_typ* api, void *_p
     }
 }
 
-void Director::addState( const std::string state,  AtnAPICheck_typ* api, void *_pParameters, size_t _sParameters ){
+void Director::addState( const std::string state,  AtnAPIState_typ* api, void *_pParameters, size_t _sParameters ){
 
     auto it = states.find(state);
 

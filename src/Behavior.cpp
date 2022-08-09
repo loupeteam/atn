@@ -7,15 +7,20 @@
 #endif
 
 	#include "atn.h"
+	#include <cstring>
 #ifdef __cplusplus
 	};
 #endif
 
-#include "Behavior.h"
+#include "../Includes/Behavior.h"
 
 using namespace atn;
 
-Behavior::Behavior( ) {};
+Behavior::Behavior( ) {
+	pParameters = 0;
+	sParameters = 0;
+	pAction = 0;
+};
 Behavior::Behavior( void * pParameters, size_t parameterSize, struct AtnAPI_typ* pAction)
 {
     this->pParameters = pParameters;
