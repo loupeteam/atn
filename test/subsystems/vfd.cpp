@@ -19,7 +19,7 @@ void vfd(){
 
 
 	//Check state
-	AtnAPICheck_typ vfdRunning = {};
+	AtnAPIState_typ vfdRunning = {};
 	registerState( running.c_str(),  "vfd", &vfdRunning, 0, 0);
 
 	strcpy(runvfdBehavior.moduleName, "vfd");

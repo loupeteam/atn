@@ -7,7 +7,7 @@
 void pump( ){
     AtnAPI_typ runpumpBehavior = {};
     AtnAPI_typ stoppumpBehavior = {};
-    AtnAPICheck_typ pumpRunning = {};
+    AtnAPIState_typ pumpRunning = {};
 
 	registerBehavior( runpump.c_str(), 		 "Pump", &runpumpBehavior, 0, 0);
 	registerBehavior( runpumpandvfd.c_str(), "Pump", &runpumpBehavior, 0, 0);
