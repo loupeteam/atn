@@ -15,7 +15,7 @@ void pump( ){
 	registerBehavior( startallfail.c_str(),  "Pump", &runpumpBehavior, 0, 0);
 	registerBehavior( stop.c_str(), 		 "Pump", &stoppumpBehavior, 0, 0);
 
-	registerState( running.c_str(),          "Pump", &pumpRunning, 0, 0);
+	registerState( running.c_str(),          "Pump", &pumpRunning);
 
 	while ( 1 )
 	{

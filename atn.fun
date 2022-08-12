@@ -8,6 +8,20 @@
  * Implementation of library All Together now
  ********************************************************************/*)
 
+FUNCTION atninit : UDINT
+	VAR_INPUT
+		buff : UDINT;
+		bufsize : UDINT;
+	END_VAR
+END_FUNCTION
+
+FUNCTION atncyclic : UDINT
+	VAR_INPUT
+		buff : UDINT;
+		bufsize : UDINT;
+	END_VAR
+END_FUNCTION
+
 FUNCTION_BLOCK AtnRunAction
 	VAR_INPUT
 		execute : BOOL;
@@ -84,5 +98,57 @@ FUNCTION atnSetActionList : BOOL
 		gategory : STRING[ATN_NAMESPACE_LEN];
 		pActions : AtnActionData_typ;
 		size : UDINT;
+	END_VAR
+END_FUNCTION
+
+FUNCTION registerState : BOOL
+	VAR_INPUT
+		state : STRING[80];
+		moduleName : STRING[80];
+		api : AtnAPIState_typ;
+	END_VAR
+END_FUNCTION
+
+FUNCTION registerStateBool : BOOL
+	VAR_INPUT
+		state : STRING[80];
+		moduleName : STRING[80];
+	END_VAR
+	VAR_IN_OUT
+		value : BOOL;
+	END_VAR
+END_FUNCTION
+
+FUNCTION stateAllTrue : BOOL
+	VAR_INPUT
+		state : STRING[80];
+		fallback : BOOL;
+	END_VAR
+END_FUNCTION
+
+FUNCTION stateAnyTrue : BOOL
+	VAR_INPUT
+		state : STRING[80];
+		fallback : BOOL;
+	END_VAR
+END_FUNCTION
+
+FUNCTION stateAllFalse : BOOL
+	VAR_INPUT
+		state : STRING[80];
+		fallback : BOOL;
+	END_VAR
+END_FUNCTION
+
+FUNCTION stateAnyFalse : BOOL
+	VAR_INPUT
+		state : STRING[80];
+		fallback : BOOL;
+	END_VAR
+END_FUNCTION
+
+FUNCTION populateActionList : BOOL
+	VAR_INPUT
+		listname : STRING[80];
 	END_VAR
 END_FUNCTION

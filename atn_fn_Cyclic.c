@@ -321,3 +321,13 @@ void initGlobalActionList( void ){
 		internActionList[i].pActions = &internActions[i];	
 	}
 }
+
+plcbit populateActionList( plcstring *pvname ){
+	
+	//TODO
+	//Go through all the members and check if it's a string. If it is, set the value to the member name
+	//If it's a structure, we could go deeper.. but should we?
+	
+}
+
+

@@ -8,22 +8,31 @@ Inhibit::Inhibit( void * pParameters, size_t sParameter, struct AtnAPIState_typ*
     this->pParameters = pParameters;
     this->sParameters = sParameter;
     this->pCheck = pCheck;
-
+    if( pCheck )
+        this->pValue = & (pCheck->active);
+        this->name = pCheck->moduleName;
 }
+Inhibit::Inhibit( std::string Name, bool * value){
+
+    this->pValue = value;
+    this->name = Name;
+}
+
 Inhibit::Inhibit( ){
 	pParameters = 0;
 	sParameters = 0;
 	pCheck  = 0;
+    pValue = 0;
 };
 Inhibit::~Inhibit( ){};
 
 bool Inhibit::isTrue(){
 
-    return this->pCheck->active;
+    return *pValue;
     
 }
 
-void Inhibit::print(){
-    std::cout << "Module: " << this->pCheck->moduleName << "\n";
-    std::cout << "Value: " << this->pCheck->active << "\n";
+void Inhibit::print(){		
+    std::cout << "Module: " << this->name << "\n";
+    std::cout << "Value: " << (bool) *pValue << "\n";
 }

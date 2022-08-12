@@ -8,7 +8,6 @@ unsigned long bur_heap_size = 0xfffff;
 
 Director::Director(/* args */)
 {
-
 }
 
 Director::~Director()
@@ -48,6 +47,20 @@ void Director::addState( const std::string state,  AtnAPIState_typ* api, void *_
     }
 }
 
+void Director::addStateBool( const std::string state, const std::string name, bool* value ){
+
+	auto it = states.find(state);
+
+	if (it != states.end()){
+		it->second.subscribe( name, value);
+	}
+	else{
+		State newAction( state );
+		newAction.subscribe( name, value);
+		states.insert( std::pair<std::string, State>(state, newAction));        
+	}
+}
+
 void Director::executeAction( const std::string action,  AtnApiStatus_typ* _pStatus, void *_pParameters, size_t _sParameters){
 
     auto it = actions.find(action);
@@ -60,16 +73,6 @@ void Director::executeAction( const std::string action,  AtnApiStatus_typ* _pSta
     else{
         std::cout << "Action not found\n";
     }
-}
-
-bool Director::stateIsTrue( const std::string state ){
-    auto it = states.find(state);
-
-    if (it != states.end()){
-        it->second.print();
-        return it->second.allTrue();
-    }
-    return false;
 }
 
 State * Director::getState( const std::string state ){

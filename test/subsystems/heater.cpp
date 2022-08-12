@@ -16,7 +16,7 @@ void heater(){
 	registerBehavior( startall.c_str(), "Heater", 		&enableHeaterBehavior, 0, 0);
 	registerBehavior( stop.c_str(), "Heater", 			&disableHeaterBehavior, 0, 0);
 
-	registerState( enableHeater.c_str(), "Heater", &heaterCheck, 0, 0);
+	registerState( enableHeater.c_str(), "Heater", &heaterCheck);
 	while( 1 ){
 
 		if( oneShotStatus( &enableHeaterBehavior, "Heating") ){

@@ -15,10 +15,11 @@ namespace atn{
         State( std:: string name);    
         ~State();
         void subscribe(  AtnAPIState_typ* api, void *_pParameters, size_t _sParameters  );
-        bool allTrue();
-        bool allFalse();
-        bool anyTrue();
-        bool anyFalse();
+        void subscribe(  std:: string ModuleName, bool* api);
+        bool allTrue( bool fallback );
+        bool allFalse( bool fallback );
+        bool anyTrue( bool fallback );
+        bool anyFalse( bool fallback );
         void print();
     };
 }
