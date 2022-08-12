@@ -9,13 +9,13 @@ void heater(){
 	AtnAPI_typ enableHeaterFailBehavior = {};
 	AtnAPI_typ disableHeaterBehavior = {};
 
-	AtnAPIState_typ heaterCheck = {};
 	registerBehavior( enableHeater.c_str(), "Heater", 	&enableHeaterBehavior, 0, 0);
 	registerBehavior( startallfail.c_str(), "Heater", 	&enableHeaterFailBehavior, 0, 0);
 	registerBehavior( disableHeater.c_str(), "Heater", 	&disableHeaterBehavior, 0, 0);
 	registerBehavior( startall.c_str(), "Heater", 		&enableHeaterBehavior, 0, 0);
 	registerBehavior( stop.c_str(), "Heater", 			&disableHeaterBehavior, 0, 0);
 
+	AtnAPIState_typ heaterCheck = {};
 	registerState( enableHeater.c_str(), "Heater", &heaterCheck);
 	while( 1 ){
 

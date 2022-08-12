@@ -176,7 +176,7 @@ int main(int argc, char const *argv[]) {
 	int it =0;
 
 	int * cyc;
-	atncyclic( &director );
+	atnSetDirector( &director );
 
 	vector<std::thread> threads;
 	std::thread heaterth( heater );

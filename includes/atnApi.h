@@ -16,13 +16,13 @@ bool oneShotStatus( AtnAPI_typ *Behavior, STRING *status);
 // bool oneShot( AtnAPI_typ *Behavior, bool *cmd, STRING *status );
 ATN_ST_enum respond( AtnAPI_typ *Behavior );
 
-//void registerState( const STRING *start, const STRING *moduleName, AtnAPIState_typ *api);
+bool registerState( STRING *start, STRING *moduleName, AtnAPIState_typ *api);
 //bool stateAllTrue( const STRING *state, bool );
 
 void executeAction( const STRING *action );
 void executeActionReport( const STRING *action, AtnApiStatusLocal_typ *api);
 
-
+void atnSetDirector( void *director );
 
 void readCallState( AtnApiStatusLocal_typ *status);
 

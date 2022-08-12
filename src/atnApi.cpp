@@ -88,6 +88,10 @@ ATN_ST_enum respond( AtnAPI_typ *Behavior ){
 }
 static outbuf *outstream = 0;
 
+void atnSetDirector( void *director ){
+	globalDirector = (Director*)director;
+}
+
 unsigned long atninit( UDINT console, UDINT bufsize ){
 	
 	if( console ){
