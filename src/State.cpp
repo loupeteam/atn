@@ -14,15 +14,22 @@ State::State( std:: string name ){
 }
 State::~State(){};
 
+
 void State::subscribe( AtnAPIState_typ* api, void *_pParameters, size_t _sParameters ){
 
-    this->inhibits.push_back( Inhibit(pParameters, sParameters, api) );
+    this->inhibits.push_back( Inhibit( _pParameters, _sParameters, api) );
 
 }
 
-void State::subscribe(  std:: string ModuleName, bool* api ){
+void State::subscribe(  const std:: string ModuleName, bool* api ){
 
     this->inhibits.push_back( Inhibit( ModuleName, api) );
+
+}
+
+void State::subscribe(  const std:: string ModuleName, bool* api, void *_pParameters, size_t _sParameters ){
+
+    this->inhibits.push_back( Inhibit( ModuleName, api, pParameters, sParameters) );
 
 }
 
@@ -88,6 +95,33 @@ bool State::anyFalse( bool fallback ){
     }
 
     return fallback;
+}
+
+bool State::setTrue(){
+    bool set = 0;
+    for( auto inhibit : this->inhibits ){
+        if( inhibit.pCheck->moduleBypass){
+            continue;
+        }
+        inhibit.set(true);
+        set = true;
+    }
+    return set;
+}
+
+bool State::setFalse(){
+    bool set = 0;
+    for( auto inhibit : this->inhibits ){
+        if( inhibit.pCheck->moduleBypass){
+            continue;
+        }
+        inhibit.set(false);
+        set = true;
+    }
+    return set;
+}
+unsigned int State::count(){
+    return this->inhibits.size();
 }
 
 void State::print(){

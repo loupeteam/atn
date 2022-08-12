@@ -32,12 +32,13 @@ atn::Director director;
 void vfd();
 void pump();
 void heater();
+void tempMonitoring();
 
 void machine( ){
 
 	while(1){
 		director.cyclic();
-		director.printState();
+		director.printState();		
 		usleep(  10000 );
 	}
 
@@ -69,6 +70,8 @@ void processControl(){
 	registerBehavior( startprocess.c_str(), "ProcessControl", &processApi.startProcess, 0, 0);
 	registerBehavior( stopprocess.c_str(), "ProcessControl", &processApi.stopProcess, 0, 0);
 	registerBehavior( pauseprocess.c_str(), "ProcessControl", &processApi.pauseProcess, 0, 0);
+
+	executeAction( startprocess.c_str() );
 
 	while(1){
 
@@ -147,6 +150,8 @@ void cyclicInput(  ){
 		std::string command;
 		std::cin >> command;
 		atn::State *state;
+		int i;
+		bool active;
 		switch (command[0])
 		{
 		case '?':
@@ -161,6 +166,12 @@ void cyclicInput(  ){
 		case '/':	
 			director.executeAction( &command[1], 0, 0, 0);
 			director.printState();
+			break;
+		case 'p':
+			std::cout << "state: " << (char*)&(command.c_str())[1] << "\n";
+			for(i=0; i<= forState( (char*)&(command.c_str())[1], i, &active, 0, 0); i++){
+				std::cout << active <<"\t";
+			}
 			break;
 		default:
 			director.printState();
@@ -181,6 +192,8 @@ int main(int argc, char const *argv[]) {
 	vector<std::thread> threads;
 	std::thread heaterth( heater );
 	usleep(  20000 );	
+	std::thread heaterth2( heater );
+	usleep(  20000 );	
 	std::thread vfdth1( vfd );
 	usleep(  20000 );	
 	std::thread vfdth2( vfd );
@@ -192,6 +205,8 @@ int main(int argc, char const *argv[]) {
 	std::thread pumpth3( pump );
 	usleep(  20000 );	
 	std::thread machineth( machine );
+	usleep(  20000 );	
+	std::thread tempMonitoringth( tempMonitoring );
 	usleep(  20000 );	
 	std::thread processControlth( processControl );
 	usleep(  20000 );	

@@ -6,20 +6,27 @@ namespace atn{
     {
     private:
         std::string name;
-        std::vector<Inhibit> inhibits; 
         AtnApiStatus_typ * pStatus;
         void * pParameters;
         size_t sParameters;
+
     public:
+
+        std::vector<Inhibit> inhibits; 
 
         State( std:: string name);    
         ~State();
         void subscribe(  AtnAPIState_typ* api, void *_pParameters, size_t _sParameters  );
-        void subscribe(  std:: string ModuleName, bool* api);
+        void subscribe(  const std:: string ModuleName, bool* api);
+        void subscribe(  const std:: string ModuleName, bool* api, void *_pParameters, size_t _sParameters  );
+
+        bool setTrue(  );
+        bool setFalse(  );
         bool allTrue( bool fallback );
         bool allFalse( bool fallback );
         bool anyTrue( bool fallback );
         bool anyFalse( bool fallback );
         void print();
+        unsigned int count();
     };
 }

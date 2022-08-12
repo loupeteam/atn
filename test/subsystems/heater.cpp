@@ -15,8 +15,19 @@ void heater(){
 	registerBehavior( startall.c_str(), "Heater", 		&enableHeaterBehavior, 0, 0);
 	registerBehavior( stop.c_str(), "Heater", 			&disableHeaterBehavior, 0, 0);
 
+
+
 	AtnAPIState_typ heaterCheck = {};
-	registerState( enableHeater.c_str(), "Heater", &heaterCheck);
+	registerState( (char*)enableHeater.c_str(), "Heater", &heaterCheck);
+	HeaterCommand heaterCommand;
+
+	heaterCommand.setTemp = 10;	
+	registerCommandBool( (char*)enableHeater.c_str(),  "Heater", &heaterCommand.enable);
+	registerCommandBool( (char*)disableHeater.c_str(),  "Heater", &heaterCommand.disable);
+
+	AtnAPIState_typ TemperatureStatus = {};
+	registerStateWithParameters( (char*)heaterTemperatures.c_str(),"Heater x", &TemperatureStatus , (UDINT*)&heaterCommand, sizeof(heaterCommand));
+
 	while( 1 ){
 
 		if( oneShotStatus( &enableHeaterBehavior, "Heating") ){
@@ -44,6 +55,26 @@ void heater(){
 				enableHeaterFailBehavior.response = enableHeaterFailBehavior.state;
 				break;
 		}
+
+		if( heaterCommand.disable ){
+			heaterCommand.disable =  false;
+			heaterCheck.active = false;
+		}
+
+		if( heaterCommand.enable ){
+			heaterCommand.enable =  false;
+			heaterCheck.active = true;
+		}
+
+		if( heaterCheck.active ){
+			heaterCommand.actTemp += 0.1;
+		}
+		else{
+			heaterCommand.actTemp -= 0.1;
+		}
+
+		if( heaterCommand.actTemp > heaterCommand.setTemp) heaterCommand.actTemp = heaterCommand.setTemp;
+		if( heaterCommand.actTemp < 0) heaterCommand.actTemp = 0;
 
 		usleep(  20000 );	
 	}

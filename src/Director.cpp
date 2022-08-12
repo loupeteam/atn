@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "../Includes/Director.h"
+#include "../includes/Director.h"
 
 using namespace atn;
 
@@ -38,7 +38,7 @@ void Director::addState( const std::string state,  AtnAPIState_typ* api, void *_
     auto it = states.find(state);
 
     if (it != states.end()){
-        it->second.subscribe( api,_pParameters, _sParameters);
+        it->second.subscribe( api, _pParameters, _sParameters);
     }
     else{
         State newAction( state );
@@ -61,6 +61,35 @@ void Director::addStateBool( const std::string state, const std::string name, bo
 	}
 }
 
+void Director::addStateBool( const std::string state, const std::string name, bool* value,  void *_pParameters, size_t _sParameters){
+
+	auto it = states.find(state);
+
+	if (it != states.end()){
+		it->second.subscribe( name, value, _pParameters, _sParameters);
+	}
+	else{
+		State newAction( state );
+		newAction.subscribe( name, value, _pParameters, _sParameters);
+		states.insert( std::pair<std::string, State>(state, newAction));        
+	}
+}
+
+//Registers a bool to be automatically monitored, without full API support
+void Director::addCommandBool( const std::string command, const std::string moduleName, bool *check ){
+	auto it = commands.find(command);
+
+	if (it != commands.end()){
+		it->second.subscribe( moduleName, check);
+	}
+	else{
+		State newAction( command );
+		newAction.subscribe( moduleName, check);
+		commands.insert( std::pair<std::string, State>(command, newAction));        
+	}
+
+}
+
 void Director::executeAction( const std::string action,  AtnApiStatus_typ* _pStatus, void *_pParameters, size_t _sParameters){
 
     auto it = actions.find(action);
@@ -69,6 +98,19 @@ void Director::executeAction( const std::string action,  AtnApiStatus_typ* _pSta
         threads.push_back(it->second); 
         ///TODO: check if it's OK to start
         threads.back().start( _pStatus, _pParameters, _sParameters );
+    }
+    else{
+        std::cout << "Action not found\n";
+    }
+}
+
+
+void Director::executeCommand( const std::string command ){
+
+    auto it = commands.find(command);
+
+    if (it != commands.end()){
+        it->second.setTrue();
     }
     else{
         std::cout << "Action not found\n";

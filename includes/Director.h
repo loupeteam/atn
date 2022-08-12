@@ -10,7 +10,8 @@ namespace atn{
 
     private:
         std::deque<Action> threads;					//Keep active threads here
-        std::unordered_map<std::string, Action> actions;		//These are actions that have been registered
+        std::unordered_map<std::string, Action> actions;	//These are actions that have been registered
+        std::unordered_map<std::string, State> commands;		//These are states that have been registered
         std::unordered_map<std::string, State> states;		//These are states that have been registered
     public:
         Director(/* args */);
@@ -23,7 +24,13 @@ namespace atn{
         void addState( const std::string state, AtnAPIState_typ *check, void *_pParameters, size_t _sParameters );
 		
 		//Registers a bool to be automatically monitored, without full API support
-		void addStateBool( const std::string state,  std::string moduleName, bool *check );
+		void addStateBool( const std::string state, const std::string moduleName, bool *check );
+
+		//Registers a bool to be automatically monitored, with parameters, without full API support
+		void addStateBool( const std::string state, const std::string moduleName, bool *check, void *_pParameters, size_t _sParameters);
+
+		//Registers a bool to be automatically monitored, without full API support
+		void addCommandBool( const std::string command, const std::string moduleName, bool * commandBit );
 
 		//Registers a behavior to an action
 		void addBehavior( const std::string action, AtnAPI_typ *behavior, void *_pParameters, size_t _sParameters );
@@ -31,6 +38,9 @@ namespace atn{
         //Starts execution of an action.
 		// Cyclic calls must be made to finish the action
         void executeAction( const std::string actions, AtnApiStatus_typ* _pStatus, void *_pParameters, size_t _sParameters );
+
+        //Sets command bits that are registered to true
+        void executeCommand( const std::string actions );
 
 		//Search for a state
         State *getState( const std::string state);

@@ -155,12 +155,17 @@ void registerBehavior( const STRING *action, const STRING *moduleName, AtnAPI_ty
 
 	globalDirector->addBehavior( std::string((char*)action), behavior, _pParameters, _sParameters );
 }
+
 void executeActionReport( const STRING *action, AtnApiStatusLocal_typ *api){
 	globalDirector->executeAction( std::string((char*)action), &api->remote, 0, 0);
 }
 
 void executeAction( const STRING *action ){
 	globalDirector->executeAction( std::string((char*)action), 0, 0, 0);
+}
+
+void executeCommand( const STRING *command ){
+	globalDirector->executeCommand( std::string((char*)command));
 }
 
 plcbit registerState(plcstring* state, plcstring* moduleName, struct AtnAPIState_typ* api){
@@ -174,6 +179,22 @@ plcbit registerStateBool(plcstring* state, plcstring* moduleName, plcbit* value)
 	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, value );
 	return 0;
 }
+
+
+plcbit registerCommandBool(plcstring* state, plcstring* moduleName, plcbit* value){
+	globalDirector->addCommandBool( std::string((char*)state), (char*)moduleName, value );
+	return 0;
+}
+
+bool registerStateWithParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters){
+	globalDirector->addState( std::string((char*)state), api, pParameters, sParameters);
+	return 0;
+}
+
+// bool registerStateBoolWithParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters){
+// 	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, 
+// 	return 0;
+// }
 
 bool stateAllTrue( STRING *state, bool fallback ){
 	State *s = globalDirector->getState(std::string((char*)state));
@@ -213,6 +234,59 @@ bool stateAnyFalse( STRING *state, bool fallback ){
 	else{
 		return fallback;
 	}
+}
+
+int forState( STRING *state, int index, bool *active, UDINT * pParameters, UDINT sParameters ){
+	
+	State *s = globalDirector->getState(std::string((char*)state));
+
+	if( s ){
+		if( index < s->count() ){
+			Inhibit item = s->inhibits.at(index);
+			if( active ){
+				*active = item.isTrue();
+			}
+			if( pParameters && item.pParameters && sParameters == item.sParameters){
+				memcpy(pParameters, item.pParameters, sParameters);				
+			}
+			else{
+				if( pParameters ){
+					memset( pParameters, 0, sParameters );
+				}
+			}
+		}
+		return s->count() - 1;
+	}
+	else{
+		return -1;
+	}
+
+}
+
+int forStateGetPointer( STRING *state, int index, bool *active, UDINT ** pParameters ){
+	
+	State *s = globalDirector->getState(std::string((char*)state));
+
+	if( s ){
+		if( index < s->count() ){
+			Inhibit item = s->inhibits.at(index);
+			if( active ){
+				*active = item.isTrue();
+			}
+
+			if( pParameters && item.pParameters ){
+				*pParameters = (UDINT*)item.pParameters;
+			}
+			else{
+				*pParameters = 0;
+			}
+		}
+		return s->count() - 1;
+	}
+	else{
+		return -1;
+	}
+
 }
 
 void readCallState( AtnApiStatusLocal_typ *status){
