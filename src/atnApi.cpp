@@ -235,7 +235,8 @@ bool stateAnyFalse( STRING *state, bool fallback ){
 		return fallback;
 	}
 }
-signed short stateCount( STRING* state, INT i ){
+
+signed short stateCount( STRING* state ){
 	State *s = globalDirector->getState(std::string( (char*) state ));
 	if( s ){
 		return s->count() - 1;
@@ -244,6 +245,7 @@ signed short stateCount( STRING* state, INT i ){
 		return -1;
 	}
 }
+
 bool forState( STRING* state, signed short index, plcbit* active, unsigned long* pParameters, unsigned long sParameters){
 	
 	State *s = globalDirector->getState(std::string( (char*) state ));
