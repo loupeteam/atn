@@ -152,3 +152,30 @@ FUNCTION populateActionList : BOOL
 		listname : STRING[80];
 	END_VAR
 END_FUNCTION
+
+FUNCTION stateCount : INT
+	VAR_INPUT
+		State : STRING[80];
+		index : INT;
+	END_VAR
+END_FUNCTION
+
+FUNCTION forState : BOOL
+	VAR_INPUT
+		State : STRING[80];
+		indexer : INT;
+		active : REFERENCE TO BOOL;
+		pParameters : REFERENCE TO UDINT;
+		sParameters : UDINT;
+	END_VAR
+END_FUNCTION
+
+FUNCTION forStateGetPointer : BOOL
+	VAR_INPUT
+		State : STRING[80];
+		indexer : INT;
+		active : REFERENCE TO BOOL;
+		pParameters : REFERENCE TO UDINT;
+		sParameters : REFERENCE TO UDINT;
+	END_VAR
+END_FUNCTION

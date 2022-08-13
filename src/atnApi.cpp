@@ -235,10 +235,18 @@ bool stateAnyFalse( STRING *state, bool fallback ){
 		return fallback;
 	}
 }
-
-int forState( STRING *state, int index, bool *active, UDINT * pParameters, UDINT sParameters ){
+signed short stateCount( STRING* state, INT i ){
+	State *s = globalDirector->getState(std::string( (char*) state ));
+	if( s ){
+		return s->count() - 1;
+	}
+	else{
+		return -1;
+	}
+}
+bool forState( STRING* state, signed short index, plcbit* active, unsigned long* pParameters, unsigned long sParameters){
 	
-	State *s = globalDirector->getState(std::string((char*)state));
+	State *s = globalDirector->getState(std::string( (char*) state ));
 
 	if( s ){
 		if( index < s->count() ){
@@ -254,18 +262,21 @@ int forState( STRING *state, int index, bool *active, UDINT * pParameters, UDINT
 					memset( pParameters, 0, sParameters );
 				}
 			}
+			return 1;
 		}
-		return s->count() - 1;
+		else{
+			return 0;
+		}
 	}
 	else{
-		return -1;
+		return 0;
 	}
 
 }
 
-int forStateGetPointer( STRING *state, int index, bool *active, UDINT ** pParameters ){
+bool forStateGetPointer(plcstring* state, signed short index, plcbit* active, unsigned long* pParameters, unsigned long* sParameters){
 	
-	State *s = globalDirector->getState(std::string((char*)state));
+	State *s = globalDirector->getState(std::string( (char*) state));
 
 	if( s ){
 		if( index < s->count() ){
@@ -274,17 +285,26 @@ int forStateGetPointer( STRING *state, int index, bool *active, UDINT ** pParame
 				*active = item.isTrue();
 			}
 
-			if( pParameters && item.pParameters ){
-				*pParameters = (UDINT*)item.pParameters;
+			if( pParameters != 0){
+				if( item.pParameters ){
+					*(UDINT**)pParameters = (UDINT*)item.pParameters;
+				}
+				else{
+					*pParameters = 0;
+				}
 			}
-			else{
-				*pParameters = 0;
+
+			if( sParameters != 0){
+				*sParameters = item.sParameters;
 			}
+			return 1;
 		}
-		return s->count() - 1;
+		else{
+			return 0;
+		}
 	}
 	else{
-		return -1;
+		return 0;
 	}
 
 }

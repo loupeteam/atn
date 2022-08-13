@@ -20,8 +20,8 @@ bool registerState( STRING *state, STRING *moduleName, AtnAPIState_typ *api);
 bool registerStateWithParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters);
 bool registerCommandBool(plcstring* state, plcstring* moduleName, plcbit* value);
 
-int forState( STRING *State, int index, bool *state, UDINT * pParameters, UDINT sParameters );
-int forStateGetPointer( STRING *state, int index, bool *active, UDINT ** pParameters );
+//int forState( STRING *State, int index, bool *state, UDINT * pParameters, UDINT sParameters );
+//int forStateGetPointer( STRING *state, int index, bool *active, UDINT ** pParameters );
 //bool stateAllTrue( const STRING *state, bool );
 
 void executeAction( const STRING *action );
