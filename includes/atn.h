@@ -234,7 +234,6 @@ typedef struct AtnRunAction
 } AtnRunAction_typ;
 
 
-
 /* Prototyping of functions and function blocks */
 _BUR_PUBLIC void AtnRunAction(struct AtnRunAction* inst);
 _BUR_PUBLIC unsigned char atnRunAction(struct Atn_typ* director, plcstring* action, unsigned long* pParameters, unsigned long parameterSize, struct AtnApiStatus_typ* status);

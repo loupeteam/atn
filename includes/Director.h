@@ -1,6 +1,6 @@
 #include <deque>
 #include <unordered_map>
-
+#include "atn.h"
 #include "Action.h"
 #include "State.h"
 namespace atn{
@@ -11,7 +11,7 @@ namespace atn{
     private:
         std::deque<Action> threads;					//Keep active threads here
         std::unordered_map<std::string, Action> actions;	//These are actions that have been registered
-        std::unordered_map<std::string, State> commands;		//These are states that have been registered
+        std::unordered_map<std::string, State> commands;	//These are commands that have been subscribed
         std::unordered_map<std::string, State> states;		//These are states that have been registered
     public:
         Director(/* args */);
@@ -32,6 +32,9 @@ namespace atn{
 		//Registers a bool to be automatically monitored, without full API support
 		void addCommandBool( const std::string command, const std::string moduleName, bool * commandBit );
 
+		//Registers a bool to be automatically monitored, without full API support
+        void addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, unsigned short *status );
+
 		//Registers a behavior to an action
 		void addBehavior( const std::string action, AtnAPI_typ *behavior, void *_pParameters, size_t _sParameters );
 
@@ -42,8 +45,14 @@ namespace atn{
         //Sets command bits that are registered to true
         void executeCommand( const std::string actions );
 
+        //reset command bits that are registered to true
+        void resetCommand( const std::string actions );
+
 		//Search for a state
         State *getState( const std::string state);
+
+		//Search for a command
+        State *getCommand( const std::string cmd);
 
 		//Count of the number of active actions
 		unsigned int countActiveThreads();

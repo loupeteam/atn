@@ -181,7 +181,13 @@ plcbit registerStateBool(plcstring* state, plcstring* moduleName, plcbit* value)
 }
 
 
-plcbit registerCommandBool(plcstring* state, plcstring* moduleName, plcbit* value){
+plcbit subscribeCommandBool(plcstring* state, plcstring* moduleName, plcbit* value){
+	globalDirector->addCommandBool( std::string((char*)state), (char*)moduleName, value );
+	return 0;
+}
+
+plcbit subscribePLCOpen(plcstring* state, plcstring* moduleName, plcbit* value, unsigned short status){
+	globalDirector->addCommandBool( std::string((char*)state), (char*)moduleName, value );
 	globalDirector->addCommandBool( std::string((char*)state), (char*)moduleName, value );
 	return 0;
 }
@@ -246,18 +252,27 @@ signed short stateCount( STRING* state ){
 	}
 }
 
+signed short commandCount( STRING* state ){
+	State *s = globalDirector->getState(std::string( (char*) state ));
+	if( s ){
+		return s->count() - 1;
+	}
+	else{
+		return -1;
+	}
+}
 bool forState( STRING* state, signed short index, plcbit* active, unsigned long* pParameters, unsigned long sParameters){
 	
 	State *s = globalDirector->getState(std::string( (char*) state ));
 
 	if( s ){
 		if( index < s->count() ){
-			Inhibit item = s->inhibits.at(index);
+			PLCOpen state = s->PLCOpenState.at(index);
 			if( active ){
-				*active = item.isTrue();
+				*active = state.isTrue();
 			}
-			if( pParameters && item.pParameters && sParameters == item.sParameters){
-				memcpy(pParameters, item.pParameters, sParameters);				
+			if( pParameters && state.pParameters && sParameters == state.sParameters){
+				memcpy(pParameters, state.pParameters, sParameters);				
 			}
 			else{
 				if( pParameters ){
@@ -282,14 +297,14 @@ bool forStateGetPointer(plcstring* state, signed short index, plcbit* active, un
 
 	if( s ){
 		if( index < s->count() ){
-			Inhibit item = s->inhibits.at(index);
+			PLCOpen state = s->PLCOpenState.at(index);
 			if( active ){
-				*active = item.isTrue();
+				*active = state.isTrue();
 			}
 
 			if( pParameters != 0){
-				if( item.pParameters ){
-					*(UDINT**)pParameters = (UDINT*)item.pParameters;
+				if( state.pParameters ){
+					*(UDINT**)pParameters = (UDINT*)state.pParameters;
 				}
 				else{
 					*pParameters = 0;
@@ -297,7 +312,30 @@ bool forStateGetPointer(plcstring* state, signed short index, plcbit* active, un
 			}
 
 			if( sParameters != 0){
-				*sParameters = item.sParameters;
+				*sParameters = state.sParameters;
+			}
+			return 1;
+		}
+		else{
+			return 0;
+		}
+	}
+	else{
+		return 0;
+	}
+
+}
+
+bool forCommandGetPLCOpenStatus(plcstring* state, signed short index, unsigned short *status){
+	
+	State *s = globalDirector->getState(std::string( (char*) state));
+
+	if( s ){
+		if( index < s->count() ){
+			PLCOpen state = s->PLCOpenState.at(index);
+
+			if( status ){
+				*status = state.PLCOpenStatus();
 			}
 			return 1;
 		}

@@ -22,8 +22,8 @@ void heater(){
 	HeaterCommand heaterCommand;
 
 	heaterCommand.setTemp = 10;	
-	registerCommandBool( (char*)enableHeater.c_str(),  "Heater", &heaterCommand.enable);
-	registerCommandBool( (char*)disableHeater.c_str(),  "Heater", &heaterCommand.disable);
+	subscribeCommandBool( (char*)enableHeater.c_str(),  "Heater", &heaterCommand.enable);
+	subscribeCommandBool( (char*)disableHeater.c_str(),  "Heater", &heaterCommand.disable);
 
 	AtnAPIState_typ TemperatureStatus = {};
 	registerStateWithParameters( (char*)heaterTemperatures.c_str(),"Heater x", &TemperatureStatus , (UDINT*)&heaterCommand, sizeof(heaterCommand));

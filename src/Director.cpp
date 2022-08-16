@@ -87,7 +87,20 @@ void Director::addCommandBool( const std::string command, const std::string modu
 		newAction.subscribe( moduleName, check);
 		commands.insert( std::pair<std::string, State>(command, newAction));        
 	}
+}
 
+//Registers a bool to be automatically monitored, without full API support
+void Director::addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, unsigned short * status ){
+	auto it = commands.find(command);
+
+	if (it != commands.end()){
+		it->second.subscribe( moduleName, commandBit, status);
+	}
+	else{
+		State newAction( command );
+		newAction.subscribe( moduleName, commandBit, status);
+		commands.insert( std::pair<std::string, State>(command, newAction));        
+	}
 }
 
 void Director::executeAction( const std::string action,  AtnApiStatus_typ* _pStatus, void *_pParameters, size_t _sParameters){
@@ -117,10 +130,33 @@ void Director::executeCommand( const std::string command ){
     }
 }
 
+void Director::resetCommand( const std::string command ){
+
+    auto it = commands.find(command);
+
+    if (it != commands.end()){
+        it->second.setFalse();
+    }
+    else{
+        std::cout << "Action not found\n";
+    }
+}
+
 State * Director::getState( const std::string state ){
     auto it = states.find(state);
 
     if (it != states.end()){
+        return &it->second;        
+    }
+    else{
+        return 0;
+    }
+}
+
+State * Director::getCommand( const std::string cmd ){
+    auto it = commands.find(cmd);
+
+    if (it != commands.end()){
         return &it->second;        
     }
     else{

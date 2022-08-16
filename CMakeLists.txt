@@ -11,6 +11,7 @@ file(GLOB SRC
 
 include_directories( ./includes )
 
+
 # add_compile_options(-fpermissive -Wno-write-strings)
 add_definitions(-D_BUR_FORMAT_BRELF)
 add_definitions(-D_REPLACE_CONST)
@@ -18,5 +19,7 @@ add_definitions(-D_SG4)
 add_definitions(-D_NOT_BR)
 add_library(${PROJECT_NAME} ${SRC})
 link_libraries(${PROJECT_NAME} StringExt)
+
+set_property(TARGET atn PROPERTY CXX_STANDARD 11)
 
 add_subdirectory (test)

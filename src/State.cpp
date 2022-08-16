@@ -17,29 +17,53 @@ State::~State(){};
 
 void State::subscribe( AtnAPIState_typ* api, void *_pParameters, size_t _sParameters ){
 
-    this->inhibits.push_back( Inhibit( _pParameters, _sParameters, api) );
+    PLCOpen state;
+    state.pParameters = _pParameters;
+    state.sParameters = _sParameters;
+    state.pCheck =  api;
+    if( api ){
+        state.name = api->moduleName;
+        state.pValue = &(api->active);
+    }
 
+    this->PLCOpenState.push_back( state );
 }
 
-void State::subscribe(  const std:: string ModuleName, bool* api ){
+void State::subscribe(  const std:: string ModuleName, bool* value ){
+    PLCOpen state;
+    state.name = ModuleName;
+    state.pValue = value;
 
-    this->inhibits.push_back( Inhibit( ModuleName, api) );
-
+    this->PLCOpenState.push_back( state );
 }
 
-void State::subscribe(  const std:: string ModuleName, bool* api, void *_pParameters, size_t _sParameters ){
+void State::subscribe(  const std:: string ModuleName, bool* value, void *_pParameters, size_t _sParameters ){
 
-    this->inhibits.push_back( Inhibit( ModuleName, api, pParameters, sParameters) );
+    PLCOpen state;
+    state.name = ModuleName;
+    state.pValue = value;
+    state.pParameters = _pParameters;
+    state.sParameters = _sParameters;
 
+    this->PLCOpenState.push_back( state );
+}
+
+void State::subscribe(  const std:: string ModuleName,  plcbit* command, unsigned short *status ){
+
+    PLCOpen state;
+    state.name = ModuleName;
+    state.pValue = command;
+    state.pStatus = status;
+    this->PLCOpenState.push_back( state );
 }
 
 bool State::allTrue( bool fallback ){
 
-    for( auto inhibit : this->inhibits ){
-        if( inhibit.pCheck->moduleBypass){
+    for( auto state : this->PLCOpenState ){
+        if( state.pCheck && state.pCheck->moduleBypass){
             continue;
         }
-        if( !inhibit.isTrue() ){
+        if( !state.isTrue() ){
             return false;
         }
 		//If we got here at least 1 was true
@@ -51,11 +75,11 @@ bool State::allTrue( bool fallback ){
 
 bool State::allFalse( bool fallback ){
 
-    for( auto inhibit : this->inhibits ){
-        if( inhibit.pCheck->moduleBypass){
+    for( auto state : this->PLCOpenState ){
+        if( state.pCheck && state.pCheck->moduleBypass){
             continue;
         }
-        if( inhibit.isTrue() ){
+        if( state.isTrue() ){
             return false;
         }
 		//If we got here, at least one was false
@@ -67,11 +91,11 @@ bool State::allFalse( bool fallback ){
 
 bool State::anyTrue( bool fallback ){
     
-    for( auto inhibit : this->inhibits ){
-        if( inhibit.pCheck->moduleBypass){
+    for( auto state : this->PLCOpenState ){
+        if( state.pCheck && state.pCheck->moduleBypass){
             continue;
         }
-        if( inhibit.isTrue() ){
+        if( state.isTrue() ){
             return true;
         }
 		//If we got here at least 1 was false
@@ -83,11 +107,11 @@ bool State::anyTrue( bool fallback ){
 
 bool State::anyFalse( bool fallback ){
     
-    for( auto inhibit : this->inhibits ){
-        if( inhibit.pCheck->moduleBypass){
+    for( auto state : this->PLCOpenState ){
+        if( state.pCheck && state.pCheck->moduleBypass){
             continue;
         }
-        if( !inhibit.isTrue() ){
+        if( !state.isTrue() ){
             return true;
         }
 		//If we got here at least 1 was true
@@ -99,11 +123,11 @@ bool State::anyFalse( bool fallback ){
 
 bool State::setTrue(){
     bool set = 0;
-    for( auto inhibit : this->inhibits ){
-        if( inhibit.pCheck->moduleBypass){
+    for( auto state : this->PLCOpenState ){
+        if( state.pCheck && state.pCheck->moduleBypass){
             continue;
         }
-        inhibit.set(true);
+        state.set(true);
         set = true;
     }
     return set;
@@ -111,23 +135,76 @@ bool State::setTrue(){
 
 bool State::setFalse(){
     bool set = 0;
-    for( auto inhibit : this->inhibits ){
-        if( inhibit.pCheck->moduleBypass){
+    for( auto state : this->PLCOpenState ){
+        if( state.pCheck && state.pCheck->moduleBypass){
             continue;
         }
-        inhibit.set(false);
+        state.set(false);
         set = true;
     }
     return set;
 }
+
+unsigned short State::getPLCOpenState( unsigned short fallback){
+
+    //We need an internal group status to default to 0 because fallback may not be zero.
+    // That means we couldn't detect a non-zero
+    unsigned short groupStatus  = 0;
+
+    for( auto state : this->PLCOpenState ){
+        if( (state.pCheck && state.pCheck->moduleBypass) || !state.pStatus ){
+            continue;
+        }
+        //Figure out the group status.
+        // Priority:
+        //  1. Error
+        //  2. Busy
+        //  3. Not Enabled
+        //  4. OK
+
+        unsigned short plcopenstatus  = *(state.pStatus);
+        switch ( plcopenstatus )
+        {
+            //Done
+            case 0:                
+                //Do nothing, default is done
+                break;
+
+            //Busy overrides not enabled and done
+            case 65535:
+                if( groupStatus == 0 || groupStatus == 65534){
+                    groupStatus = plcopenstatus;
+                }
+                break;        
+
+            //Not enabled overrides done
+            case 65534:
+                if( groupStatus == 0){
+                    groupStatus = plcopenstatus;
+                }
+                break;        
+
+            //Error overrides all others. We can only report 1 error
+            default:
+                groupStatus = plcopenstatus;
+                break;
+        }
+
+        fallback = groupStatus;
+	}
+
+    return fallback;
+       
+}
+
 unsigned int State::count(){
-    return this->inhibits.size();
+    return this->PLCOpenState.size();
 }
 
 void State::print(){
     std::cout << "\nState Check: " << this->name << "\n";
-    for( auto inhibit : this->inhibits ){
-        inhibit.print();
+    for( auto state : this->PLCOpenState ){
+        state.print();
     }
     std::cout << "\n";
 

@@ -1,4 +1,4 @@
-#include "Inhibit.h"
+#include "PLCOpen.h"
 #include "atn.h"
 #include <vector>
 namespace atn{
@@ -12,20 +12,21 @@ namespace atn{
 
     public:
 
-        std::vector<Inhibit> inhibits; 
+        std::vector<PLCOpen> PLCOpenState; 
 
         State( std:: string name);    
         ~State();
         void subscribe(  AtnAPIState_typ* api, void *_pParameters, size_t _sParameters  );
         void subscribe(  const std:: string ModuleName, bool* api);
         void subscribe(  const std:: string ModuleName, bool* api, void *_pParameters, size_t _sParameters  );
-
+        void subscribe(  const std:: string ModuleName,  plcbit* command, unsigned short *status );
         bool setTrue(  );
         bool setFalse(  );
         bool allTrue( bool fallback );
         bool allFalse( bool fallback );
         bool anyTrue( bool fallback );
         bool anyFalse( bool fallback );
+        unsigned short getPLCOpenState( unsigned short fallback );
         void print();
         unsigned int count();
     };
