@@ -156,7 +156,6 @@ END_FUNCTION
 FUNCTION stateCount : INT
 	VAR_INPUT
 		State : STRING[80];
-		index : INT;
 	END_VAR
 END_FUNCTION
 
