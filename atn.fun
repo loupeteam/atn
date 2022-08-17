@@ -178,3 +178,44 @@ FUNCTION forStateGetPointer : BOOL
 		sParameters : REFERENCE TO UDINT;
 	END_VAR
 END_FUNCTION
+
+FUNCTION_BLOCK AtnPLCOpen
+	VAR_INPUT
+		Command : STRING[80];
+		Execute : BOOL;
+		Fallback : DINT;
+	END_VAR
+	VAR_OUTPUT
+		Status : DINT;
+		Busy : BOOL;
+		Done : BOOL;
+		Aborted : BOOL;
+		Error : BOOL;
+	END_VAR
+	VAR
+		_state : USINT;
+		_execute : BOOL;
+		_command : {REDUND_UNREPLICABLE} UDINT;
+	END_VAR
+END_FUNCTION_BLOCK
+
+FUNCTION subscribeCommandBool : BOOL
+	VAR_INPUT
+		commandName : STRING[80];
+		moduleName : STRING[80];
+	END_VAR
+	VAR_IN_OUT
+		command : BOOL;
+	END_VAR
+END_FUNCTION
+
+FUNCTION subscribePLCOpen : BOOL
+	VAR_INPUT
+		commandName : STRING[80];
+		moduleName : STRING[80];
+	END_VAR
+	VAR_IN_OUT
+		command : BOOL;
+		status : AtnPlcOpenStatus;
+	END_VAR
+END_FUNCTION

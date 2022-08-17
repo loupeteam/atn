@@ -9,7 +9,7 @@ PLCOpen::PLCOpen( struct AtnAPIState_typ* pCheck, void * _pParameters, size_t _s
     this->sParameters = _sParameter;
     this->pCheck = pCheck;
     if( pCheck ){
-        this->pValue = & (pCheck->active);
+        this->pValue = &(pCheck->active);
         this->name = pCheck->moduleName;
     }
 }

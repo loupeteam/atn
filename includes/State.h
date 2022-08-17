@@ -19,7 +19,7 @@ namespace atn{
         void subscribe(  AtnAPIState_typ* api, void *_pParameters, size_t _sParameters  );
         void subscribe(  const std:: string ModuleName, bool* api);
         void subscribe(  const std:: string ModuleName, bool* api, void *_pParameters, size_t _sParameters  );
-        void subscribe(  const std:: string ModuleName,  plcbit* command, unsigned short *status );
+        void subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcOpenStatus *status );
         bool setTrue(  );
         bool setFalse(  );
         bool allTrue( bool fallback );

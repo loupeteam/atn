@@ -10,7 +10,8 @@ namespace atn{
         size_t sParameters;
         struct AtnAPIState_typ* pCheck;
         bool * pValue;
-        unsigned short * pStatus;
+		signed long * pStatus;
+		long unsigned int * pCommandSource;
         std::string name;
         PLCOpen( );
         PLCOpen( std::string Name, bool * value );

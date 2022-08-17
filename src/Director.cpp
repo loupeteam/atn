@@ -90,7 +90,7 @@ void Director::addCommandBool( const std::string command, const std::string modu
 }
 
 //Registers a bool to be automatically monitored, without full API support
-void Director::addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, unsigned short * status ){
+void Director::addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, AtnPlcOpenStatus * status ){
 	auto it = commands.find(command);
 
 	if (it != commands.end()){

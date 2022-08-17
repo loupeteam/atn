@@ -6,7 +6,7 @@
       <Object Type="File">atnApi.h</Object>
       <Object Type="File">Behavior.h</Object>
       <Object Type="File">Director.h</Object>
-      <Object Type="File">Inhibit.h</Object>
+      <Object Type="File">PLCOpen.h</Object>
       <Object Type="File">State.h</Object>
   </Objects>
 </Package>

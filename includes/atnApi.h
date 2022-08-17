@@ -28,7 +28,7 @@ bool registerState( STRING *state, STRING *moduleName, AtnAPIState_typ *api);
 bool registerStateWithParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters);
 
 bool subscribeCommandBool(plcstring* state, plcstring* moduleName, plcbit* value);
-bool subscribePLCOpen(plcstring* state, plcstring* moduleName, plcbit* command, unsigned short *status );
+bool subscribePLCOpen(plcstring* state, plcstring* moduleName, plcbit* command, AtnPlcOpenStatus *status );
 
 void executeCommand( const STRING *action );
 unsigned short PLCOpenStatus( const STRING *action );

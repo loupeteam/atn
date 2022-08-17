@@ -6,7 +6,7 @@
       <Object Type="File">atnApi.cpp</Object>
       <Object Type="File">Behavior.cpp</Object>
       <Object Type="File">Director.cpp</Object>
-      <Object Type="File">Inhibit.cpp</Object>
+      <Object Type="File">PLCOpen.cpp</Object>
       <Object Type="File">State.cpp</Object>
   </Objects>
 </Package>

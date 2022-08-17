@@ -48,13 +48,14 @@ void State::subscribe(  const std:: string ModuleName, bool* value, void *_pPara
     this->PLCOpenState.push_back( state );
 }
 
-void State::subscribe(  const std:: string ModuleName,  plcbit* command, unsigned short *status ){
+void State::subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcOpenStatus *status ){
 
     PLCOpen state;
     state.name = ModuleName;
     state.pValue = command;
-    state.pStatus = status;
-    this->PLCOpenState.push_back( state );
+    state.pStatus = &(status->status);
+	state.pCommandSource = &(status->internal);
+	this->PLCOpenState.push_back( state );
 }
 
 bool State::allTrue( bool fallback ){

@@ -134,7 +134,7 @@ TYPE
 		moduleStatus : STRING[80];
 		moduleBypass : BOOL;
 		moduleIsBypassed : BOOL;
-		active : USINT;
+		active : BOOL;
 	END_STRUCT;
 	AtnActionList_typ : 	STRUCT 
 		name : STRING[ATN_NAMESPACE_LEN];
@@ -152,5 +152,9 @@ TYPE
 		pParameters : UDINT;
 		sParameters : UDINT;
 		pStatusStructure : UDINT;
+	END_STRUCT;
+	AtnPlcOpenStatus : 	STRUCT 
+		status : DINT;
+		internal : UDINT;
 	END_STRUCT;
 END_TYPE
