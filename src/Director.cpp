@@ -113,21 +113,27 @@ void Director::executeAction( const std::string action,  AtnApiStatus_typ* _pSta
         threads.back().start( _pStatus, _pParameters, _sParameters );
     }
     else{
-        std::cout << "Action not found\n";
+		if( this->outstream ){
+			*this->outstream << "Action not found\n";
+		}
     }
 }
 
 
-void Director::executeCommand( const std::string command ){
+bool Director::executeCommand( const std::string command ){
 
     auto it = commands.find(command);
 
     if (it != commands.end()){
         it->second.setTrue();
+		return true;
     }
     else{
-        std::cout << "Action not found\n";
-    }
+		if( this->outstream ){
+			*this->outstream << "Action not found\n";
+		}
+		return false;
+	}
 }
 
 void Director::resetCommand( const std::string command ){
@@ -138,7 +144,9 @@ void Director::resetCommand( const std::string command ){
         it->second.setFalse();
     }
     else{
-        std::cout << "Action not found\n";
+		if( this->outstream ){
+			*this->outstream << "Action not found\n";
+		}
     }
 }
 
@@ -169,29 +177,29 @@ void Director::cyclic(){
     for (auto thread = threads.begin(); thread != threads.end(); ++thread){
         //Run thread
         if( thread->update() ){
-            thread->print();
+            thread->print( *this->outstream );
             //If it's done, remove it            
             threads.erase( thread );
         }
     }
 }
 
-void Director::printState(){
+void Director::printState( std::ostream &out ){
     for (auto thread = threads.begin(); thread != threads.end(); ++thread){
-        thread->print();   
+        thread->print( out );   
     }
 }
 
-void Director::printActions(){
-    std::cout << "\nActions:" << "\n";
+void Director::printActions( std::ostream &out ){
+    out << "\nActions:" << "\n";
     for( auto action : actions ){
-        std::cout << action.first << "\n";
+        out << action.first << "\n";
     }
 }
-void Director::printStates(){
-    std::cout << "\nStates:" << "\n";
+void Director::printStates( std::ostream &out ){
+    out << "\nStates:" << "\n";
     for( auto state : states ){
-        std::cout << state.first << "\n";
+        out << state.first << "\n";
     }
 
 }

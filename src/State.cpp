@@ -54,7 +54,8 @@ void State::subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcO
     state.name = ModuleName;
     state.pValue = command;
     state.pStatus = &(status->status);
-	state.pCommandSource = &(status->internal);
+	state.pCommandSource = &(status->internal.fbk);
+	state.pFirstCycle = &(status->internal.trig);
 	this->PLCOpenState.push_back( state );
 }
 
@@ -202,11 +203,11 @@ unsigned int State::count(){
     return this->PLCOpenState.size();
 }
 
-void State::print(){
-    std::cout << "\nState Check: " << this->name << "\n";
+void State::print( std::ostream &outbuf){
+    outbuf << "\nState Check: " << this->name << "\n";
     for( auto state : this->PLCOpenState ){
-        state.print();
+        state.print( outbuf );
     }
-    std::cout << "\n";
+    outbuf << "\n";
 
 }

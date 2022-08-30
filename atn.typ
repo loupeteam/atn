@@ -155,6 +155,10 @@ TYPE
 	END_STRUCT;
 	AtnPlcOpenStatus : 	STRUCT 
 		status : DINT;
-		internal : UDINT;
+		internal : AtnPlcOpenInternal;
+	END_STRUCT;
+	AtnPlcOpenInternal : 	STRUCT 
+		fbk : UDINT;
+		trig : BOOL;
 	END_STRUCT;
 END_TYPE

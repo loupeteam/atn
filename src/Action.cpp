@@ -186,10 +186,10 @@ void Action::release(  ){
     }
 }
 
-void Action::print(){
-    std::cout << "\nAction: "<< this->name << "\n";
+void Action::print( std::ostream &out ){
+    out << "\nAction: "<< this->name << "\n";
     for ( Behavior it : this->behaviors ){
-        it.print();
+        it.print( out );
     }
-    std::cout << "\n";
+    out << "\n";
 }

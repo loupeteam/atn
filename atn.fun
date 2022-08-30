@@ -42,6 +42,9 @@ FUNCTION_BLOCK AtnRunAction
 		_execute : BOOL;
 	END_VAR
 END_FUNCTION_BLOCK
+(*
+Actions interface
+*)
 
 FUNCTION atnRunAction : USINT
 	VAR_INPUT
@@ -101,6 +104,16 @@ FUNCTION atnSetActionList : BOOL
 	END_VAR
 END_FUNCTION
 
+FUNCTION populateActionList : BOOL
+	VAR_INPUT
+		listname : STRING[80];
+	END_VAR
+END_FUNCTION
+(*
+State/Command Interface
+*)
+(*Registering*)
+
 FUNCTION registerState : BOOL
 	VAR_INPUT
 		state : STRING[80];
@@ -118,6 +131,46 @@ FUNCTION registerStateBool : BOOL
 		value : BOOL;
 	END_VAR
 END_FUNCTION
+
+FUNCTION registerStateBoolAdr : BOOL
+	VAR_INPUT
+		state : STRING[80];
+		moduleName : STRING[80];
+		value : REFERENCE TO BOOL;
+	END_VAR
+END_FUNCTION
+(*Subscribing*)
+
+FUNCTION subscribeCommandBool : BOOL
+	VAR_INPUT
+		commandName : STRING[80];
+		moduleName : STRING[80];
+	END_VAR
+	VAR_IN_OUT
+		command : BOOL;
+	END_VAR
+END_FUNCTION
+
+FUNCTION subscribePLCOpen : BOOL
+	VAR_INPUT
+		commandName : STRING[80];
+		moduleName : STRING[80];
+	END_VAR
+	VAR_IN_OUT
+		command : BOOL;
+		status : AtnPlcOpenStatus;
+	END_VAR
+END_FUNCTION
+(*PLCOpen*)
+
+FUNCTION atnPLCOpenAbort : BOOL
+	VAR_IN_OUT
+		status : AtnPlcOpenStatus;
+	END_VAR
+END_FUNCTION
+(*
+Combined State check
+*)
 
 FUNCTION stateAllTrue : BOOL
 	VAR_INPUT
@@ -146,12 +199,9 @@ FUNCTION stateAnyFalse : BOOL
 		fallback : BOOL;
 	END_VAR
 END_FUNCTION
-
-FUNCTION populateActionList : BOOL
-	VAR_INPUT
-		listname : STRING[80];
-	END_VAR
-END_FUNCTION
+(*
+Individual State check
+*)
 
 FUNCTION stateCount : INT
 	VAR_INPUT
@@ -178,6 +228,14 @@ FUNCTION forStateGetPointer : BOOL
 		sParameters : REFERENCE TO UDINT;
 	END_VAR
 END_FUNCTION
+(*
+Executing Commands*)
+
+FUNCTION executeCommand : BOOL
+	VAR_INPUT
+		Command : STRING[80];
+	END_VAR
+END_FUNCTION
 
 FUNCTION_BLOCK AtnPLCOpen
 	VAR_INPUT
@@ -198,24 +256,3 @@ FUNCTION_BLOCK AtnPLCOpen
 		_command : {REDUND_UNREPLICABLE} UDINT;
 	END_VAR
 END_FUNCTION_BLOCK
-
-FUNCTION subscribeCommandBool : BOOL
-	VAR_INPUT
-		commandName : STRING[80];
-		moduleName : STRING[80];
-	END_VAR
-	VAR_IN_OUT
-		command : BOOL;
-	END_VAR
-END_FUNCTION
-
-FUNCTION subscribePLCOpen : BOOL
-	VAR_INPUT
-		commandName : STRING[80];
-		moduleName : STRING[80];
-	END_VAR
-	VAR_IN_OUT
-		command : BOOL;
-		status : AtnPlcOpenStatus;
-	END_VAR
-END_FUNCTION

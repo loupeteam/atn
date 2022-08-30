@@ -30,7 +30,7 @@ namespace atn{
         ATN_RESPONSE_ST checkState( ATN_ST_enum stateToCheck );
         void release();
         void abort();
-        void print();
+        void print( std::ostream &);
 
     };
 }

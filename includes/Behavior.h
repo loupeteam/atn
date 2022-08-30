@@ -16,6 +16,6 @@ namespace atn{
         bool updateSubstate( unsigned long state );
         ATN_RESPONSE_ST checkState( ATN_ST_enum state, unsigned long substate  );
         void release();
-        void print();
+        void print( std::ostream &);
     };
 }

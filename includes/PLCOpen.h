@@ -12,6 +12,7 @@ namespace atn{
         bool * pValue;
 		signed long * pStatus;
 		long unsigned int * pCommandSource;
+		bool * pFirstCycle;
         std::string name;
         PLCOpen( );
         PLCOpen( std::string Name, bool * value );
@@ -23,6 +24,6 @@ namespace atn{
         void setBusyStatus();
         unsigned short PLCOpenStatus();
         bool set( bool value);
-        void print();
+        void print( std::ostream & );
     };
 }

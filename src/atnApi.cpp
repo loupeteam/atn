@@ -86,7 +86,7 @@ ATN_ST_enum respond( AtnAPI_typ *Behavior ){
 	Behavior->response = Behavior->state;
 	return Behavior->state;
 }
-static outbuf *outstream = 0;
+static outbuf *obuf = 0;
 
 void atnSetDirector( void *director ){
 	globalDirector = (Director*)director;
@@ -94,16 +94,17 @@ void atnSetDirector( void *director ){
 
 unsigned long atninit( UDINT console, UDINT bufsize ){
 	
-	if( console ){
-		outstream = new outbuf( (char*)console, bufsize );
-		std::streambuf *sb = std::cout.rdbuf( outstream );
-	}
 	
 	if( !globalDirector ){
 		globalDirector = new Director();
 	}
 
-	std::cout <<	"atn initialized\n";
+	if( console ){
+		obuf = new outbuf( (char*)console, bufsize );		
+		globalDirector->outstream = new std::ostream(obuf);
+	}
+
+	*globalDirector->outstream <<	"atn initialized\n";
 
 	return (unsigned long)globalDirector;
 }
@@ -113,31 +114,32 @@ unsigned long atncyclic( UDINT console, UDINT bufsize ){
 	char *command = (char*) console;
 
 	atn::State *state;
-	
-	outstream->reset();
+	std::ostream *outstream = globalDirector->outstream;
+		
+	obuf->reset();
 	switch (command[0])
 	{
 		case '?':
-			std::cout << "? for this help\n";
-			std::cout << "/[actionName] to run an action\n";
-			std::cout << "+[actionName] to view an action status\n";
-			std::cout << "[statename] to view a state status\n";			
+			*outstream << "? for this help\n";
+			*outstream << "/[actionName] to run an action\n";
+			*outstream << "+[actionName] to view an action status\n";
+			*outstream << "[statename] to view a state status\n";			
 			break;
 		case '/':			
 			command[0] = '+';
 			globalDirector->executeAction( &command[1], 0, 0, 0);
 		case '+':			
-			globalDirector->printState();
+			globalDirector->printState( *outstream );
 			break;
 		default:
 			state = globalDirector->getState( &command[0] );
 			if( state ){
-				state->print();
+				state->print( *outstream );
 			}
 			else{
-				std::cout << "state "<< command << " Not found";
-				globalDirector->printActions();
-				globalDirector->printStates();
+				*outstream << "state "<< command << " Not found";
+				globalDirector->printActions( *outstream );
+				globalDirector->printStates( *outstream );
 			}
 			break;
 	}
@@ -164,8 +166,8 @@ void executeAction( const STRING *action ){
 	globalDirector->executeAction( std::string((char*)action), 0, 0, 0);
 }
 
-void executeCommand( const STRING *command ){
-	globalDirector->executeCommand( std::string((char*)command));
+plcbit executeCommand( STRING *command ){
+	return globalDirector->executeCommand( std::string((char*)command));
 }
 
 plcbit registerState(plcstring* state, plcstring* moduleName, struct AtnAPIState_typ* api){
@@ -180,6 +182,10 @@ plcbit registerStateBool(plcstring* state, plcstring* moduleName, plcbit* value)
 	return 0;
 }
 
+plcbit registerStateBoolAdr(plcstring* state, plcstring* moduleName, plcbit* value){
+	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, value );
+	return 0;
+}
 
 plcbit subscribeCommandBool(plcstring* state, plcstring* moduleName, plcbit* value){
 	globalDirector->addCommandBool( std::string((char*)state), (char*)moduleName, value );
@@ -369,6 +375,28 @@ unsigned short PLCOpenStatus( const STRING *command, unsigned short fallback ){
 	}
 }
 
+
+plcbit atnPLCOpenAbort(struct AtnPlcOpenStatus* status){
+	
+	if( !status ) return 0;
+
+	AtnPLCOpen_typ* commandSrc;
+	
+	//aborted if there is an active PLCOpen Command active
+	if( !status->internal.trig ){
+		commandSrc = (AtnPLCOpen_typ*) (status->internal.fbk);
+
+		if( commandSrc != 0 ){
+			commandSrc->_state = 8;
+		}		
+		
+		status->internal.fbk = 0;
+	}			
+
+	status->internal.trig = 0;
+
+}
+
 void AtnPLCOpen(AtnPLCOpen_typ* inst){
 
 	//Capture edges
@@ -382,9 +410,9 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 	}
 
 	int i = 0;	
-	State *command;
+	State *command = (State *)inst->_command;;
 	AtnPLCOpen_typ* commandSrc;
-
+		
 	switch (inst->_state)
 	{
 		//IDLE
@@ -396,41 +424,63 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 			inst->Aborted = false;
 			break;
 
-		//Abort any commands that require it
+		//Start a new command by getting it
 		case 1:
 			inst->Status = ERR_FUB_BUSY;
 			inst->Busy = true;
 			inst->Done = false;
 			inst->Error = false;
 			inst->Aborted = false;			
+			inst->_command = (unsigned long)globalDirector->getCommand( inst->Command );			
+			if( inst->_command ){
+				inst->_state = 2;
+				command = (State *)inst->_command;
+				//No break;
+			}
+			else{
+				inst->_state = 5;
+				inst->Status = inst->Fallback;
+				break;
+			}
+			//No break;
+		
+		//Abort any commands that was active using the same PLCOpen state
+		case 2:
+			if(command){
+				for( auto state : command->PLCOpenState ){
+					if( state.pCheck && state.pCheck->moduleBypass){
+						continue;
+					}
+					if( state.pCommandSource ){
+						commandSrc = *(AtnPLCOpen_typ**) (state.pCommandSource);
 
-			command = globalDirector->getCommand( inst->Command );
-			for( auto state : command->PLCOpenState ){
-				if( state.pCheck && state.pCheck->moduleBypass){
-					continue;
-				}
-				if( state.pCommandSource ){
-					commandSrc = *(AtnPLCOpen_typ**) (state.pCommandSource);
-
-					if( commandSrc != 0 && commandSrc != inst ){
-						commandSrc->_state = 6;
-					}		
-					*((AtnPLCOpen_typ**)state.pCommandSource) = (AtnPLCOpen_typ*)inst;
+						if( commandSrc != 0 && commandSrc != inst ){
+							commandSrc->_state = 8;
+						}		
+						*((AtnPLCOpen_typ**)state.pCommandSource) = (AtnPLCOpen_typ*)inst;
+					}
+					if( state.pFirstCycle ){
+						*state.pFirstCycle = 1;
+					}
 				}
 			}
-			inst->_state = 2;
+			//No break	
 		
 		//Start the command
-		case 2:
-						
-			executeCommand( inst->Command );
+		case 3:
+			command->setTrue();			
 			inst->Busy = true;
-			inst->_state = 3;
+			inst->_state = 4;
+			// no break
 
 		//Wait for the command to be finished
-		case 3:
+		case 4:
 			inst->Busy = true;
-			inst->Status = PLCOpenStatus( inst->Command, inst->Fallback );
+			inst->Status = command->getPLCOpenState( inst->Fallback );
+			//No Break;
+
+		//Read the status and update outputs
+		case 5:
 			if( inst->Status != ERR_FUB_BUSY ){
 				inst->Busy = false;
 				if( inst->Status == 0 ){
@@ -439,38 +489,43 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 				else{
 					inst->Error = true;		
 				}
-				inst->_state = 4;
+				inst->_state = 6;
+				//No break	
 			}
 			else{
 				break;
 			}
-
+			//No break	
+		
 		//cleanup
-		case 4:
-			command = globalDirector->getCommand( inst->Command );
-			for( auto state : command->PLCOpenState ){
-				if( state.pCheck && state.pCheck->moduleBypass){
-					continue;
-				}
-				if( state.pCommandSource ){
-					commandSrc = *(AtnPLCOpen_typ**) (state.pCommandSource);
+		case 6:
+			//Remove self from the source command
+			if(command){
+				for( auto state : command->PLCOpenState ){
+					if( state.pCheck && state.pCheck->moduleBypass){
+						continue;
+					}
+					if( state.pCommandSource ){
+						commandSrc = *(AtnPLCOpen_typ**) (state.pCommandSource);
 
-					if( commandSrc != 0 && commandSrc == inst ){
-						*((AtnPLCOpen_typ**)state.pCommandSource) = 0;
-					}		
+						if( commandSrc != 0 && commandSrc == inst ){
+							*((AtnPLCOpen_typ**)state.pCommandSource) = 0;
+						}		
+					}
 				}
 			}
-			inst->_state = 5;
+			
+			inst->_state = 7;
 
 		//done
-		case 5:
+		case 7:
 			if( !inst->Execute ){
 				inst->_state = 0;
 			}
 			break;
 
 		//aborted
-		case 6:
+		case 8:
 			inst->Status = ERR_OK;
 			inst->Busy = false;
 			inst->Done = false;

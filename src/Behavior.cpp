@@ -149,9 +149,9 @@ ATN_RESPONSE_ST Behavior::checkState( ATN_ST_enum state, unsigned long substate 
 		}
 }
 
-void Behavior::print(){
-	std::cout << "Module       : " << pAction->moduleName << "\n";
-	std::cout << "Module status: " << pAction->moduleStatus << "\n";
-	std::cout << "state        : " << pAction->state << "\n";
-	std::cout << "response     : " << pAction->response << "\n";
+void Behavior::print( std::ostream &out ){
+	out << "Module       : " << pAction->moduleName << "\n";
+	out << "Module status: " << pAction->moduleStatus << "\n";
+	out << "state        : " << pAction->state << "\n";
+	out << "response     : " << pAction->response << "\n";
 }

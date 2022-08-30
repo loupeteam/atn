@@ -35,6 +35,7 @@ PLCOpen::PLCOpen( ){
 	pCheck  = 0;
     pValue = 0;
     pStatus = 0;
+	pFirstCycle = 0;
 };
 PLCOpen::~PLCOpen( ){
 
@@ -84,7 +85,7 @@ unsigned short PLCOpen::PLCOpenStatus(){
     }
 }
 
-void PLCOpen::print(){		
-    std::cout << "Module: " << this->name << "\n";
-    std::cout << "Value: " << (bool) *pValue << "\n";
+void PLCOpen::print( std::ostream &out ){		
+   	out << "Module: " << this->name << "\n";
+    out << "Value: " << (bool) *pValue << "\n";
 }

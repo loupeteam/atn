@@ -20,14 +20,15 @@ namespace atn{
         void subscribe(  const std:: string ModuleName, bool* api);
         void subscribe(  const std:: string ModuleName, bool* api, void *_pParameters, size_t _sParameters  );
         void subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcOpenStatus *status );
-        bool setTrue(  );
+		bool setTrigger(  );
+		bool setTrue(  );
         bool setFalse(  );
         bool allTrue( bool fallback );
         bool allFalse( bool fallback );
         bool anyTrue( bool fallback );
         bool anyFalse( bool fallback );
         unsigned short getPLCOpenState( unsigned short fallback );
-        void print();
+        void print( std::ostream &);
         unsigned int count();
     };
 }

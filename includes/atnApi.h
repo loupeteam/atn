@@ -30,7 +30,7 @@ bool registerStateWithParameters( STRING *state, STRING *moduleName, AtnAPIState
 bool subscribeCommandBool(plcstring* state, plcstring* moduleName, plcbit* value);
 bool subscribePLCOpen(plcstring* state, plcstring* moduleName, plcbit* command, AtnPlcOpenStatus *status );
 
-void executeCommand( const STRING *action );
+//void executeCommand( const STRING *action );
 unsigned short PLCOpenStatus( const STRING *action );
 
 bool forCommandGetPLCOpenStatus(plcstring* command, signed short index, unsigned short *status);
