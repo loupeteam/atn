@@ -245,6 +245,7 @@ FUNCTION_BLOCK AtnPLCOpen
 	END_VAR
 	VAR_OUTPUT
 		Status : DINT;
+		StatusMessage : ARRAY[0..9] OF STRING[80];
 		Busy : BOOL;
 		Done : BOOL;
 		Aborted : BOOL;
@@ -256,3 +257,28 @@ FUNCTION_BLOCK AtnPLCOpen
 		_command : {REDUND_UNREPLICABLE} UDINT;
 	END_VAR
 END_FUNCTION_BLOCK
+(*Reading Status*)
+
+FUNCTION stateTrueStatus : BOOL
+	VAR_INPUT
+		state : STRING[80];
+		buffer : UDINT;
+		sBuffer : UDINT;
+	END_VAR
+END_FUNCTION
+
+FUNCTION stateFalseStatus : BOOL
+	VAR_INPUT
+		state : STRING[80];
+		buffer : UDINT;
+		sBuffer : UDINT;
+	END_VAR
+END_FUNCTION
+
+FUNCTION stateStatus : BOOL
+	VAR_INPUT
+		state : STRING[80];
+		buffer : UDINT;
+		sBuffer : UDINT;
+	END_VAR
+END_FUNCTION

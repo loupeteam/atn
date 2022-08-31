@@ -7,45 +7,37 @@
 
 using namespace atn;
 
-static Director *globalDirector = 0;
+Director *globalDirector = 0;
 
-class outbuf : public std::streambuf {
-	private:
-	char * _front;
-	char * _current;
-	size_t _sz;
-	public:
-	outbuf( char * data, size_t sz ) : _front(data), _current(data), _sz(sz)  {
-		// no buffering, overflow on every char
-		setp(0, 0);
-	}
-
-	virtual int_type overflow(int_type c = traits_type::eof()) {
-		// add the char to wherever you want it, for example:
+outbuf::outbuf( char * data, size_t sz ) : _front(data), _current(data), _sz(sz)  {
+	// no buffering, overflow on every char
+	setp(0, 0);
+}
+int outbuf::overflow(int_type c ) {
+	// add the char to wherever you want it, for example:
 		
-		if(_current - _front > _sz){
-			_current = _front;
-		}
-
-		switch(c){
-			case '\n':
-				if(_current - _front < _sz){
-					(*_current) = 0;
-				}
-				_current = (char*) ((((((UDINT)_current - (UDINT)_front)/81)+1)*81) + (UDINT)_front);
-				return c;
-			default:
-				(*_current) = c;
-				_current++;
-				break;			
-		}
-		return c;
-	}
-	void reset(){
-		memset( (void*)_front, 0, _sz );	
+	if(_current - _front > _sz){
 		_current = _front;
 	}
-};
+
+	switch(c){
+		case '\n':
+			if(_current - _front < _sz){
+				(*_current) = 0;
+			}
+			_current = (char*) ((((((UDINT)_current - (UDINT)_front)/81)+1)*81) + (UDINT)_front);
+			return c;
+		default:
+			(*_current) = c;
+			_current++;
+			break;			
+	}
+	return c;
+}
+void outbuf::reset(){
+	memset( (void*)_front, 0, _sz );	
+	_current = _front;
+}
 
 bool oneShot( AtnAPI_typ *Behavior ){
 	if( Behavior->response != Behavior->state ){
@@ -412,7 +404,10 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 	int i = 0;	
 	State *command = (State *)inst->_command;;
 	AtnPLCOpen_typ* commandSrc;
-		
+
+	outbuf buf( (char*)&(inst->StatusMessage) , sizeof(inst->StatusMessage) );		
+	std::ostream out( &buf );
+	
 	switch (inst->_state)
 	{
 		//IDLE
@@ -477,6 +472,8 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 		case 4:
 			inst->Busy = true;
 			inst->Status = command->getPLCOpenState( inst->Fallback );
+			buf.reset();
+			command->plcopenReport( out );
 			//No Break;
 
 		//Read the status and update outputs
@@ -519,8 +516,11 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 
 		//done
 		case 7:
+			inst->_command = 0;
+
 			if( !inst->Execute ){
 				inst->_state = 0;
+				buf.reset();
 			}
 			break;
 
@@ -531,9 +531,11 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 			inst->Done = false;
 			inst->Error = false;
 			inst->Aborted = true;
+			inst->_command = 0;
 			
 			if( !inst->Execute ){
 				inst->_state = 0;
+				buf.reset();
 			}
 			break;
 	}

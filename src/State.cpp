@@ -211,3 +211,14 @@ void State::print( std::ostream &outbuf){
     outbuf << "\n";
 
 }
+
+void State::plcopenReport( std::ostream &outbuf){
+
+	for( auto state : this->PLCOpenState ){
+		if( (state.pCheck && state.pCheck->moduleBypass) || !state.pStatus ){
+			continue;
+		}
+		outbuf << state.name << " : " << *(state.pStatus);
+	}
+	
+}

@@ -29,6 +29,7 @@ namespace atn{
         bool anyFalse( bool fallback );
         unsigned short getPLCOpenState( unsigned short fallback );
         void print( std::ostream &);
-        unsigned int count();
+		void plcopenReport( std::ostream &);
+		unsigned int count();
     };
 }
