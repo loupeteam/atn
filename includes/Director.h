@@ -64,7 +64,9 @@ namespace atn{
 
 		//Print things..
 		void printState( std::ostream &);
+
 		void printActions( std::ostream &);
 		void printStates( std::ostream &);
+		void printCommands( std::ostream &);
 	};
 };

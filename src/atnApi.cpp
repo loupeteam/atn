@@ -113,9 +113,23 @@ unsigned long atncyclic( UDINT console, UDINT bufsize ){
 	{
 		case '?':
 			*outstream << "? for this help\n";
+			*outstream << "\\[commandName] to run a command\n";
+			*outstream << "=[commandName] to view a command status\n";
 			*outstream << "/[actionName] to run an action\n";
 			*outstream << "+[actionName] to view an action status\n";
 			*outstream << "[statename] to view a state status\n";			
+			break;
+		case '\\':			
+			command[0] = '=';
+			globalDirector->executeCommand( &command[1] );
+		case '=':
+			state = globalDirector->getCommand( &command[1] );
+			if( state ){
+				state->plcopenReport( *outstream );
+			}
+			else{
+				*outstream << "state "<< command << " Not found\n";
+			}
 			break;
 		case '/':			
 			command[0] = '+';
@@ -129,9 +143,10 @@ unsigned long atncyclic( UDINT console, UDINT bufsize ){
 				state->print( *outstream );
 			}
 			else{
-				*outstream << "state "<< command << " Not found";
-				globalDirector->printActions( *outstream );
+				*outstream << "state "<< command << " Not found\n";
+				globalDirector->printCommands( *outstream );
 				globalDirector->printStates( *outstream );
+				globalDirector->printActions( *outstream );
 			}
 			break;
 	}
@@ -179,6 +194,25 @@ plcbit registerStateBoolAdr(plcstring* state, plcstring* moduleName, plcbit* val
 	return 0;
 }
 
+bool registerStateParameters( STRING *state, STRING *moduleName, UDINT * pParameters, UDINT sParameters){
+	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, 0, pParameters, sParameters);
+	return 0;
+}
+
+bool registerStateApiParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters){
+
+	if(api){
+		strncpy( api->moduleName, (char*)moduleName, sizeof(api->moduleName) );
+	}
+	globalDirector->addState( std::string((char*)state), api, pParameters, sParameters);
+	return 0;
+}
+
+// bool registerStateBoolWithParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters){
+// 	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, 
+// 	return 0;
+// }
+
 plcbit subscribeCommandBool(plcstring* state, plcstring* moduleName, plcbit* value){
 	globalDirector->addCommandBool( std::string((char*)state), (char*)moduleName, value );
 	return 0;
@@ -189,20 +223,6 @@ plcbit subscribePLCOpen(plcstring* state, plcstring* moduleName, plcbit* value, 
 	return 0;
 }
 
-bool registerStateParameters( STRING *state, STRING *moduleName, UDINT * pParameters, UDINT sParameters){
-	globalDirector->addState( std::string((char*)state), 0, pParameters, sParameters);
-	return 0;
-}
-
-bool registerStateWithParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters){
-	globalDirector->addState( std::string((char*)state), api, pParameters, sParameters);
-	return 0;
-}
-
-// bool registerStateBoolWithParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters){
-// 	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, 
-// 	return 0;
-// }
 
 bool stateAllTrue( STRING *state, bool fallback ){
 	State *s = globalDirector->getState(std::string((char*)state));

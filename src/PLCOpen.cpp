@@ -87,5 +87,13 @@ unsigned short PLCOpen::PLCOpenStatus(){
 
 void PLCOpen::print( std::ostream &out ){		
    	out << "Module: " << this->name << "\n";
-    out << "Value: " << (bool) *pValue << "\n";
+	if(pValue){
+		out << "Active: " << (bool) *pValue << "\n";
+	}
+	else{
+		out << "Active: None\n";
+	}
+	if( pParameters ){
+		out << "ParameterSize: " << sParameters << "\n";		
+	}
 }

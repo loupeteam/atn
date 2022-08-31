@@ -203,3 +203,11 @@ void Director::printStates( std::ostream &out ){
     }
 
 }
+
+void Director::printCommands( std::ostream &out ){
+	out << "\nCommands:" << "\n";
+	for( auto command : commands ){
+		out << command.first << "\n";
+	}
+
+}
