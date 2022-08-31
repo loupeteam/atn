@@ -139,6 +139,15 @@ FUNCTION registerStateBoolAdr : BOOL
 		value : REFERENCE TO BOOL;
 	END_VAR
 END_FUNCTION
+
+FUNCTION registerStateParameters : BOOL
+	VAR_INPUT
+		state : STRING[80];
+		moduleName : STRING[80];
+		pParameters : REFERENCE TO UDINT;
+		sParameters : UDINT;
+	END_VAR
+END_FUNCTION
 (*Subscribing*)
 
 FUNCTION subscribeCommandBool : BOOL

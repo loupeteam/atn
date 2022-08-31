@@ -189,6 +189,11 @@ plcbit subscribePLCOpen(plcstring* state, plcstring* moduleName, plcbit* value, 
 	return 0;
 }
 
+bool registerStateParameters( STRING *state, STRING *moduleName, UDINT * pParameters, UDINT sParameters){
+	globalDirector->addState( std::string((char*)state), 0, pParameters, sParameters);
+	return 0;
+}
+
 bool registerStateWithParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters){
 	globalDirector->addState( std::string((char*)state), api, pParameters, sParameters);
 	return 0;
