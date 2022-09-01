@@ -69,6 +69,7 @@ void State::subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcO
 	state.sParameters = _sParameters;
 	state.pCommandSource = &(status->internal.fbk);
 	state.pFirstCycle = &(status->internal.trig);
+	state.pParameterWritten = &(status->parametersWritten);
 	this->PLCOpenState.push_back( state );
 }
 

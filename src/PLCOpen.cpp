@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstring>
 #include "../includes/PLCOpen.h"
 
 using namespace atn;
@@ -83,6 +84,20 @@ unsigned short PLCOpen::PLCOpenStatus(){
     else{
         return 0;
     }
+}
+
+void PLCOpen::writeParameters( void *pParameters, size_t sParameters){
+	if( pParameters && this->pParameters && sParameters == this->sParameters){
+		std::memcpy(this->pParameters, pParameters, this->sParameters);
+		if( this->pParameterWritten ){
+			*this->pParameterWritten = 1;
+		}
+	}
+	else{
+		if( this->pParameterWritten ){
+			*this->pParameterWritten = 0;
+		}
+	}
 }
 
 void PLCOpen::print( std::ostream &out ){		

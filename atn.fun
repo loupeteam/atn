@@ -170,6 +170,23 @@ FUNCTION subscribePLCOpen : BOOL
 		status : AtnPlcOpenStatus;
 	END_VAR
 END_FUNCTION
+
+FUNCTION subscribePLCOpenWithParameters : BOOL
+	VAR_INPUT
+		commandName : STRING[80];
+		moduleName : STRING[80];
+	END_VAR
+	VAR_IN_OUT
+		command : BOOL;
+	END_VAR
+	VAR_INPUT
+		pParameters : REFERENCE TO UDINT;
+		sParameters : UDINT;
+	END_VAR
+	VAR_IN_OUT
+		status : AtnPlcOpenStatus;
+	END_VAR
+END_FUNCTION
 (*PLCOpen*)
 
 FUNCTION atnPLCOpenAbort : BOOL
@@ -251,6 +268,30 @@ FUNCTION_BLOCK AtnPLCOpen
 		Command : STRING[80];
 		Execute : BOOL;
 		Fallback : DINT;
+	END_VAR
+	VAR_OUTPUT
+		Status : DINT;
+		StatusMessage : ARRAY[0..9] OF STRING[80];
+		Busy : BOOL;
+		Done : BOOL;
+		Aborted : BOOL;
+		Error : BOOL;
+	END_VAR
+	VAR
+		_state : USINT;
+		_command : {REDUND_UNREPLICABLE} UDINT;
+		_execute : BOOL;
+		_call : AtnPlcOpenCall;
+	END_VAR
+END_FUNCTION_BLOCK
+
+FUNCTION_BLOCK AtnPLCOpenWithParameters
+	VAR_INPUT
+		Command : STRING[80];
+		Execute : BOOL;
+		Fallback : DINT;
+		pParameters : REFERENCE TO UDINT;
+		sParameters : {REDUND_UNREPLICABLE} UDINT;
 	END_VAR
 	VAR_OUTPUT
 		Status : DINT;
