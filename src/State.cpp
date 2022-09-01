@@ -218,7 +218,7 @@ void State::plcopenReport( std::ostream &outbuf){
 		if( (state.pCheck && state.pCheck->moduleBypass) || !state.pStatus ){
 			continue;
 		}
-		outbuf << state.name << " : " << *(state.pStatus);
+		outbuf << state.name << " : " << *(state.pStatus) << "\n";
 	}
 	
 }

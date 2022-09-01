@@ -428,10 +428,15 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 
 	int i = 0;	
 	State *command = (State *)inst->_command;;
-	AtnPLCOpen_typ* commandSrc;
+	AtnPlcOpenCall* commandSrc;
 
 	outbuf buf( (char*)&(inst->StatusMessage) , sizeof(inst->StatusMessage) );		
 	std::ostream out( &buf );
+	
+	if( inst->_call.abort ){
+		inst->_call.abort = 0;
+		inst->_state = 8;
+	}
 	
 	switch (inst->_state)
 	{
@@ -472,12 +477,12 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 						continue;
 					}
 					if( state.pCommandSource ){
-						commandSrc = *(AtnPLCOpen_typ**) (state.pCommandSource);
+						commandSrc = *(AtnPlcOpenCall**) (state.pCommandSource);
 
-						if( commandSrc != 0 && commandSrc != inst ){
-							commandSrc->_state = 8;
+						if( commandSrc != 0 && commandSrc != &inst->_call ){
+							commandSrc->abort = 1;
 						}		
-						*((AtnPLCOpen_typ**)state.pCommandSource) = (AtnPLCOpen_typ*)inst;
+						*((AtnPlcOpenCall**)state.pCommandSource) = (AtnPlcOpenCall*)&(inst->_call);
 					}
 					if( state.pFirstCycle ){
 						*state.pFirstCycle = 1;
@@ -528,9 +533,9 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 						continue;
 					}
 					if( state.pCommandSource ){
-						commandSrc = *(AtnPLCOpen_typ**) (state.pCommandSource);
+						commandSrc = *(AtnPlcOpenCall**) (state.pCommandSource);
 
-						if( commandSrc != 0 && commandSrc == inst ){
+						if( commandSrc != 0 && commandSrc == &inst->_call ){
 							*((AtnPLCOpen_typ**)state.pCommandSource) = 0;
 						}		
 					}
@@ -538,13 +543,19 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 			}
 			
 			inst->_state = 7;
-
+			//Break to force at least 1 cycle with statuses
+			break;
 		//done
 		case 7:
 			inst->_command = 0;
 
 			if( !inst->Execute ){
 				inst->_state = 0;
+				inst->Status = ERR_FUB_ENABLE_FALSE;
+				inst->Busy = false;
+				inst->Done = false;
+				inst->Error = false;
+				inst->Aborted = false;
 				buf.reset();
 			}
 			break;
@@ -557,12 +568,9 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 			inst->Error = false;
 			inst->Aborted = true;
 			inst->_command = 0;
-			
-			if( !inst->Execute ){
-				inst->_state = 0;
-				buf.reset();
-			}
+			inst->_state = 7;
 			break;
+
 	}
 
 

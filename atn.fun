@@ -262,8 +262,9 @@ FUNCTION_BLOCK AtnPLCOpen
 	END_VAR
 	VAR
 		_state : USINT;
-		_execute : BOOL;
 		_command : {REDUND_UNREPLICABLE} UDINT;
+		_execute : BOOL;
+		_call : AtnPlcOpenCall;
 	END_VAR
 END_FUNCTION_BLOCK
 (*Reading Status*)

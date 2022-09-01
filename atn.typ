@@ -153,6 +153,9 @@ TYPE
 		sParameters : UDINT;
 		pStatusStructure : UDINT;
 	END_STRUCT;
+	AtnPlcOpenCall : 	STRUCT 
+		abort : BOOL;
+	END_STRUCT;
 	AtnPlcOpenStatus : 	STRUCT 
 		status : DINT;
 		internal : AtnPlcOpenInternal;
