@@ -218,8 +218,13 @@ plcbit subscribeCommandBool(plcstring* state, plcstring* moduleName, plcbit* val
 	return 0;
 }
 
-plcbit subscribePLCOpen(plcstring* state, plcstring* moduleName, plcbit* value, AtnPlcOpenStatus *status){
-	globalDirector->addCommandPLCOpen( std::string((char*)state), (char*)moduleName, value, status );
+plcbit subscribePLCOpen(plcstring* commandName, plcstring* moduleName, plcbit* value, AtnPlcOpenStatus *status){
+	globalDirector->addCommandPLCOpen( std::string((char*)commandName), (char*)moduleName, value, status );
+	return 0;
+}
+
+plcbit subscribePLCOpenWithParameters(plcstring* commandName, plcstring* moduleName, unsigned long* pParameters, unsigned long sParameters, plcbit* command, struct AtnPlcOpenStatus* status){
+	globalDirector->addCommandPLCOpen( std::string((char*)commandName), (char*)moduleName, command, status, pParameters, sParameters   );
 	return 0;
 }
 

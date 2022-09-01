@@ -50,10 +50,23 @@ void State::subscribe(  const std:: string ModuleName, bool* value, void *_pPara
 
 void State::subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcOpenStatus *status ){
 
+	PLCOpen state;
+	state.name = ModuleName;
+	state.pValue = command;
+	state.pStatus = &(status->status);
+	state.pCommandSource = &(status->internal.fbk);
+	state.pFirstCycle = &(status->internal.trig);
+	this->PLCOpenState.push_back( state );
+}
+
+void State::subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcOpenStatus *status, void *_pParameters, size_t _sParameters   ){
+
     PLCOpen state;
     state.name = ModuleName;
     state.pValue = command;
     state.pStatus = &(status->status);
+	state.pParameters = _pParameters;
+	state.sParameters = _sParameters;
 	state.pCommandSource = &(status->internal.fbk);
 	state.pFirstCycle = &(status->internal.trig);
 	this->PLCOpenState.push_back( state );

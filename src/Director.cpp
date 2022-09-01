@@ -103,6 +103,20 @@ void Director::addCommandPLCOpen( const std::string command, const std::string m
 	}
 }
 
+//Registers a bool to be automatically monitored, without full API support
+void Director::addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, AtnPlcOpenStatus * status,  void *_pParameters, size_t _sParameters ){
+	auto it = commands.find(command);
+
+	if (it != commands.end()){
+		it->second.subscribe( moduleName, commandBit, status, _pParameters, _sParameters);
+	}
+	else{
+		State newAction( command );
+		newAction.subscribe( moduleName, commandBit, status, _pParameters, _sParameters);
+		commands.insert( std::pair<std::string, State>(command, newAction));        
+	}
+}
+
 void Director::executeAction( const std::string action,  AtnApiStatus_typ* _pStatus, void *_pParameters, size_t _sParameters){
 
     auto it = actions.find(action);

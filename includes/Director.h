@@ -40,6 +40,9 @@ namespace atn{
 		//Registers a bool to be automatically monitored, without full API support
 		void addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, AtnPlcOpenStatus *status );
 
+		//Registers a bool to be automatically monitored, without full API support
+		void addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, AtnPlcOpenStatus *status,  void *_pParameters, size_t _sParameters);
+
 		//Registers a behavior to an action
 		void addBehavior( const std::string action, AtnAPI_typ *behavior, void *_pParameters, size_t _sParameters );
 
