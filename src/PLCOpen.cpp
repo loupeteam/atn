@@ -45,8 +45,12 @@ PLCOpen::~PLCOpen( ){
 
 bool PLCOpen::isTrue(){
 
-    return *pValue;
-    
+	if(pValue){
+		return *pValue;
+	}
+	else{
+		return 0;
+	}
 }
 
 bool PLCOpen::set( bool value){

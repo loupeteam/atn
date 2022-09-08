@@ -108,7 +108,7 @@ bool State::allFalse( bool fallback ){
 bool State::anyTrue( bool fallback ){
     
     for( auto state : this->PLCOpenState ){
-        if( state.pCheck && state.pCheck->moduleBypass){
+        if( state.pCheck && state.pCheck->moduleBypass && state.pValue ){
             continue;
         }
         if( state.isTrue() ){
