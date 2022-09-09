@@ -37,6 +37,9 @@ plcbit atn_checkResponses(struct AtnThread_typ* thread)
 	//Initialize to finished. Will get reset if not
 	thread->responseStatus = ATN_RESPONSE_ST_STEP_DONE;
 	
+	//Initialize next substate to 0 to search for the next one
+	thread->nextSubState = 0;
+	
 	//Go through all the modules and check status
 	while ( currentPipe <= MAI_ATN_ACT_ACTIONS && thread->activeActions[currentPipe] != 0 )
 	{
@@ -45,8 +48,9 @@ plcbit atn_checkResponses(struct AtnThread_typ* thread)
 		Module =	(AtnAPI_typ *)(ActionData->pAction);
 
 		//Check if the Pipe should respond in the current step
-//		if(Module->ModuleSubStateRequest <= Piper->OUT.SubState && !Module->moduleBypass ){
-		if( !Module->moduleBypass ){
+		//	The modules substate is less than the current, so it has already happened or wasn't requested
+		//	If the substatereq is greater than the substate, that is a response, the this module is done
+		if(Module->subStateReq <= thread->substate && !Module->moduleBypass ){
 
 			//If any pipe from this step is not done remain here by setting busy
 			if( thread->state != Module->response ){
@@ -58,23 +62,24 @@ plcbit atn_checkResponses(struct AtnThread_typ* thread)
 				thread->busyModule[busyMod++]=	(UDINT)Module;				
 			}
 		}
-
-//		TODO: ? Don't support substates at the moment
 		//Figure out if there is a next step that we will need to go to
-//		else if(Module->ModuleSubStateRequest > Piper->OUT.SubState && !Module->ModuleBypass ){
-//
-//			//If we haven't found a response step that is greater than our current step, grab the current pipes response step
-//			if( Piper->Internal.NextSubState <= Piper->OUT.SubState){
-//				Piper->Internal.NextSubState = Module->ModuleSubStateRequest;
-//				Piper->OUT.SubStateRequestModule = (UDINT)Module; 
-//			}
-//
-//				//If we currently have a response step that is greater than our current step, use the lower one.
-//			else if( Piper->Internal.NextSubState > Module->ModuleSubStateRequest ){
-//				Piper->Internal.NextSubState = Module->ModuleSubStateRequest;
-//				Piper->OUT.SubStateRequestModule = (UDINT)Module;				
-//			}
-//		}
+		//	The modules is requesting a substate, check if it is after the current substate
+		// 	Looking for the lowest after the current
+		else if(Module->subStateReq > thread->substate && !Module->moduleBypass ){
+
+			//If we haven't found a response step that is greater than our current step, grab the current pipes response step
+			//nextSubState should be zero when we get to the first module, so just grab any first item
+			if( thread->nextSubState <= thread->substate){
+				thread->nextSubState = Module->subStateReq;
+				thread->substateRequestModule = (UDINT)Module; 
+			}
+
+			//If we currently have a response step that is greater than our current step, use the lower one.
+			else if( thread->nextSubState > Module->subStateReq ){
+				thread->nextSubState = Module->subStateReq ;
+				thread->substateRequestModule = (UDINT)Module;				
+			}
+		}
 		currentPipe+=1;		
 	}
 	

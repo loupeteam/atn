@@ -44,14 +44,15 @@ plcbit atn_setCommand(struct AtnThread_typ* thread)
 			if(Module->state!=thread->state){
 				//reset the response so we know it is real when we see non zero
 				Module->response = 0;
+				Module->subStateReq = 0;
 
 				//If there are data pointers on either side, use them if they fit
 				if( thread->activeRequest.pParameters && ActionData->pParameters ){
-					if( thread->activeRequest.parametersSize <= ActionData->parametersSize ){
+					if( thread->activeRequest.sParameters <= ActionData->sParameters ){
 						//TODO: Is there anything else to do if it is wrong?
 						//TODO: Should this memset either way?
-						memset(ActionData->pParameters, 0, ActionData->parametersSize );
-						memcpy(ActionData->pParameters, thread->activeRequest.pParameters, thread->activeRequest.parametersSize );
+						memset(ActionData->pParameters, 0, ActionData->sParameters );
+						memcpy(ActionData->pParameters, thread->activeRequest.pParameters, thread->activeRequest.sParameters );
 					}					
 				}
 				// Tell the action what request we called, since they may be subscribed to multiples
@@ -60,6 +61,7 @@ plcbit atn_setCommand(struct AtnThread_typ* thread)
 			
 			//Set the current state to the action
 			Module->state=		thread->state;
+			Module->subState=	thread->substate;
 			Module->activeThread = thread; 
 			
 		} else if (!Module->moduleIsBypassed) {

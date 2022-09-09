@@ -2,24 +2,21 @@
 # so let's require it now.
 cmake_minimum_required(VERSION 3.11-3.18)
 
-project(atn)
-
-file(GLOB SRC
-"src/*.cpp"
-"src/*.c"
-)
-
-include_directories( ./includes )
-
+project(atn_test)
 
 # add_compile_options(-fpermissive -Wno-write-strings)
 add_definitions(-D_BUR_FORMAT_BRELF)
 add_definitions(-D_REPLACE_CONST)
 add_definitions(-D_SG4)
-add_definitions(-D_NOT_BR)
-add_library(${PROJECT_NAME} ${SRC})
-link_libraries(${PROJECT_NAME} StringExt)
 
-set_property(TARGET atn PROPERTY CXX_STANDARD 11)
+add_executable(atn_test_main "test_main.cpp")
 
-add_subdirectory (test)
+file(GLOB subs_src
+"machineTest.cpp"
+"subsystems/*.cpp"
+)
+
+add_executable(atn_test_machine  ${subs_src})
+
+target_link_libraries(atn_test_main PUBLIC atn)
+target_link_libraries(atn_test_machine PUBLIC atn)

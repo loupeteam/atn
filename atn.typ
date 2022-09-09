@@ -9,10 +9,16 @@
  ********************************************************************/*)
 
 TYPE
+	ATN_SST_enum : 
+		(
+		ATN_SS_INIT (*0*)
+		);
 	ATN_ST_enum : 
 		(
 		ATN_IDLE, (*0*)
 		ATN_EXECUTE,
+		ATN_WAITING,
+		ATN_DONE,
 		ATN_ABORT,
 		ATN_ERROR,
 		ATN_BYPASSED
@@ -48,7 +54,7 @@ TYPE
 		forceQuit : BOOL;
 	END_STRUCT;
 	AtnInPar_typ : 	STRUCT 
-		namespace : STRING[ATN_NAMESPACE_LEN];
+		category : STRING[ATN_NAMESPACE_LEN];
 		ID : USINT;
 	END_STRUCT;
 	AtnOut_typ : 	STRUCT 
@@ -63,12 +69,22 @@ TYPE
 		done : BOOL;
 		error : BOOL;
 	END_STRUCT;
+	AtnApiStatusLocal_typ : 	STRUCT 
+		active : BOOL;
+		busy : BOOL;
+		done : BOOL;
+		aborted : BOOL;
+		error : BOOL;
+		errorID : UDINT;
+		remote : AtnApiStatus_typ;
+	END_STRUCT;
 	AtnApiStatus_typ : 	STRUCT 
 		active : BOOL;
 		busy : BOOL;
 		done : BOOL;
 		aborted : BOOL;
 		error : BOOL;
+		errorID : UDINT;
 	END_STRUCT;
 	AtnInternal_typ : 	STRUCT 
 		thread : AtnThread_typ;
@@ -84,11 +100,14 @@ TYPE
 		request : AtnActionCmdData_typ;
 		activeRequest : AtnActionCmdData_typ;
 		state : ATN_ST_enum;
+		substate : UDINT;
+		nextSubState : UDINT;
 		abort : BOOL;
 		forceQuit : BOOL;
 		responseStatus : ATN_RESPONSE_ST;
 		actions : UDINT;
 		actionCount : UDINT;
+		substateRequestModule : UDINT;
 		busyModule : ARRAY[0..MAI_ATN_ACT_ACTIONS]OF UDINT;
 		blockingModule : ARRAY[0..MAI_ATN_ACT_ACTIONS]OF UDINT;
 		errorModule : ARRAY[0..MAI_ATN_ACT_ACTIONS]OF UDINT;
@@ -101,11 +120,21 @@ TYPE
 		request : STRING[ATN_ACTION_NAME_LEN];
 		state : ATN_ST_enum;
 		response : ATN_ST_enum;
+		subState : UDINT;
+		subStateReq : UDINT;
+		oneShot : BOOL;
 		moduleBypass : BOOL;
 		moduleIsBypassed : BOOL;
-		activeThread : UDINT;
-		waitingThread : UDINT;
+		activeThread : REFERENCE TO UDINT;
+		waitingThread : REFERENCE TO UDINT;
 		waitingDirectorID : USINT;
+	END_STRUCT;
+	AtnAPIState_typ : 	STRUCT 
+		moduleName : STRING[80];
+		moduleStatus : STRING[80];
+		moduleBypass : BOOL;
+		moduleIsBypassed : BOOL;
+		active : BOOL;
 	END_STRUCT;
 	AtnActionList_typ : 	STRUCT 
 		name : STRING[ATN_NAMESPACE_LEN];
@@ -115,13 +144,39 @@ TYPE
 	AtnActionData_typ : 	STRUCT 
 		name : STRING[ATN_ACTION_NAME_LEN];
 		pParameters : UDINT;
-		parametersSize : UDINT;
+		sParameters : UDINT;
 		pAction : REFERENCE TO AtnAPI_typ;
 	END_STRUCT;
 	AtnActionCmdData_typ : 	STRUCT 
 		name : STRING[ATN_ACTION_NAME_LEN];
 		pParameters : UDINT;
-		parametersSize : UDINT;
+		sParameters : UDINT;
 		pStatusStructure : UDINT;
 	END_STRUCT;
+	AtnPlcOpenCall : 	STRUCT 
+		abort : BOOL;
+	END_STRUCT;
+	AtnPlcOpenStatus : 	STRUCT 
+		status : DINT;
+		parametersWritten : BOOL;
+		bypass : BOOL;
+		internal : AtnPlcOpenInternal;
+	END_STRUCT;
+	AtnPlcOpenInternal : 	STRUCT 
+		fbk : UDINT;
+		trig : BOOL;
+	END_STRUCT;
+	ATN_PLCOPEN_FUB_STATE_enum : 
+		(
+		ATN_PLCOPEN_FUB_IDLE,
+		ATN_PLCOPEN_FUB_NEW_COMMAND,
+		ATN_PLCOPEN_FUB_ABORT_OLD,
+		ATN_PLCOPEN_FUB_WRITE_PAR,
+		ATN_PLCOPEN_FUB_SET_COMMAND,
+		ATN_PLCOPEN_FUB_WORKING,
+		ATN_PLCOPEN_FUB_STATUS,
+		ATN_PLCOPEN_FUB_CLEANUP,
+		ATN_PLCOPEN_FUB_DONE,
+		ATN_PLCOPEN_FUB_ABORTED
+		);
 END_TYPE
