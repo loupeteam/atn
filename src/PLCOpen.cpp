@@ -8,10 +8,10 @@ PLCOpen::PLCOpen( struct AtnAPIState_typ* pCheck, void * _pParameters, size_t _s
 
     this->pParameters = _pParameters;
     this->sParameters = _sParameter;
-    this->pCheck = pCheck;
     if( pCheck ){
         this->pValue = &(pCheck->active);
-        this->name = pCheck->moduleName;
+		this->name = pCheck->moduleName;
+		this->pBypass = &pCheck->moduleBypass;
     }
 }
 
@@ -31,10 +31,12 @@ PLCOpen::PLCOpen( std::string Name, bool * value, void * _pParameters, size_t _s
 }
 
 PLCOpen::PLCOpen( ){
+	pParameterWritten = 0;	
 	pParameters = 0;
 	sParameters = 0;
-	pCheck  = 0;
-    pValue = 0;
+	pBypass  = 0;
+	pValue = 0;
+	pStatusString = 0;
     pStatus = 0;
 	pFirstCycle = 0;
 };
@@ -105,14 +107,21 @@ void PLCOpen::writeParameters( void *pParameters, size_t sParameters){
 }
 
 void PLCOpen::print( std::ostream &out ){		
-   	out << "Module: " << this->name << "\n";
+	out << "Module: " << this->name;
+	if(pBypass && *pBypass){
+		out << " | Bypassed\n";
+		return;
+	}
 	if(pValue){
-		out << "Active: " << (bool) *pValue << "\n";
+		out << " | Active: " << (bool) *pValue << "\n";
 	}
 	else{
-		out << "Active: None\n";
+		out << " | Active: None\n";
+	}
+	if( pStatusString ){
+		out << "- Status: " << this->pStatusString << "\n";
 	}
 	if( pParameters ){
-		out << "ParameterSize: " << sParameters << "\n";		
+		out << "- ParameterSize: " << sParameters << "\n";		
 	}
 }

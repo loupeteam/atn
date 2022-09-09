@@ -114,15 +114,7 @@ State/Command Interface
 *)
 (*Registering*)
 
-FUNCTION registerState : BOOL
-	VAR_INPUT
-		state : STRING[80];
-		moduleName : STRING[80];
-		api : AtnAPIState_typ;
-	END_VAR
-END_FUNCTION
-
-FUNCTION registerStateBool : BOOL
+FUNCTION registerStateBool : UDINT
 	VAR_INPUT
 		state : STRING[80];
 		moduleName : STRING[80];
@@ -132,7 +124,7 @@ FUNCTION registerStateBool : BOOL
 	END_VAR
 END_FUNCTION
 
-FUNCTION registerStateBoolAdr : BOOL
+FUNCTION registerStateBoolAdr : UDINT
 	VAR_INPUT
 		state : STRING[80];
 		moduleName : STRING[80];
@@ -140,7 +132,7 @@ FUNCTION registerStateBoolAdr : BOOL
 	END_VAR
 END_FUNCTION
 
-FUNCTION registerStateParameters : BOOL
+FUNCTION registerStateParameters : UDINT
 	VAR_INPUT
 		state : STRING[80];
 		moduleName : STRING[80];
@@ -148,9 +140,25 @@ FUNCTION registerStateParameters : BOOL
 		sParameters : UDINT;
 	END_VAR
 END_FUNCTION
+
+FUNCTION registerStateExt1 : UDINT
+	VAR_INPUT
+		state : STRING[80];
+		moduleName : STRING[80];
+		pModuleStatus : STRING[80];
+	END_VAR
+	VAR_IN_OUT
+		pModuleByPass : BOOL;
+		pActive : BOOL;
+	END_VAR
+	VAR_INPUT
+		pParameters : REFERENCE TO UDINT;
+		sParameters : UDINT;
+	END_VAR
+END_FUNCTION
 (*Subscribing*)
 
-FUNCTION subscribeCommandBool : BOOL
+FUNCTION subscribeCommandBool : UDINT
 	VAR_INPUT
 		commandName : STRING[80];
 		moduleName : STRING[80];
@@ -160,7 +168,7 @@ FUNCTION subscribeCommandBool : BOOL
 	END_VAR
 END_FUNCTION
 
-FUNCTION subscribePLCOpen : BOOL
+FUNCTION subscribePLCOpen : UDINT
 	VAR_INPUT
 		commandName : STRING[80];
 		moduleName : STRING[80];
@@ -171,19 +179,15 @@ FUNCTION subscribePLCOpen : BOOL
 	END_VAR
 END_FUNCTION
 
-FUNCTION subscribePLCOpenWithParameters : BOOL
+FUNCTION subscribePLCOpenWithParameters : UDINT
 	VAR_INPUT
 		commandName : STRING[80];
 		moduleName : STRING[80];
-	END_VAR
-	VAR_IN_OUT
-		command : BOOL;
-	END_VAR
-	VAR_INPUT
 		pParameters : REFERENCE TO UDINT;
 		sParameters : UDINT;
 	END_VAR
 	VAR_IN_OUT
+		command : BOOL;
 		status : AtnPlcOpenStatus;
 	END_VAR
 END_FUNCTION
@@ -225,6 +229,62 @@ FUNCTION stateAnyFalse : BOOL
 		fallback : BOOL;
 	END_VAR
 END_FUNCTION
+
+FUNCTION_BLOCK stateAllTrueFb
+	VAR_INPUT
+		update : BOOL;
+		state : {REDUND_UNREPLICABLE} STRING[80];
+		fallback : {REDUND_UNREPLICABLE} BOOL;
+	END_VAR
+	VAR_OUTPUT
+		value : BOOL;
+	END_VAR
+	VAR
+		cache : REFERENCE TO UDINT;
+	END_VAR
+END_FUNCTION_BLOCK
+
+FUNCTION_BLOCK stateAnyTrueFb
+	VAR_INPUT
+		update : BOOL;
+		state : {REDUND_UNREPLICABLE} STRING[80];
+		fallback : {REDUND_UNREPLICABLE} BOOL;
+	END_VAR
+	VAR_OUTPUT
+		value : BOOL;
+	END_VAR
+	VAR
+		cache : REFERENCE TO UDINT;
+	END_VAR
+END_FUNCTION_BLOCK
+
+FUNCTION_BLOCK stateAllFalseFb
+	VAR_INPUT
+		update : BOOL;
+		state : {REDUND_UNREPLICABLE} STRING[80];
+		fallback : {REDUND_UNREPLICABLE} BOOL;
+	END_VAR
+	VAR_OUTPUT
+		value : BOOL;
+	END_VAR
+	VAR
+		cache : REFERENCE TO UDINT;
+	END_VAR
+END_FUNCTION_BLOCK
+
+FUNCTION_BLOCK stateAnyFalseFb
+	VAR_INPUT
+		update : BOOL;
+		state : {REDUND_UNREPLICABLE} STRING[80];
+		fallback : {REDUND_UNREPLICABLE} BOOL;
+	END_VAR
+	VAR_OUTPUT
+		value : BOOL;
+	END_VAR
+	VAR
+		cache : REFERENCE TO UDINT;
+	END_VAR
+END_FUNCTION_BLOCK
 (*
 Individual State check
 *)

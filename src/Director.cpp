@@ -4,7 +4,7 @@
 
 using namespace atn;
 
-unsigned long bur_heap_size = 0xfffff;
+unsigned long bur_heap_size = 0xfffffff;
 
 Director::Director(/* args */)
 {
@@ -45,6 +45,23 @@ void Director::addState( const std::string state,  AtnAPIState_typ* api, void *_
         newAction.subscribe(api, _pParameters, _sParameters);
         states.insert( std::pair<std::string, State>(state, newAction));        
     }
+}
+
+
+void Director::addState( const std::string state, const std::string name, char *moduleStatus, plcbit* moduleByPass, bool* value, void *_pParameters, size_t _sParameters ){
+
+	auto it = states.find(state);
+
+	if (it != states.end()){
+		it->second.subscribe( name, value, moduleByPass, moduleStatus, _pParameters, _sParameters);
+	}
+	else{
+		State newAction( state );
+		newAction.subscribe( name, value, moduleByPass, moduleStatus, _pParameters, _sParameters);
+		states.insert( std::pair<std::string, State>(state, newAction));        
+	}
+
+	
 }
 
 void Director::addStateBool( const std::string state, const std::string name, bool* value ){

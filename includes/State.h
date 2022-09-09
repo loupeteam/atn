@@ -17,10 +17,12 @@ namespace atn{
         State( std:: string name);    
         ~State();
         void subscribe(  AtnAPIState_typ* api, void *_pParameters, size_t _sParameters  );
-        void subscribe(  const std:: string ModuleName, bool* api);
-        void subscribe(  const std:: string ModuleName, bool* api, void *_pParameters, size_t _sParameters  );
-		void subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcOpenStatus *status );
-		void subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcOpenStatus *status, void *_pParameters, size_t _sParameters  );
+        void subscribe(  const std:: string ModuleName, bool* active);
+        void subscribe(  const std:: string ModuleName, bool* active, void *_pParameters, size_t _sParameters  );
+		void subscribe(  const std:: string ModuleName, bool* active, bool* bypass, char * statusString, void *_pParameters, size_t _sParameters  );
+
+		void subscribe(  const std:: string ModuleName,  bool* command, AtnPlcOpenStatus *status );
+		void subscribe(  const std:: string ModuleName,  bool* command, AtnPlcOpenStatus *status, void *_pParameters, size_t _sParameters  );
 		bool setTrigger(  );
 		bool setTrue(  );
         bool setFalse(  );

@@ -24,11 +24,11 @@ void atnSetDirector( void *director );
 
 
 
-bool registerState( STRING *state, STRING *moduleName, AtnAPIState_typ *api);
-bool registerStateWithParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters);
+//bool registerState( STRING *state, STRING *moduleName, AtnAPIState_typ *api);
+//bool registerStateWithParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters);
 
-bool subscribeCommandBool(plcstring* state, plcstring* moduleName, plcbit* value);
-bool subscribePLCOpen(plcstring* state, plcstring* moduleName, plcbit* command, AtnPlcOpenStatus *status );
+//bool subscribeCommandBool(plcstring* state, plcstring* moduleName, plcbit* value);
+//bool subscribePLCOpen(plcstring* state, plcstring* moduleName, plcbit* command, AtnPlcOpenStatus *status );
 
 //void executeCommand( const STRING *action );
 unsigned short PLCOpenStatus( const STRING *action );
@@ -46,6 +46,7 @@ class outbuf : public std::streambuf {
 	char * _front;
 	char * _current;
 	size_t _sz;
+	bool rolled;
 	public:
 	outbuf( char * data, size_t sz );
 

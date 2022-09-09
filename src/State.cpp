@@ -20,7 +20,6 @@ void State::subscribe( AtnAPIState_typ* api, void *_pParameters, size_t _sParame
     PLCOpen state;
     state.pParameters = _pParameters;
     state.sParameters = _sParameters;
-    state.pCheck =  api;
     if( api ){
         state.name = api->moduleName;
         state.pValue = &(api->active);
@@ -35,6 +34,18 @@ void State::subscribe(  const std:: string ModuleName, bool* value ){
     state.pValue = value;
 
     this->PLCOpenState.push_back( state );
+}
+void State::subscribe(  const std:: string ModuleName, bool* active, bool* bypass, char * statusString, void *_pParameters, size_t _sParameters  ){
+
+	PLCOpen state;
+	state.name = ModuleName;
+	state.pValue = active;
+	state.pParameters = _pParameters;
+	state.sParameters = _sParameters;
+	state.pStatusString = statusString;
+	state.pBypass = bypass;
+
+	this->PLCOpenState.push_back( state );
 }
 
 void State::subscribe(  const std:: string ModuleName, bool* value, void *_pParameters, size_t _sParameters ){
@@ -56,6 +67,9 @@ void State::subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcO
 	state.pStatus = &(status->status);
 	state.pCommandSource = &(status->internal.fbk);
 	state.pFirstCycle = &(status->internal.trig);
+	state.pParameterWritten = &( status->parametersWritten );
+	state.pBypass = &( status->bypass );
+	
 	this->PLCOpenState.push_back( state );
 }
 
@@ -70,13 +84,15 @@ void State::subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcO
 	state.pCommandSource = &(status->internal.fbk);
 	state.pFirstCycle = &(status->internal.trig);
 	state.pParameterWritten = &(status->parametersWritten);
+	state.pBypass = &( status->bypass );
+	
 	this->PLCOpenState.push_back( state );
 }
 
 bool State::allTrue( bool fallback ){
 
     for( auto state : this->PLCOpenState ){
-        if( state.pCheck && state.pCheck->moduleBypass){
+		if( state.pBypass && *state.pBypass){
             continue;
         }
         if( !state.isTrue() ){
@@ -92,8 +108,8 @@ bool State::allTrue( bool fallback ){
 bool State::allFalse( bool fallback ){
 
     for( auto state : this->PLCOpenState ){
-        if( state.pCheck && state.pCheck->moduleBypass){
-            continue;
+		if( state.pBypass && *state.pBypass){
+			continue;
         }
         if( state.isTrue() ){
             return false;
@@ -108,7 +124,7 @@ bool State::allFalse( bool fallback ){
 bool State::anyTrue( bool fallback ){
     
     for( auto state : this->PLCOpenState ){
-        if( state.pCheck && state.pCheck->moduleBypass && state.pValue ){
+		if( (state.pBypass && *state.pBypass) || state.pValue == 0 ){
             continue;
         }
         if( state.isTrue() ){
@@ -124,7 +140,7 @@ bool State::anyTrue( bool fallback ){
 bool State::anyFalse( bool fallback ){
     
     for( auto state : this->PLCOpenState ){
-        if( state.pCheck && state.pCheck->moduleBypass){
+		if( (state.pBypass && *state.pBypass) || state.pValue == 0 ){
             continue;
         }
         if( !state.isTrue() ){
@@ -140,8 +156,8 @@ bool State::anyFalse( bool fallback ){
 bool State::setTrue(){
     bool set = 0;
     for( auto state : this->PLCOpenState ){
-        if( state.pCheck && state.pCheck->moduleBypass){
-            continue;
+		if( (state.pBypass && *state.pBypass) || state.pValue == 0 ){
+			continue;
         }
         state.set(true);
         set = true;
@@ -152,8 +168,8 @@ bool State::setTrue(){
 bool State::setFalse(){
     bool set = 0;
     for( auto state : this->PLCOpenState ){
-        if( state.pCheck && state.pCheck->moduleBypass){
-            continue;
+		if( (state.pBypass && *state.pBypass) || state.pValue == 0 ){
+			continue;
         }
         state.set(false);
         set = true;
@@ -168,7 +184,7 @@ unsigned short State::getPLCOpenState( unsigned short fallback){
     unsigned short groupStatus  = 0;
 
     for( auto state : this->PLCOpenState ){
-        if( (state.pCheck && state.pCheck->moduleBypass) || !state.pStatus ){
+        if( (state.pBypass && *state.pBypass) || !state.pStatus ){
             continue;
         }
         //Figure out the group status.
@@ -229,10 +245,15 @@ void State::print( std::ostream &outbuf){
 void State::plcopenReport( std::ostream &outbuf){
 
 	for( auto state : this->PLCOpenState ){
-		if( (state.pCheck && state.pCheck->moduleBypass) || !state.pStatus ){
+
+		if( (state.pBypass && *state.pBypass) || !state.pStatus ){
 			continue;
 		}
-		outbuf << state.name << " : " << *(state.pStatus) << "\n";
+		outbuf << state.name << " : " << *(state.pStatus) << " ";
+		if( state.pStatusString ){
+			outbuf << "- Status: " << state.pStatusString;
+		}
+		outbuf << "\n";
 	}
 	
 }

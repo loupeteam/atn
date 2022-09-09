@@ -28,6 +28,9 @@ namespace atn{
 		//Registers an API interface to a state for detailed control
 		void addState( const std::string state, AtnAPIState_typ *check, void *_pParameters, size_t _sParameters );
 		
+		//Registers an API interface to a state for detailed control
+		void addState( const std::string state, const std::string moduleName, char *moduleStatus, bool* moduleByPass, bool *check, void *_pParameters, size_t _sParameters );
+
 		//Registers a bool to be automatically monitored, without full API support
 		void addStateBool( const std::string state, const std::string moduleName, bool *check );
 

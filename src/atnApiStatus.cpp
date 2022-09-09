@@ -22,7 +22,7 @@ plcbit stateTrueStatus(plcstring* state, unsigned long buffer, unsigned long sBu
 		buf.reset();
         for( auto state : s->PLCOpenState ){
 
-            if( state.pCheck && state.pCheck->moduleBypass){
+            if( state.pBypass && *state.pBypass){
                 continue;
             }
 
@@ -53,7 +53,7 @@ plcbit stateFalseStatus(plcstring* state, unsigned long buffer, unsigned long sB
 
         for( auto state : s->PLCOpenState ){
 
-            if( state.pCheck && state.pCheck->moduleBypass){
+			if( state.pBypass && *state.pBypass){
                 continue;
             }
 
@@ -84,7 +84,7 @@ plcbit stateStatus(plcstring* state, unsigned long buffer, unsigned long sBuffer
 
 		for( auto state : s->PLCOpenState ){
 
-			if( state.pCheck && state.pCheck->moduleBypass){
+			if( state.pBypass && *state.pBypass){
 				continue;
 			}
 			if( state.isTrue() )

@@ -4,6 +4,7 @@
   <Objects>
       <Object Type="File">atnApi.cpp</Object>
       <Object Type="File">atnApiPLCOpen.cpp</Object>
+      <Object Type="File">atnApiState.cpp</Object>
       <Object Type="File">atnApiStatus.cpp</Object>
       <Object Type="File">Action.cpp</Object>
       <Object Type="File">Behavior.cpp</Object>

@@ -9,12 +9,12 @@ using namespace atn;
 
 extern Director *globalDirector;
 
-plcbit subscribePLCOpen(plcstring* commandName, plcstring* moduleName, plcbit* value, AtnPlcOpenStatus *status){
+UDINT subscribePLCOpen(plcstring* commandName, plcstring* moduleName, plcbit* value, AtnPlcOpenStatus *status){
 	globalDirector->addCommandPLCOpen( std::string((char*)commandName), (char*)moduleName, value, status );
 	return 0;
 }
 
-plcbit subscribePLCOpenWithParameters(plcstring* commandName, plcstring* moduleName, unsigned long* pParameters, unsigned long sParameters, plcbit* command,  struct AtnPlcOpenStatus* status){
+UDINT subscribePLCOpenWithParameters(plcstring* commandName, plcstring* moduleName, unsigned long* pParameters, unsigned long sParameters, plcbit* command,  struct AtnPlcOpenStatus* status){
 	globalDirector->addCommandPLCOpen( std::string((char*)commandName), (char*)moduleName, command, status, pParameters, sParameters   );
 	return 0;
 }
@@ -134,7 +134,7 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 		case ATN_PLCOPEN_FUB_ABORT_OLD:
 			if(command){
 				for( auto state : command->PLCOpenState ){
-					if( state.pCheck && state.pCheck->moduleBypass){
+					if( state.pBypass && *state.pBypass ){
 						continue;
 					}
 					if( state.pCommandSource ){
@@ -200,7 +200,7 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 			//Remove self from the source command
 			if(command){
 				for( auto state : command->PLCOpenState ){
-					if( state.pCheck && state.pCheck->moduleBypass){
+					if( state.pBypass && *state.pBypass ){
 						continue;
 					}
 					if( state.pCommandSource ){
@@ -305,7 +305,7 @@ void AtnPLCOpenWithParameters(AtnPLCOpenWithParameters_typ* inst){
 		case ATN_PLCOPEN_FUB_ABORT_OLD:
 			if(command){
 				for( auto state : command->PLCOpenState ){
-					if( state.pCheck && state.pCheck->moduleBypass){
+					if( state.pBypass && *state.pBypass ){
 						continue;
 					}
 					if( state.pCommandSource ){
@@ -370,7 +370,7 @@ void AtnPLCOpenWithParameters(AtnPLCOpenWithParameters_typ* inst){
 			//Remove self from the source command
 			if(command){
 				for( auto state : command->PLCOpenState ){
-					if( state.pCheck && state.pCheck->moduleBypass){
+					if( state.pBypass && *state.pBypass ){
 						continue;
 					}
 					if( state.pCommandSource ){

@@ -6,16 +6,21 @@ namespace atn{
     class PLCOpen
     {
     public:
-        void * pParameters;
+		std::string name;
+		char * pStatusString;
+		bool * pValue;
+		
+		void * pParameters;
         size_t sParameters;
-        struct AtnAPIState_typ* pCheck;
-        bool * pValue;
+
 		signed long * pStatus;
+		bool * pBypass;
 		long unsigned int * pCommandSource;
+
 		bool * pFirstCycle;
 		bool * pParameterWritten;
-        std::string name;
-        PLCOpen( );
+		//        struct AtnAPIState_typ* pCheck;
+		PLCOpen( );
         PLCOpen( std::string Name, bool * value );
         PLCOpen( std::string Name, bool * value, void * pParameters, size_t parameterSize );
         PLCOpen( struct AtnAPIState_typ* pCheck, void * pParameters, size_t parameterSize) ;

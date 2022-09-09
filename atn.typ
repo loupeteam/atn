@@ -159,6 +159,7 @@ TYPE
 	AtnPlcOpenStatus : 	STRUCT 
 		status : DINT;
 		parametersWritten : BOOL;
+		bypass : BOOL;
 		internal : AtnPlcOpenInternal;
 	END_STRUCT;
 	AtnPlcOpenInternal : 	STRUCT 

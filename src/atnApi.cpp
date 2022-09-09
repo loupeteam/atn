@@ -18,6 +18,7 @@ int outbuf::overflow(int_type c ) {
 		
 	if(_current - _front > _sz){
 		_current = _front;
+		rolled = true;
 	}
 
 	switch(c){
@@ -35,7 +36,13 @@ int outbuf::overflow(int_type c ) {
 	return c;
 }
 void outbuf::reset(){
-	memset( (void*)_front, 0, _sz );	
+	if(rolled){
+		rolled = false;		
+		memset( (void*)_front, 0, _sz );	
+	}		
+	else{
+		memset( (void*)_front, 0, _current - _front );	
+	}
 	_current = _front;
 }
 
@@ -177,29 +184,33 @@ plcbit executeCommand( STRING *command ){
 	return globalDirector->executeCommand( std::string((char*)command));
 }
 
-plcbit registerState(plcstring* state, plcstring* moduleName, struct AtnAPIState_typ* api){
+UDINT registerState(plcstring* state, plcstring* moduleName, struct AtnAPIState_typ* api){
 
 	strncpy( api->moduleName, (char*)moduleName, sizeof(api->moduleName) );
 	globalDirector->addState( std::string((char*)state), api, 0, 0);
 	return 0;
 }
+UDINT registerStateExt1(plcstring* state, plcstring* moduleName, plcstring* moduleStatus, unsigned long* pParameters, unsigned long sParameters, plcbit* moduleByPass, plcbit* active){
+	globalDirector->addState( std::string((char*)state), std::string((char*)moduleName), moduleStatus, moduleByPass, active, pParameters, sParameters);
+	return 0;
+}
 
-plcbit registerStateBool(plcstring* state, plcstring* moduleName, plcbit* value){
+UDINT registerStateBool(plcstring* state, plcstring* moduleName, plcbit* value){
 	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, value );
 	return 0;
 }
 
-plcbit registerStateBoolAdr(plcstring* state, plcstring* moduleName, plcbit* value){
+UDINT registerStateBoolAdr(plcstring* state, plcstring* moduleName, plcbit* value){
 	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, value );
 	return 0;
 }
 
-bool registerStateParameters( STRING *state, STRING *moduleName, UDINT * pParameters, UDINT sParameters){
+UDINT registerStateParameters( STRING *state, STRING *moduleName, UDINT * pParameters, UDINT sParameters){
 	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, 0, pParameters, sParameters);
 	return 0;
 }
 
-bool registerStateApiParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters){
+UDINT registerStateApiParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters){
 
 	if(api){
 		strncpy( api->moduleName, (char*)moduleName, sizeof(api->moduleName) );
@@ -213,50 +224,9 @@ bool registerStateApiParameters( STRING *state, STRING *moduleName, AtnAPIState_
 // 	return 0;
 // }
 
-plcbit subscribeCommandBool(plcstring* state, plcstring* moduleName, plcbit* value){
+UDINT subscribeCommandBool(plcstring* state, plcstring* moduleName, plcbit* value){
 	globalDirector->addCommandBool( std::string((char*)state), (char*)moduleName, value );
 	return 0;
-}
-
-
-bool stateAllTrue( STRING *state, bool fallback ){
-	State *s = globalDirector->getState(std::string((char*)state));
-	if( s ){
-		return s->allTrue( fallback );
-	}
-	else{
-		return fallback;
-	}
-}
-
-bool stateAnyTrue( STRING *state, bool fallback ){
-	State *s = globalDirector->getState(std::string((char*)state));
-	if( s ){
-		return s->anyTrue( fallback );
-	}
-	else{
-		return fallback;
-	}
-}
-
-bool stateAllFalse( STRING *state, bool fallback ){
-	State *s = globalDirector->getState(std::string((char*)state));
-	if( s ){
-		return s->allFalse( fallback );
-	}
-	else{
-		return fallback;
-	}
-}
-
-bool stateAnyFalse( STRING *state, bool fallback ){
-	State *s = globalDirector->getState(std::string((char*)state));
-	if( s ){
-		return s->anyFalse( fallback );
-	}
-	else{
-		return fallback;
-	}
 }
 
 signed short stateCount( STRING* state ){
