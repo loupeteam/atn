@@ -1,3 +1,4 @@
+0.04.1 - Add active command string to PLCOpen structure
 0.04.0 - Add new Apis for statuses and commands
 0.03.0 - Fix some namespaces lengths
 		- Add support for multiple action namespaces
