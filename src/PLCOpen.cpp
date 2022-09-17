@@ -37,7 +37,8 @@ PLCOpen::PLCOpen( ){
 	pBypass  = 0;
 	pValue = 0;
 	pStatusString = 0;
-    pStatus = 0;
+	pActiveCommand = 0;
+	pStatus = 0;
 	pFirstCycle = 0;
 };
 PLCOpen::~PLCOpen( ){

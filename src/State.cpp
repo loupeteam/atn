@@ -65,6 +65,7 @@ void State::subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcO
 	state.name = ModuleName;
 	state.pValue = command;
 	state.pStatus = &(status->status);
+	state.pActiveCommand =  (char*)&(status->activeCommand);
 	state.pCommandSource = &(status->internal.fbk);
 	state.pFirstCycle = &(status->internal.trig);
 	state.pParameterWritten = &( status->parametersWritten );
@@ -79,6 +80,7 @@ void State::subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcO
     state.name = ModuleName;
     state.pValue = command;
     state.pStatus = &(status->status);
+	state.pActiveCommand =  (char*)&(status->activeCommand);
 	state.pParameters = _pParameters;
 	state.sParameters = _sParameters;
 	state.pCommandSource = &(status->internal.fbk);

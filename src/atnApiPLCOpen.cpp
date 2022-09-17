@@ -143,10 +143,6 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 						if( commandSrc != 0 && commandSrc != &inst->_call ){
 							commandSrc->abort = 1;
 						}		
-						*((AtnPlcOpenCall**)state.pCommandSource) = (AtnPlcOpenCall*)&(inst->_call);
-					}
-					if( state.pFirstCycle ){
-						*state.pFirstCycle = 1;
 					}
 				}
 			}
@@ -157,7 +153,19 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 		//Write any parameters that we need to write
 		case ATN_PLCOPEN_FUB_WRITE_PAR:
 			for( auto state : command->PLCOpenState ){
+				if( state.pBypass && *state.pBypass ){
+					continue;
+				}
 				state.writeParameters( 0, 0 );
+				if( state.pFirstCycle ){
+					*state.pFirstCycle = 1;
+				}
+				if( state.pCommandSource ){				
+					*((AtnPlcOpenCall**)state.pCommandSource) = (AtnPlcOpenCall*)&(inst->_call);
+				}
+				if( state.pActiveCommand ){
+					strcpy( state.pActiveCommand, inst->Command ); 
+				}			
 			}
 			inst->_state = ATN_PLCOPEN_FUB_SET_COMMAND;
 		//No break;
@@ -211,6 +219,9 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 							state.writeParameters(0,0);
 						}		
 					}
+					if( state.pActiveCommand ){
+						*state.pActiveCommand = 0;						
+					}					
 				}
 			}
 			
@@ -314,20 +325,29 @@ void AtnPLCOpenWithParameters(AtnPLCOpenWithParameters_typ* inst){
 						if( commandSrc != 0 && commandSrc != &inst->_call ){
 							commandSrc->abort = 1;
 						}		
-						*((AtnPlcOpenCall**)state.pCommandSource) = (AtnPlcOpenCall*)&(inst->_call);
-					}
-					if( state.pFirstCycle ){
-						*state.pFirstCycle = 1;
 					}
 				}
 			}
+			
 			inst->_state = ATN_PLCOPEN_FUB_WRITE_PAR;
 		//No break	
 		
 		//Write any parameters that we need to write
 		case ATN_PLCOPEN_FUB_WRITE_PAR:
 			for( auto state : command->PLCOpenState ){
+				if( state.pBypass && *state.pBypass ){
+					continue;
+				}
 				state.writeParameters( inst->pParameters, inst->sParameters );
+				if( state.pFirstCycle ){
+					*state.pFirstCycle = 1;
+				}
+				if( state.pCommandSource ){				
+					*((AtnPlcOpenCall**)state.pCommandSource) = (AtnPlcOpenCall*)&(inst->_call);
+				}
+				if( state.pActiveCommand ){
+					strcpy( state.pActiveCommand, inst->Command ); 
+				}			
 			}
 			inst->_state = ATN_PLCOPEN_FUB_SET_COMMAND;
 		//No break;
@@ -380,6 +400,9 @@ void AtnPLCOpenWithParameters(AtnPLCOpenWithParameters_typ* inst){
 							*((AtnPLCOpen_typ**)state.pCommandSource) = 0;
 							state.writeParameters(0,0);							
 						}		
+					}
+					if( state.pActiveCommand ){
+						*state.pActiveCommand = 0;						
 					}
 				}
 			}

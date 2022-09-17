@@ -7,6 +7,7 @@ namespace atn{
     {
     public:
 		std::string name;
+		char * pActiveCommand;
 		char * pStatusString;
 		bool * pValue;
 		

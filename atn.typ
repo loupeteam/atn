@@ -157,6 +157,7 @@ TYPE
 		abort : BOOL;
 	END_STRUCT;
 	AtnPlcOpenStatus : 	STRUCT 
+		activeCommand : STRING[80];
 		status : DINT;
 		parametersWritten : BOOL;
 		bypass : BOOL;
