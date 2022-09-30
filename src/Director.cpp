@@ -242,3 +242,25 @@ void Director::printCommands( std::ostream &out ){
 	}
 
 }
+
+void Director::printSystemJson( std::ostream &out ){
+	bool comma;
+	out << "{";
+	out << "\"commands\":[";
+	comma = 0;
+	for( auto command : commands ){
+		if(comma) out << ","; 
+		out << "\"" <<command.first << "\"";
+		comma = 1;
+	}
+	out << "]";
+	out << ",\"States\":[";
+	comma = 0;
+	for( auto state : states ){
+		if(comma) out << ","; 
+		out << "\"" <<state.first << "\"";
+		comma = 1;
+	}
+	out << "]";
+	out << "}";	
+}

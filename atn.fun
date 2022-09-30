@@ -146,14 +146,12 @@ FUNCTION registerStateExt1 : UDINT
 		state : STRING[80];
 		moduleName : STRING[80];
 		pModuleStatus : STRING[80];
+		pParameters : REFERENCE TO UDINT;
+		sParameters : UDINT;
 	END_VAR
 	VAR_IN_OUT
 		pModuleByPass : BOOL;
 		pActive : BOOL;
-	END_VAR
-	VAR_INPUT
-		pParameters : REFERENCE TO UDINT;
-		sParameters : UDINT;
 	END_VAR
 END_FUNCTION
 (*Subscribing*)
@@ -389,6 +387,13 @@ END_FUNCTION
 FUNCTION stateStatus : BOOL
 	VAR_INPUT
 		state : STRING[80];
+		buffer : UDINT;
+		sBuffer : UDINT;
+	END_VAR
+END_FUNCTION
+
+FUNCTION systemJson : BOOL
+	VAR_INPUT
 		buffer : UDINT;
 		sBuffer : UDINT;
 	END_VAR

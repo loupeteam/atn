@@ -101,3 +101,13 @@ plcbit stateStatus(plcstring* state, unsigned long buffer, unsigned long sBuffer
 		return false;
 	}
 }
+
+plcbit systemJson(unsigned long buffer, unsigned long sBuffer){
+
+	outbuf buf( (char*)buffer, sBuffer );		
+	std::ostream out( &buf );
+	buf.reset();
+
+	globalDirector->printSystemJson(out);
+	
+}
