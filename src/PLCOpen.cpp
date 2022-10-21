@@ -40,6 +40,7 @@ PLCOpen::PLCOpen( ){
 	pActiveCommand = 0;
 	pStatus = 0;
 	pFirstCycle = 0;
+	pCommandSource = 0;	
 };
 PLCOpen::~PLCOpen( ){
 
