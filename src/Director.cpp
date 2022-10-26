@@ -78,6 +78,22 @@ void Director::addStateBool( const std::string state, const std::string name, bo
 	}
 }
 
+void Director::addResourceBool( const std::string state, const std::string name, unsigned long int *pResourceUid, bool *value ){
+
+	auto it = states.find(state);
+
+	if (it != states.end()){
+		it->second.subscribe( name, pResourceUid, value);
+	}
+	else{
+		State newAction( state );
+		newAction.subscribe( name, pResourceUid, value);
+		states.insert( std::pair<std::string, State>(state, newAction));        
+	}
+}
+		
+
+
 void Director::addStateBool( const std::string state, const std::string name, bool* value,  void *_pParameters, size_t _sParameters){
 
 	auto it = states.find(state);

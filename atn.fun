@@ -154,6 +154,17 @@ FUNCTION registerStateExt1 : UDINT
 		pActive : BOOL;
 	END_VAR
 END_FUNCTION
+
+FUNCTION registerToResource : UDINT
+	VAR_INPUT
+		resource : STRING[80];
+		moduleName : STRING[80];
+	END_VAR
+	VAR_IN_OUT
+		pResourceUserId : UDINT;
+		pResourceActive : BOOL;
+	END_VAR
+END_FUNCTION
 (*Subscribing*)
 
 FUNCTION subscribeCommandBool : UDINT
@@ -396,5 +407,19 @@ FUNCTION systemJson : BOOL
 	VAR_INPUT
 		buffer : UDINT;
 		sBuffer : UDINT;
+	END_VAR
+END_FUNCTION
+(*Application Functions*)
+
+FUNCTION resourceIsAvailable : BOOL
+	VAR_INPUT
+		resourceName : STRING[80];
+		resourceUserId : UDINT;
+	END_VAR
+END_FUNCTION
+
+FUNCTION isInhibited : BOOL
+	VAR_INPUT
+		inhibit : STRING[80];
 	END_VAR
 END_FUNCTION

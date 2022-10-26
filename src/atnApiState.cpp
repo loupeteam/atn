@@ -49,6 +49,27 @@ bool stateAnyFalse( STRING *state, bool fallback ){
 	}
 }
 
+bool isInhibited( STRING *state ){
+	State *s = globalDirector->getState(std::string((char*)state));
+	if( s ){
+		return s->allFalse( false );
+	}
+	else{
+		return false;
+	}
+}
+
+bool resourceIsAvailable( STRING *state, unsigned long ID ){
+	State *s = globalDirector->getState(std::string((char*)state));
+	if( s ){
+		return s->allFalseExcept( true, ID );
+	}
+	else{
+		return true;
+	}
+}
+
+
 void stateAllTrueFb(struct stateAllTrueFb* inst){
 	if( inst->update || inst->cache == 0){	
 		inst->cache = (UDINT*)globalDirector->getState(std::string((char*)inst->state));

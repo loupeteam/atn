@@ -200,8 +200,14 @@ UDINT registerStateBool(plcstring* state, plcstring* moduleName, plcbit* value){
 	return 0;
 }
 
+
 UDINT registerStateBoolAdr(plcstring* state, plcstring* moduleName, plcbit* value){
 	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, value );
+	return 0;
+}
+
+UDINT registerToResource(plcstring* state, plcstring* moduleName, UDINT * pResourceUID, plcbit* value){
+	globalDirector->addResourceBool( std::string((char*)state), (char*)moduleName, pResourceUID, value );
 	return 0;
 }
 
@@ -218,7 +224,6 @@ UDINT registerStateApiParameters( STRING *state, STRING *moduleName, AtnAPIState
 	globalDirector->addState( std::string((char*)state), api, pParameters, sParameters);
 	return 0;
 }
-
 // bool registerStateBoolWithParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters){
 // 	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, 
 // 	return 0;

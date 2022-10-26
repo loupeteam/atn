@@ -35,6 +35,19 @@ void State::subscribe(  const std:: string ModuleName, bool* value ){
 
     this->PLCOpenState.push_back( state );
 }
+void State::subscribe(  const std:: string ModuleName, unsigned long int * pUid, bool* value ){
+	PLCOpen state;
+	state.name = ModuleName;
+	state.pResourceUser = pUid;
+	state.pValue = value;
+
+	if( pUid != 0 && *pUid == 0 ){
+		*pUid = (unsigned long int)pUid;
+	}
+	
+	this->PLCOpenState.push_back( state );
+}
+
 void State::subscribe(  const std:: string ModuleName, bool* active, bool* bypass, char * statusString, void *_pParameters, size_t _sParameters  ){
 
 	PLCOpen state;
@@ -90,6 +103,14 @@ void State::subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcO
 	
 	this->PLCOpenState.push_back( state );
 }
+
+
+void State::subscribe(  const std:: string ModuleName,  const std::string state ){
+	
+	this->DependentState.push_back( state );
+
+}
+
 
 bool State::allTrue( bool fallback ){
 
@@ -178,6 +199,31 @@ bool State::setFalse(){
     }
     return set;
 }
+
+bool State::allFalseExcept( bool fallback, unsigned long ID ){
+
+	for( auto state : this->PLCOpenState ){
+		if( state.pBypass && *state.pBypass){
+			continue;
+		}
+		if( state.isTrue() ){
+			//If true, we need to filter out the ID given
+			if( state.pResourceUser ){
+				if( *(state.pResourceUser) != ID ){
+					return false;
+				}
+			}
+			else{
+				return false;
+			}
+		}
+		//If we got here, at least one was false
+		fallback = true;
+	}
+
+	return fallback;
+}
+
 
 unsigned short State::getPLCOpenState( unsigned short fallback){
 

@@ -14,6 +14,8 @@ namespace atn{
 		void * pParameters;
         size_t sParameters;
 
+		long unsigned int * pResourceUser;
+
 		signed long * pStatus;
 		bool * pBypass;
 		long unsigned int * pCommandSource;

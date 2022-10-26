@@ -38,6 +38,9 @@ namespace atn{
 		void addStateBool( const std::string state, const std::string moduleName, bool *check, void *_pParameters, size_t _sParameters);
 
 		//Registers a bool to be automatically monitored, without full API support
+		void addResourceBool( const std::string state, const std::string moduleName, unsigned long int *pResourceUid, bool *check );
+		
+		//Registers a bool to be automatically monitored, without full API support
 		void addCommandBool( const std::string command, const std::string moduleName, bool * commandBit );
 
 		//Registers a bool to be automatically monitored, without full API support
