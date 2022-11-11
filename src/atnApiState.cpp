@@ -52,7 +52,7 @@ bool stateAnyFalse( STRING *state, bool fallback ){
 bool isInhibited( STRING *state ){
 	State *s = globalDirector->getState(std::string((char*)state));
 	if( s ){
-		return s->allFalse( false );
+		return s->anyTrue( false );
 	}
 	else{
 		return false;
