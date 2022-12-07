@@ -15,6 +15,7 @@
     <Object Type="File">atn_setCommand.c</Object>
     <Object Type="File">atn_threadState.c</Object>
     <Object Type="File">atn_prepareRequest.c</Object>
+    <Object Type="File">heap_redirect.c</Object>
     <Object Type="Package">src</Object>
     <Object Type="Package">includes</Object>
   </Objects>
