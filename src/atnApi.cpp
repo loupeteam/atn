@@ -10,6 +10,8 @@ using namespace atn;
 Director *globalDirector = 0;
 
 outbuf::outbuf( char * data, size_t sz ) : _front(data), _current(data), _sz(sz)  {
+	// track first reset after initialization
+	hasBeenReset = false;
 	// no buffering, overflow on every char
 	setp(0, 0);
 }
@@ -36,8 +38,10 @@ int outbuf::overflow(int_type c ) {
 	return c;
 }
 void outbuf::reset(){
-	if(rolled){
-		rolled = false;		
+	if(rolled || !hasBeenReset){
+		// clear whole buffer if overflowed or first reset after initialization
+		rolled = false;
+		hasBeenReset = true;
 		memset( (void*)_front, 0, _sz );	
 	}		
 	else{

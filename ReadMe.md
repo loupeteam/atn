@@ -10,4 +10,4 @@ info@loupe.team
 
 # Documentation
 
-Documentation for this and other Loupe libraries can be found at https://loupeteam.github.io/Sandbox/libraries.html
+Documentation for this and other Loupe libraries can be found at https://loupeteam.github.io/LoupeDocs/libraries.html

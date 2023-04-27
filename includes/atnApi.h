@@ -47,6 +47,7 @@ class outbuf : public std::streambuf {
 	char * _current;
 	size_t _sz;
 	bool rolled;
+	bool hasBeenReset;
 	public:
 	outbuf( char * data, size_t sz );
 
