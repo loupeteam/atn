@@ -22,5 +22,6 @@
   <Dependencies>
     <Dependency ObjectName="StringExt" />
     <Dependency ObjectName="VarTools" />
+    <Dependency ObjectName="tlsf" />
   </Dependencies>
 </Library>
