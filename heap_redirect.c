@@ -1,3 +1,4 @@
+#ifndef notlsf
 #include <stdlib.h>
 #include "tlsf.h"
 
@@ -20,3 +21,5 @@ void *	_calloc_r(REENT, size_t items, size_t size) { return tlsf_calloc(items, s
 int const _force_tlfs_malloc = (int) malloc;
 
 __attribute__((weak,visibility("hidden"))) size_t bur_heap_size = 0; /* variable 'bur_heap_size' as dummy */
+
+#endif
