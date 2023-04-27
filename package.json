@@ -1,0 +1,22 @@
+{
+  "name": "@loupeteam/atn",
+  "version": "0.5.1",
+  "description": "Loupe's atn library for Automation Runtime",
+  "homepage": "https://loupeteam.github.io/Sandbox/libraries/atn.html",
+  "scripts": {},
+  "keywords": [],
+  "author": "Loupe",
+  "license": "Loupe Software License Agreement",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/loupeteam/atn"
+  },
+  "lpm": {
+    "type": "library"
+  },
+  "dependencies": {
+    "@loupeteam/stringext": "*",
+    "@loupeteam/vartools": "*",
+    "@loupeteam/tlsf": "*"
+  }
+}
