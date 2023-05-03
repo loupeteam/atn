@@ -1,0 +1,16 @@
+{
+  "name": "@loupeteam/atn",
+  "lpm": {
+    "type": "library",
+    "physical": {
+      "cpu": {
+        "attributes": {
+          "AdditionalLibraryDirectories": "C:/Projects/Loupe/loupeRT/lib/",
+          "AdditionalLibraries": "AR",
+          "Debugging": "true"
+        }
+      }
+
+    }
+  }
+}
