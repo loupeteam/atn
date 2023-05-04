@@ -5,7 +5,7 @@
     "physical": {
       "cpu": {
         "attributes": {
-          "AdditionalLibraryDirectories": "C:/Projects/Loupe/loupeRT/lib/",
+          "AdditionalLibraryDirectories": "../LoupeRT/lib/",
           "AdditionalLibraries": "AR",
           "Debugging": "true"
         }
