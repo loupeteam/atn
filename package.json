@@ -3,14 +3,24 @@
   "lpm": {
     "type": "library",
     "physical": {
-      "cpu": {
-        "attributes": {
-          "AdditionalLibraryDirectories": "../LoupeRT/lib/",
-          "AdditionalLibraries": "AR",
-          "Debugging": "true"
+      "cpu": [
+        {
+          "config": "intel",
+          "attributes": {
+            "AdditionalLibraryDirectories": "../LoupeRT/lib/",
+            "AdditionalLibraries": "AR",
+            "Debugging": "true"
+          }
+        },
+        {
+          "config": "arm",
+          "attributes": {
+            "AdditionalLibraryDirectories": "../LoupeRT/lib/Arm",
+            "AdditionalLibraries": "AR",
+            "Debugging": "true"
+          }
         }
-      }
-
+      ]
     }
   }
 }
