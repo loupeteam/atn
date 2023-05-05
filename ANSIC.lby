@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <?AutomationStudio FileVersion="4.9"?>
-<Library Version="0.04.7" SubType="ANSIC" Description="" xmlns="http://br-automation.co.at/AS/Library">
+<Library Version="0.05.1" SubType="ANSIC" Description="" xmlns="http://br-automation.co.at/AS/Library">
   <Objects>
     <Object Type="File">VersionHistory.txt</Object>
     <Object Type="File">License.txt</Object>
@@ -22,5 +22,6 @@
   <Dependencies>
     <Dependency ObjectName="StringExt" />
     <Dependency ObjectName="VarTools" />
+    <Dependency ObjectName="tlsf" />
   </Dependencies>
 </Library>
