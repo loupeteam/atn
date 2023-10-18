@@ -9,10 +9,6 @@
  ********************************************************************/*)
 
 TYPE
-	ATN_SST_enum : 
-		(
-		ATN_SS_INIT (*0*)
-		);
 	ATN_ST_enum : 
 		(
 		ATN_IDLE, (*0*)
@@ -40,35 +36,6 @@ TYPE
 		ATN_RESPONSE_ST_STATE_DONE,
 		ATN_RESPONSE_ST_BUSY
 		);
-	Atn_typ : 	STRUCT 
-		in : AtnIn_typ;
-		out : AtnOut_typ;
-		internal : AtnInternal_typ;
-	END_STRUCT;
-	AtnIn_typ : 	STRUCT 
-		cmd : AtnInCmd_typ;
-		par : AtnInPar_typ;
-	END_STRUCT;
-	AtnInCmd_typ : 	STRUCT 
-		abort : BOOL;
-		forceQuit : BOOL;
-	END_STRUCT;
-	AtnInPar_typ : 	STRUCT 
-		category : STRING[ATN_NAMESPACE_LEN];
-		ID : USINT;
-	END_STRUCT;
-	AtnOut_typ : 	STRUCT 
-		activeThreads : ARRAY[0..MAI_ATN_ACT_THREADS]OF AtnActiveThread_typ;
-		busy : BOOL;
-		done : BOOL;
-		error : BOOL;
-	END_STRUCT;
-	AtnOutStatus_typ : 	STRUCT 
-		blocked : BOOL;
-		busy : BOOL;
-		done : BOOL;
-		error : BOOL;
-	END_STRUCT;
 	AtnApiStatusLocal_typ : 	STRUCT 
 		active : BOOL;
 		busy : BOOL;
@@ -85,34 +52,6 @@ TYPE
 		aborted : BOOL;
 		error : BOOL;
 		errorID : UDINT;
-	END_STRUCT;
-	AtnInternal_typ : 	STRUCT 
-		thread : AtnThread_typ;
-	END_STRUCT;
-	AtnActiveThread_typ : 	STRUCT 
-		action : STRING[ATN_ACTION_NAME_LEN];
-		busyModule : ARRAY[0..MAI_ATN_ACT_ACTIONS]OF UDINT;
-		errorModule : ARRAY[0..MAI_ATN_ACT_ACTIONS]OF UDINT;
-		status : AtnOutStatus_typ;
-	END_STRUCT;
-	AtnThread_typ : 	STRUCT 
-		ID : USINT;
-		request : AtnActionCmdData_typ;
-		activeRequest : AtnActionCmdData_typ;
-		state : ATN_ST_enum;
-		substate : UDINT;
-		nextSubState : UDINT;
-		abort : BOOL;
-		forceQuit : BOOL;
-		responseStatus : ATN_RESPONSE_ST;
-		actions : UDINT;
-		actionCount : UDINT;
-		substateRequestModule : UDINT;
-		busyModule : ARRAY[0..MAI_ATN_ACT_ACTIONS]OF UDINT;
-		blockingModule : ARRAY[0..MAI_ATN_ACT_ACTIONS]OF UDINT;
-		errorModule : ARRAY[0..MAI_ATN_ACT_ACTIONS]OF UDINT;
-		activeActions : ARRAY[0..MAI_ATN_ACT_ACTIONS]OF UDINT;
-		status : AtnOutStatus_typ;
 	END_STRUCT;
 	AtnAPI_typ : 	STRUCT 
 		moduleName : STRING[80];
@@ -135,23 +74,6 @@ TYPE
 		moduleBypass : BOOL;
 		moduleIsBypassed : BOOL;
 		active : BOOL;
-	END_STRUCT;
-	AtnActionList_typ : 	STRUCT 
-		name : STRING[ATN_NAMESPACE_LEN];
-		maxActions : UDINT;
-		pActions : REFERENCE TO AtnActionData_typ;
-	END_STRUCT;
-	AtnActionData_typ : 	STRUCT 
-		name : STRING[ATN_ACTION_NAME_LEN];
-		pParameters : UDINT;
-		sParameters : UDINT;
-		pAction : REFERENCE TO AtnAPI_typ;
-	END_STRUCT;
-	AtnActionCmdData_typ : 	STRUCT 
-		name : STRING[ATN_ACTION_NAME_LEN];
-		pParameters : UDINT;
-		sParameters : UDINT;
-		pStatusStructure : UDINT;
 	END_STRUCT;
 	AtnPlcOpenCall : 	STRUCT 
 		abort : BOOL;

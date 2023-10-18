@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <?AutomationStudio FileVersion="4.9"?>
-<Library Version="0.05.1" SubType="ANSIC" Description="" xmlns="http://br-automation.co.at/AS/Library">
+<Library Version="0.06.0" SubType="ANSIC" xmlns="http://br-automation.co.at/AS/Library">
   <Objects>
     <Object Type="File">VersionHistory.txt</Object>
     <Object Type="File">License.txt</Object>
@@ -8,13 +8,6 @@
     <Object Type="File">atn.typ</Object>
     <Object Type="File">atn.var</Object>
     <Object Type="File">atn.fun</Object>
-    <Object Type="File">atnGlobal.h</Object>
-    <Object Type="File">atn_fn_Cyclic.c</Object>
-    <Object Type="File">atn_checkResponses.c</Object>
-    <Object Type="File">atn_handleResponseState.c</Object>
-    <Object Type="File">atn_setCommand.c</Object>
-    <Object Type="File">atn_threadState.c</Object>
-    <Object Type="File">atn_prepareRequest.c</Object>
     <Object Type="File">heap_redirect.c</Object>
     <Object Type="Package">src</Object>
     <Object Type="Package">includes</Object>
