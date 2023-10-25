@@ -1,4 +1,5 @@
 0.06.1 - Remove bur_heap_size from director.cpp
+0.06.0 - Remove depricated functionality
 0.05.1 - Add tlsf dependency
 0.04.7 - Fix memory handling
 0.04.6 - Fully clear buffers on first reset after initialization
