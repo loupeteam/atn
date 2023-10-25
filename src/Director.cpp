@@ -4,8 +4,6 @@
 
 using namespace atn;
 
-unsigned long bur_heap_size = 0xfffffff;
-
 Director::Director(/* args */)
 {
 }
