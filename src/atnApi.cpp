@@ -1,3 +1,12 @@
+/*
+ * File: atnApi.cpp
+ * Copyright (c) 2023 Loupe
+ * https://loupe.team
+ * 
+ * This file is part of All Together Now - ATN, licensed under the MIT License.
+ * 
+ */
+
 #include "atn.h"
 #include "../includes/atnApi.h"
 #include "../includes/Director.h"
