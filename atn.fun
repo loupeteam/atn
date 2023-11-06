@@ -1,12 +1,11 @@
-(*/********************************************************************
- * COPYRIGHT -- Loupe 
- ********************************************************************
- * Library: All Together Now -atn
- * Author: Josh Polansky
- * Created: April 7, 2020
- ********************************************************************
- * Implementation of library All Together now
- ********************************************************************/*)
+(*
+ * File: atn.fun
+ * Copyright (c) 2023 Loupe
+ * https://loupe.team
+ * 
+ * This file is part of All Together Now - ATN, licensed under the MIT License.
+ *
+ *)
 
 FUNCTION atninit : UDINT
 	VAR_INPUT
