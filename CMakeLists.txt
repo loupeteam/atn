@@ -5,11 +5,11 @@ cmake_minimum_required(VERSION 3.11-3.18)
 project(atn)
 
 file(GLOB SRC
-"src/*.cpp"
-"src/*.c"
+"src/Ar/ATN/*.cpp"
+"src/Ar/ATN/*.c"
 )
 
-include_directories( ./includes )
+include_directories( ./src/Ar/ATN/includes )
 
 
 # add_compile_options(-fpermissive -Wno-write-strings)
