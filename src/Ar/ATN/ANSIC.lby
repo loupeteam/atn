@@ -8,7 +8,15 @@
     <Object Type="File">atn.var</Object>
     <Object Type="File">atn.fun</Object>
     <Object Type="File">heap_redirect.c</Object>
-    <Object Type="Package">src</Object>
+    <Object Type="File">atnApi.cpp</Object>
+    <Object Type="File">atnApiPLCOpen.cpp</Object>
+    <Object Type="File">atnApiState.cpp</Object>
+    <Object Type="File">atnApiStatus.cpp</Object>
+    <Object Type="File">Action.cpp</Object>
+    <Object Type="File">Behavior.cpp</Object>
+    <Object Type="File">Director.cpp</Object>
+    <Object Type="File">PLCOpen.cpp</Object>
+    <Object Type="File">State.cpp</Object>
     <Object Type="Package">includes</Object>
   </Objects>
   <Dependencies>
