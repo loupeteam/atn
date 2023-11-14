@@ -19,4 +19,4 @@ To install using the Loupe Package Manager (LPM), in an initialized Automation S
 
 This project is primarily licensed under the [MIT License](LICENSE).  However, it includes components under dual license strategy: GPL/LGPL and Bernecker + Rainer Industrie-Elektronik Ges.m.b.H Copyright.
 
--tlsf.h
+-tlsf.h (used according to LGPL terms)
