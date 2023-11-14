@@ -7,7 +7,7 @@
         {
           "config": "intel",
           "attributes": {
-            "AdditionalLibraryDirectories": "../LoupeRT/lib/",
+            "AdditionalLibraryDirectories": "/./Logical/Libraries/Loupe/atn/lib/SG4/", 
             "AdditionalLibraries": "AR",
             "Debugging": "true"
           }
@@ -15,7 +15,7 @@
         {
           "config": "arm",
           "attributes": {
-            "AdditionalLibraryDirectories": "../LoupeRT/lib/Arm",
+            "AdditionalLibraryDirectories": "/./Logical/Libraries/Loupe/atn/lib/SG4/Arm/",
             "AdditionalLibraries": "AR",
             "Debugging": "true"
           }

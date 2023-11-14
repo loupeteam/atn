@@ -1,0 +1,11 @@
+(*
+ * File: atn.var
+ * Copyright (c) 2023 Loupe
+ * https://loupe.team
+ * 
+ * This file is part of All Together Now - ATN, licensed under the MIT License.
+ *
+ *)
+VAR CONSTANT
+	ATN_ACTION_NAME_LEN : USINT := 20;
+END_VAR

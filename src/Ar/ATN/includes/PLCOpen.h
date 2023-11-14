@@ -1,3 +1,12 @@
+/*
+ * File: PLCOpen.h
+ * Copyright (c) 2023 Loupe
+ * https://loupe.team
+ * 
+ * This file is part of All Together Now - ATN, licensed under the MIT License.
+ * 
+ */
+
 #include <string>
 #include "atn.h"
 
