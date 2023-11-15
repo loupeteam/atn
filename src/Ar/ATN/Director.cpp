@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-#include "../includes/Director.h"
+#include "./includes/Director.h"
 
 using namespace atn;
 

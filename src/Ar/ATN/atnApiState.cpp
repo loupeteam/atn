@@ -8,8 +8,8 @@
  */
 
 #include "atn.h"
-#include "../includes/atnApi.h"
-#include "../includes/Director.h"
+#include "./includes/atnApi.h"
+#include "./includes/Director.h"
 #include <string>
 #include <cstring>
 #include <iostream>
