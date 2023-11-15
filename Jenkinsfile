@@ -1,4 +1,4 @@
-library "jenkinsLibrary@feature/loupeRT"
+library "jenkinsLibrary@develop"
 
 buildPublishPipeline(
     slackChannel: "sandbox-github",
