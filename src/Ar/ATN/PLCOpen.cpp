@@ -9,7 +9,7 @@
 
 #include <iostream>
 #include <cstring>
-#include "../includes/PLCOpen.h"
+#include "./includes/PLCOpen.h"
 
 using namespace atn;
 

@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<NcConfiguration Version="5.12.2" NcSwId="Arnc0">
+  <Group ID="ARNC0CFG_typ">
+    <Parameter ID="sampling_rate" Value="4000" />
+    <Parameter ID="cnt_nettrc_rec_drive" Value="150" />
+    <Parameter ID="bufsize_sys_trace" Value="16#00005000" />
+    <Parameter ID="enable_mp_log" Value="Yes" />
+    <Parameter ID="tc_nc_man_task" Value="Cyclic #1" />
+    <Parameter ID="bg_load" Value="1" />
+    <Parameter ID="glob_pv_as_ncobject" Value="Yes" />
+  </Group>
+</NcConfiguration>

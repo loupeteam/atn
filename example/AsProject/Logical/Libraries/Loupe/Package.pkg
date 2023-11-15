@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Package xmlns="http://br-automation.co.at/AS/Package">
+  <Objects>
+    <Object Type="Library" Language="ANSIC" Reference="true">..\..\src\Ar\ATN\ANSIC.lby</Object>
+    <Object Type="Library" Language="ANSIC">tlsf</Object>
+    <Object Type="Library" Language="Binary">vartools</Object>
+    <Object Type="Library" Language="Binary">stringext</Object>
+  </Objects>
+</Package>

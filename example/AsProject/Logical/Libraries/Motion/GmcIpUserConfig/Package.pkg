@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?AutomationStudio FileVersion="4.9"?>
+<Package Version="5.12.2" xmlns="http://br-automation.co.at/AS/Package">
+  <Objects>
+    <Object Type="DataObject" Language="Cnc">gmcipvar</Object>
+    <Object Type="DataObject" Language="Cnc">gmcipfun</Object>
+    <Object Type="DataObject" Language="Cnc">gmcipfub</Object>
+    <Object Type="DataObject" Language="Cnc">gmcipubr</Object>
+    <Object Type="DataObject" Language="Cnc">gmcipusm</Object>
+    <Object Type="DataObject" Language="Cnc">gmcipui</Object>
+    <Object Type="DataObject" Language="Cnc">gmcipus</Object>
+    <Object Type="DataObject" Language="Cnc">gmcipuc</Object>
+  </Objects>
+</Package>

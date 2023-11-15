@@ -21,7 +21,7 @@
 	};
 #endif
 
-#include "../Includes/Behavior.h"
+#include "./includes/Behavior.h"
 
 using namespace atn;
 

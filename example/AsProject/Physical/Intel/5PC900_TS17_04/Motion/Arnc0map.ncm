@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?AutomationStudio FileVersion="4.9"?>
+<NcMapping NcSwId="Arnc0">
+  <NcObject Name="CNC1" Type="ncCNCSYS" Channel="1" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC2" Type="ncCNCSYS" Channel="2" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC3" Type="ncCNCSYS" Channel="3" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC4" Type="ncCNCSYS" Channel="4" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC5" Type="ncCNCSYS" Channel="5" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC6" Type="ncCNCSYS" Channel="6" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC7" Type="ncCNCSYS" Channel="7" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC8" Type="ncCNCSYS" Channel="8" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC9" Type="ncCNCSYS" Channel="9" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC10" Type="ncCNCSYS" Channel="10" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC11" Type="ncCNCSYS" Channel="11" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC12" Type="ncCNCSYS" Channel="12" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC13" Type="ncCNCSYS" Channel="13" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC14" Type="ncCNCSYS" Channel="14" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC15" Type="ncCNCSYS" Channel="15" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC16" Type="ncCNCSYS" Channel="16" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC17" Type="ncCNCSYS" Channel="17" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC18" Type="ncCNCSYS" Channel="18" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC19" Type="ncCNCSYS" Channel="19" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC20" Type="ncCNCSYS" Channel="20" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC21" Type="ncCNCSYS" Channel="21" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC22" Type="ncCNCSYS" Channel="22" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC23" Type="ncCNCSYS" Channel="23" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+  <NcObject Name="CNC24" Type="ncCNCSYS" Channel="24" AcoposSimulation="Off" Disabled="TRUE" ModuleDisabled="FALSE" />
+</NcMapping>
