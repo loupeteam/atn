@@ -1,0 +1,25 @@
+{
+  "name": "@loupeteam/tlsf",
+  "version": "1.0.2",
+  "description": "Loupe's tlsf library for Automation Runtime",
+  "homepage": "https://loupeteam.github.io/Sandbox/libraries/tlsf.html",
+  "scripts": {},
+  "keywords": [],
+  "author": "Loupe",
+  "license": "Loupe Software License Agreement",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/loupeteam/tlsf"
+  },
+  "lpm": {
+    "type": "library",
+    "physical": {
+      "cpu": {
+        "attributes": {
+          "Memory": "None"
+        }
+      }
+    }
+  },
+  "dependencies": {}
+}

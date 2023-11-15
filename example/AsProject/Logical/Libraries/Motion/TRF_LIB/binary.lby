@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?AutomationStudio FileVersion="4.9"?>
+<Library Version="5.15.1" SubType="binary" Description="Transformation Library" xmlns="http://br-automation.co.at/AS/Library">
+  <Files>
+    <File>TRF_LIB.var</File>
+    <File>TRF_LIB.typ</File>
+    <File>TRF_LIB.fun</File>
+  </Files>
+  <Dependencies>
+    <Dependency ObjectName="sys_lib" />
+  </Dependencies>
+</Library>
