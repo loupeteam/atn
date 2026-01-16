@@ -5,7 +5,6 @@
     <Object Type="File">atn.typ</Object>
     <Object Type="File">atn.var</Object>
     <Object Type="File">atn.fun</Object>
-    <Object Type="File">heap_redirect.c</Object>
     <Object Type="File">atnApi.cpp</Object>
     <Object Type="File">atnApiPLCOpen.cpp</Object>
     <Object Type="File">atnApiState.cpp</Object>
