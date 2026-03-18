@@ -27,6 +27,7 @@ namespace atn{
 		public:
 
 		std::ostream *outstream;
+		unsigned int version;  // incremented whenever active threads change
 		
 		Director(/* args */);
 		~Director();

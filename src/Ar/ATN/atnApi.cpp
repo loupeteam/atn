@@ -12,6 +12,7 @@
 #include "./includes/Director.h"
 #include <string>
 #include <cstring>
+#include <climits>
 #include <iostream>
 
 using namespace atn;
@@ -23,27 +24,42 @@ Director *globalDirector = 0;
 outbuf::outbuf( char * data, size_t sz ) : _front(data), _current(data), _sz(sz)  {
 	// track first reset after initialization
 	hasBeenReset = false;
+	rolled = false;
 	// no buffering, overflow on every char
 	setp(0, 0);
 }
 int outbuf::overflow(int_type c ) {
-	// add the char to wherever you want it, for example:
-		
-	if(_current - _front > _sz){
+	if (c == traits_type::eof()) {
+		return traits_type::not_eof(c);
+	}
+
+	size_t pos = (size_t)(_current - _front);
+	if(pos >= _sz){
 		_current = _front;
 		rolled = true;
+		pos = 0;
 	}
 
 	switch(c){
 		case '\n':
-			if(_current - _front < _sz){
+			if(pos < _sz){
 				(*_current) = 0;
 			}
-			_current = (char*) ((((((UDINT)_current - (UDINT)_front)/81)+1)*81) + (UDINT)_front);
+			{
+				size_t nextPos = ((pos / 81) + 1) * 81;
+				if (nextPos >= _sz) {
+					_current = _front;
+					rolled = true;
+				} else {
+					_current = _front + nextPos;
+				}
+			}
 			return c;
 		default:
-			(*_current) = c;
-			_current++;
+			if (pos < _sz) {
+				(*_current) = (char)c;
+				_current++;
+			}
 			break;			
 	}
 	return c;
@@ -90,7 +106,8 @@ bool oneShotReset( AtnAPI_typ *Behavior, bool *cmd ){
 bool oneShotStatus( AtnAPI_typ *Behavior, STRING *status){
 	if( Behavior->response != Behavior->state ){
 		Behavior->response = Behavior->state;
-		strncpy( Behavior->moduleStatus, status, sizeof(Behavior->moduleStatus) );
+		strncpy( Behavior->moduleStatus, status, sizeof(Behavior->moduleStatus) - 1 );
+		Behavior->moduleStatus[sizeof(Behavior->moduleStatus) - 1] = 0;
 		return Behavior->state == ATN_EXECUTE;
 	}
 	return false;
@@ -101,6 +118,7 @@ ATN_ST_enum respond( AtnAPI_typ *Behavior ){
 	return Behavior->state;
 }
 static outbuf *obuf = 0;
+static unsigned int lastVersion = UINT_MAX;  // Director::version at last render
 
 void atnSetDirector( void *director ){
 	globalDirector = (Director*)director;
@@ -118,17 +136,39 @@ unsigned long atninit( UDINT console, UDINT bufsize ){
 		globalDirector->outstream = new std::ostream(obuf);
 	}
 
-	*globalDirector->outstream <<	"atn initialized\n";
+	if( globalDirector->outstream ){
+		*globalDirector->outstream <<	"atn initialized\n";
+	}
 
 	return (unsigned long)globalDirector;
 }
 
 unsigned long atncyclic( UDINT console, UDINT bufsize ){
+	if( !globalDirector ){
+		return 0;
+	}
+	if( !obuf || !globalDirector->outstream || !console ){
+		globalDirector->cyclic();
+		return (unsigned long)globalDirector;
+	}
 	
 	char *command = (char*) console;
-
 	atn::State *state;
 	std::ostream *outstream = globalDirector->outstream;
+	if( command[0] == 0 ){
+		globalDirector->cyclic();
+
+		// Only re-render when something has changed (registration or thread start/finish).
+		if( globalDirector->version != lastVersion ){
+			lastVersion = globalDirector->version;
+			obuf->reset();
+			globalDirector->printState( *outstream );
+			globalDirector->printCommands( *outstream );
+			globalDirector->printStates( *outstream );
+			globalDirector->printActions( *outstream );
+		}
+		return (unsigned long)globalDirector;
+	}
 		
 	obuf->reset();
 	switch (command[0])
@@ -182,7 +222,8 @@ void registerBehavior( const STRING *action, const STRING *moduleName, AtnAPI_ty
 	if( behavior == 0 ){
 		return;
 	}
-	strncpy( behavior->moduleName, (char*)moduleName, sizeof(behavior->moduleName) );
+	strncpy( behavior->moduleName, (char*)moduleName, sizeof(behavior->moduleName) - 1 );
+	behavior->moduleName[sizeof(behavior->moduleName) - 1] = 0;
 
 	globalDirector->addBehavior( std::string((char*)action), behavior, _pParameters, _sParameters );
 }
@@ -200,8 +241,12 @@ plcbit executeCommand( STRING *command ){
 }
 
 UDINT registerState(plcstring* state, plcstring* moduleName, struct AtnAPIState_typ* api){
+	if( !api ){
+		return 0;
+	}
 
-	strncpy( api->moduleName, (char*)moduleName, sizeof(api->moduleName) );
+	strncpy( api->moduleName, (char*)moduleName, sizeof(api->moduleName) - 1 );
+	api->moduleName[sizeof(api->moduleName) - 1] = 0;
 	globalDirector->addState( std::string((char*)state), api, 0, 0);
 	return 0;
 }
@@ -234,7 +279,8 @@ UDINT registerStateParameters( STRING *state, STRING *moduleName, UDINT * pParam
 UDINT registerStateApiParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters){
 
 	if(api){
-		strncpy( api->moduleName, (char*)moduleName, sizeof(api->moduleName) );
+		strncpy( api->moduleName, (char*)moduleName, sizeof(api->moduleName) - 1 );
+		api->moduleName[sizeof(api->moduleName) - 1] = 0;
 	}
 	globalDirector->addState( std::string((char*)state), api, pParameters, sParameters);
 	return 0;
@@ -260,7 +306,7 @@ signed short stateCount( STRING* state ){
 }
 
 signed short commandCount( STRING* state ){
-	State *s = globalDirector->getState(std::string( (char*) state ));
+	State *s = globalDirector->getCommand(std::string( (char*) state ));
 	if( s ){
 		return s->count() - 1;
 	}
@@ -334,7 +380,7 @@ bool forStateGetPointer(plcstring* state, signed short index, plcbit* active, un
 
 void readCallState( AtnApiStatusLocal_typ *status){
 	if( status ){
-		memcpy( status, &(status->remote), sizeof(AtnApiStatus_typ));
+		memmove( status, &(status->remote), sizeof(AtnApiStatus_typ));
 		if( status->remote.busy ){
 			return;
 		}

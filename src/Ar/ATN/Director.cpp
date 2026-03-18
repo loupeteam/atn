@@ -15,6 +15,8 @@ using namespace atn;
 
 Director::Director(/* args */)
 {
+	outstream = 0;
+	version = 0;
 }
 
 Director::~Director()
@@ -38,6 +40,7 @@ void Director::addBehavior( const std::string action,  AtnAPI_typ* api, void *_p
         newAction.subscribe(api,_pParameters, _sParameters);
         actions.insert( std::pair<std::string, Action>(action, newAction));        
     }
+    version++;
 }
 
 void Director::addState( const std::string state,  AtnAPIState_typ* api, void *_pParameters, size_t _sParameters ){
@@ -52,6 +55,7 @@ void Director::addState( const std::string state,  AtnAPIState_typ* api, void *_
         newAction.subscribe(api, _pParameters, _sParameters);
         states.insert( std::pair<std::string, State>(state, newAction));        
     }
+    version++;
 }
 
 
@@ -67,8 +71,7 @@ void Director::addState( const std::string state, const std::string name, char *
 		newAction.subscribe( name, value, moduleByPass, moduleStatus, _pParameters, _sParameters);
 		states.insert( std::pair<std::string, State>(state, newAction));        
 	}
-
-	
+	version++;
 }
 
 void Director::addStateBool( const std::string state, const std::string name, bool* value ){
@@ -83,6 +86,7 @@ void Director::addStateBool( const std::string state, const std::string name, bo
 		newAction.subscribe( name, value);
 		states.insert( std::pair<std::string, State>(state, newAction));        
 	}
+	version++;
 }
 
 void Director::addResourceBool( const std::string state, const std::string name, unsigned long int *pResourceUid, bool *value ){
@@ -97,6 +101,7 @@ void Director::addResourceBool( const std::string state, const std::string name,
 		newAction.subscribe( name, pResourceUid, value);
 		states.insert( std::pair<std::string, State>(state, newAction));        
 	}
+	version++;
 }
 		
 
@@ -113,6 +118,7 @@ void Director::addStateBool( const std::string state, const std::string name, bo
 		newAction.subscribe( name, value, _pParameters, _sParameters);
 		states.insert( std::pair<std::string, State>(state, newAction));        
 	}
+	version++;
 }
 
 //Registers a bool to be automatically monitored, without full API support
@@ -127,6 +133,7 @@ void Director::addCommandBool( const std::string command, const std::string modu
 		newAction.subscribe( moduleName, check);
 		commands.insert( std::pair<std::string, State>(command, newAction));        
 	}
+	version++;
 }
 
 //Registers a bool to be automatically monitored, without full API support
@@ -141,6 +148,7 @@ void Director::addCommandPLCOpen( const std::string command, const std::string m
 		newAction.subscribe( moduleName, commandBit, status);
 		commands.insert( std::pair<std::string, State>(command, newAction));        
 	}
+	version++;
 }
 
 //Registers a bool to be automatically monitored, without full API support
@@ -155,6 +163,7 @@ void Director::addCommandPLCOpen( const std::string command, const std::string m
 		newAction.subscribe( moduleName, commandBit, status, _pParameters, _sParameters);
 		commands.insert( std::pair<std::string, State>(command, newAction));        
 	}
+	version++;
 }
 
 void Director::executeAction( const std::string action,  AtnApiStatus_typ* _pStatus, void *_pParameters, size_t _sParameters){
@@ -165,6 +174,7 @@ void Director::executeAction( const std::string action,  AtnApiStatus_typ* _pSta
         threads.push_back(it->second); 
         ///TODO: check if it's OK to start
         threads.back().start( _pStatus, _pParameters, _sParameters );
+        version++;
     }
     else{
 		if( this->outstream ){
@@ -227,13 +237,18 @@ State * Director::getCommand( const std::string cmd ){
 }
 
 void Director::cyclic(){
-
-    for (auto thread = threads.begin(); thread != threads.end(); ++thread){
+	for (auto thread = threads.begin(); thread != threads.end(); ){
         //Run thread
         if( thread->update() ){
-            thread->print( *this->outstream );
-            //If it's done, remove it            
-            threads.erase( thread );
+			if( this->outstream ){
+				thread->print( *this->outstream );
+			}
+			//If it's done, remove it
+			version++;
+			thread = threads.erase( thread );
+		}
+		else{
+			++thread;
         }
     }
 }

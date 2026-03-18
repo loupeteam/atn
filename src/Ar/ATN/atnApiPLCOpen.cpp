@@ -19,16 +19,25 @@ using namespace atn;
 extern Director *globalDirector;
 
 UDINT subscribePLCOpen(plcstring* commandName, plcstring* moduleName, plcbit* value, AtnPlcOpenStatus *status){
+	if( !globalDirector ){
+		return 0;
+	}
 	globalDirector->addCommandPLCOpen( std::string((char*)commandName), (char*)moduleName, value, status );
 	return 0;
 }
 
 UDINT subscribePLCOpenWithParameters(plcstring* commandName, plcstring* moduleName, unsigned long* pParameters, unsigned long sParameters, plcbit* command,  struct AtnPlcOpenStatus* status){
+	if( !globalDirector ){
+		return 0;
+	}
 	globalDirector->addCommandPLCOpen( std::string((char*)commandName), (char*)moduleName, command, status, pParameters, sParameters   );
 	return 0;
 }
 
 bool forCommandGetPLCOpenStatus(plcstring* state, signed short index, unsigned short *status){
+	if( !globalDirector ){
+		return 0;
+	}
 	
 	State *s = globalDirector->getCommand(std::string( (char*) state));
 
@@ -52,6 +61,9 @@ bool forCommandGetPLCOpenStatus(plcstring* state, signed short index, unsigned s
 }
 
 unsigned short PLCOpenStatus( const STRING *command, unsigned short fallback ){
+	if( !globalDirector ){
+		return fallback;
+	}
 
 	State *s = globalDirector->getCommand(std::string( (char*) command));
 
@@ -81,10 +93,14 @@ plcbit atnPLCOpenAbort(struct AtnPlcOpenStatus* status){
 		status->parametersWritten = false;		
 	}			
 	status->internal.trig = 0;
+	return 1;
 
 }
 
 void AtnPLCOpen(AtnPLCOpen_typ* inst){
+	if( !inst || !globalDirector ){
+		return;
+	}
 
 	//Capture edges
 	if( !inst->Execute ){
@@ -224,7 +240,7 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 						commandSrc = *(AtnPlcOpenCall**) (state.pCommandSource);
 
 						if( commandSrc != 0 && commandSrc == &inst->_call ){
-							*((AtnPLCOpen_typ**)state.pCommandSource) = 0;
+							*((AtnPlcOpenCall**)state.pCommandSource) = 0;
 							state.writeParameters(0,0);
 						}		
 					}
@@ -267,6 +283,9 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 }
 
 void AtnPLCOpenWithParameters(AtnPLCOpenWithParameters_typ* inst){
+	if( !inst || !globalDirector ){
+		return;
+	}
 
 	//Capture edges
 	if( !inst->Execute ){
@@ -406,7 +425,7 @@ void AtnPLCOpenWithParameters(AtnPLCOpenWithParameters_typ* inst){
 						commandSrc = *(AtnPlcOpenCall**) (state.pCommandSource);
 
 						if( commandSrc != 0 && commandSrc == &inst->_call ){
-							*((AtnPLCOpen_typ**)state.pCommandSource) = 0;
+							*((AtnPlcOpenCall**)state.pCommandSource) = 0;
 							state.writeParameters(0,0);							
 						}		
 					}

@@ -19,6 +19,9 @@ using namespace atn;
 extern Director *globalDirector;
 
 bool stateAllTrue( STRING *state, bool fallback ){
+	if( !globalDirector ){
+		return fallback;
+	}
 	State *s = globalDirector->getState(std::string((char*)state));
 	if( s ){
 		return s->allTrue( fallback );
@@ -29,6 +32,9 @@ bool stateAllTrue( STRING *state, bool fallback ){
 }
 
 bool stateAnyTrue( STRING *state, bool fallback ){
+	if( !globalDirector ){
+		return fallback;
+	}
 	State *s = globalDirector->getState(std::string((char*)state));
 	if( s ){
 		return s->anyTrue( fallback );
@@ -39,6 +45,9 @@ bool stateAnyTrue( STRING *state, bool fallback ){
 }
 
 bool stateAllFalse( STRING *state, bool fallback ){
+	if( !globalDirector ){
+		return fallback;
+	}
 	State *s = globalDirector->getState(std::string((char*)state));
 	if( s ){
 		return s->allFalse( fallback );
@@ -49,6 +58,9 @@ bool stateAllFalse( STRING *state, bool fallback ){
 }
 
 bool stateAnyFalse( STRING *state, bool fallback ){
+	if( !globalDirector ){
+		return fallback;
+	}
 	State *s = globalDirector->getState(std::string((char*)state));
 	if( s ){
 		return s->anyFalse( fallback );
@@ -59,6 +71,9 @@ bool stateAnyFalse( STRING *state, bool fallback ){
 }
 
 bool isInhibited( STRING *state ){
+	if( !globalDirector ){
+		return false;
+	}
 	State *s = globalDirector->getState(std::string((char*)state));
 	if( s ){
 		return s->anyTrue( false );
@@ -69,6 +84,9 @@ bool isInhibited( STRING *state ){
 }
 
 bool resourceIsAvailable( STRING *state, unsigned long ID ){
+	if( !globalDirector ){
+		return true;
+	}
 	State *s = globalDirector->getState(std::string((char*)state));
 	if( s ){
 		return s->allFalseExcept( true, ID );
@@ -80,6 +98,11 @@ bool resourceIsAvailable( STRING *state, unsigned long ID ){
 
 
 void stateAllTrueFb(struct stateAllTrueFb* inst){
+	if( !globalDirector ){
+		inst->cache = 0;
+		inst->value = inst->fallback;
+		return;
+	}
 	if( inst->update || inst->cache == 0){	
 		inst->cache = (UDINT*)globalDirector->getState(std::string((char*)inst->state));
 	}
@@ -92,6 +115,11 @@ void stateAllTrueFb(struct stateAllTrueFb* inst){
 	}
 }
 void stateAnyTrueFb(struct stateAnyTrueFb* inst){
+	if( !globalDirector ){
+		inst->cache = 0;
+		inst->value = inst->fallback;
+		return;
+	}
 	if( inst->update || inst->cache == 0){	
 		inst->cache = (UDINT*)globalDirector->getState(std::string((char*)inst->state));
 	}
@@ -104,6 +132,11 @@ void stateAnyTrueFb(struct stateAnyTrueFb* inst){
 	}
 }
 void stateAllFalseFb(struct stateAllFalseFb* inst){
+	if( !globalDirector ){
+		inst->cache = 0;
+		inst->value = inst->fallback;
+		return;
+	}
 	if( inst->update || inst->cache == 0){	
 		inst->cache = (UDINT*)globalDirector->getState(std::string((char*)inst->state));
 	}
@@ -116,6 +149,11 @@ void stateAllFalseFb(struct stateAllFalseFb* inst){
 	}
 }
 void stateAnyFalseFb(struct stateAnyFalseFb* inst){
+	if( !globalDirector ){
+		inst->cache = 0;
+		inst->value = inst->fallback;
+		return;
+	}
 	if( inst->update || inst->cache == 0){	
 		inst->cache = (UDINT*)globalDirector->getState(std::string((char*)inst->state));
 	}

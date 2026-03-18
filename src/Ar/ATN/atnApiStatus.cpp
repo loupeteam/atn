@@ -19,6 +19,9 @@ using namespace atn;
 extern Director *globalDirector;
 
 plcbit stateTrueStatus(plcstring* state, unsigned long buffer, unsigned long sBuffer){
+	if( !globalDirector ){
+		return false;
+	}
 
     State *s = globalDirector->getState(std::string((char*)state));
 
@@ -49,6 +52,9 @@ plcbit stateTrueStatus(plcstring* state, unsigned long buffer, unsigned long sBu
 }
 
 plcbit stateFalseStatus(plcstring* state, unsigned long buffer, unsigned long sBuffer){
+	if( !globalDirector ){
+		return false;
+	}
 
     State *s = globalDirector->getState(std::string((char*)state));
 
@@ -80,6 +86,9 @@ plcbit stateFalseStatus(plcstring* state, unsigned long buffer, unsigned long sB
 }
 
 plcbit stateStatus(plcstring* state, unsigned long buffer, unsigned long sBuffer){
+	if( !globalDirector ){
+		return false;
+	}
 
 	State *s = globalDirector->getState(std::string((char*)state));
 
@@ -112,11 +121,14 @@ plcbit stateStatus(plcstring* state, unsigned long buffer, unsigned long sBuffer
 }
 
 plcbit systemJson(unsigned long buffer, unsigned long sBuffer){
+	if( !globalDirector ){
+		return false;
+	}
 
 	outbuf buf( (char*)buffer, sBuffer );		
 	std::ostream out( &buf );
 	buf.reset();
 
 	globalDirector->printSystemJson(out);
-	
+	return true;
 }
