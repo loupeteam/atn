@@ -1,0 +1,5 @@
+(* ATN unregister API self-test *)
+VAR
+	task : localInterface_typ; (* Public interface - command from the watch window *)
+	internal : localInterfaceInternal_typ;
+END_VAR
