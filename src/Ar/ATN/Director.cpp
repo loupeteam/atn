@@ -8,6 +8,7 @@
  */
 
 #include <iostream>
+#include <cstring>
 
 #include "./includes/Director.h"
 
@@ -15,7 +16,62 @@ using namespace atn;
 
 Director::Director(/* args */)
 {
+	diagHead = 0;
+	diagCount = 0;
+	diagSeq = 0;
+	diagDropped = 0;
 }
+
+unsigned long Director::raise( AtnDiagSeverity_enum severity, signed long code, const char* source, const char* message )
+{
+	if( diagCount >= DIAG_CAP ){
+		diagHead = (diagHead + 1) % DIAG_CAP;
+		diagCount--;
+		diagDropped++;
+	}
+	int tail = (diagHead + diagCount) % DIAG_CAP;
+	AtnDiagnostic_typ* e = &diagBuf[tail];
+
+	e->seq = ++diagSeq;
+	e->severity = severity;
+	e->code = code;
+	if( source ){
+		std::strncpy((char*)e->source, source, sizeof(e->source) - 1);
+		((char*)e->source)[sizeof(e->source) - 1] = 0;
+	}
+	else{
+		e->source[0] = 0;
+	}
+	if( message ){
+		std::strncpy((char*)e->message, message, sizeof(e->message) - 1);
+		((char*)e->message)[sizeof(e->message) - 1] = 0;
+	}
+	else{
+		e->message[0] = 0;
+	}
+
+	diagCount++;
+	return e->seq;
+}
+
+bool Director::popDiagnostic( AtnDiagnostic_typ* entry )
+{
+	if( diagCount <= 0 ){
+		if( entry ){
+			entry->seq = 0;
+		}
+		return false;
+	}
+	if( entry ){
+		*entry = diagBuf[diagHead];
+	}
+	diagHead = (diagHead + 1) % DIAG_CAP;
+	diagCount--;
+	return true;
+}
+
+unsigned long Director::diagnosticCount(){ return (unsigned long)diagCount; }
+unsigned long Director::diagnosticsDropped(){ return diagDropped; }
 
 Director::~Director()
 {

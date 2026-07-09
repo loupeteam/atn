@@ -339,3 +339,34 @@ void readCallState( AtnApiStatusLocal_typ *status){
 		memset( &(status->remote), 0, sizeof(AtnApiStatus_typ));
 	}
 }
+
+unsigned long atnRaise( AtnDiagSeverity_enum severity, signed long code, plcstring* source, plcstring* message ){
+	if( !globalDirector ){
+		return 0;
+	}
+	return globalDirector->raise( severity, code, (const char*)source, (const char*)message );
+}
+
+plcbit atnPopDiagnostic( AtnDiagnostic_typ* entry ){
+	if( !globalDirector ){
+		if( entry ){
+			entry->seq = 0;
+		}
+		return 0;
+	}
+	return globalDirector->popDiagnostic( entry );
+}
+
+unsigned long atnDiagnosticCount( void ){
+	if( !globalDirector ){
+		return 0;
+	}
+	return globalDirector->diagnosticCount();
+}
+
+unsigned long atnDiagnosticsDropped( void ){
+	if( !globalDirector ){
+		return 0;
+	}
+	return globalDirector->diagnosticsDropped();
+}
