@@ -1,26 +1,21 @@
 {
   "name": "@loupeteam/atn",
+  "version": "0.0.0",
+  "description": "All Together Now - state-machine and behavior orchestration library for B&R Automation Studio",
+  "homepage": "https://loupeteam.github.io/LoupeDocs/libraries/atn.html",
+  "scripts": {},
+  "keywords": [],
+  "author": "Loupe",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/loupeteam/atn"
+  },
   "lpm": {
-    "type": "library",
-    "physical": {
-      "cpu": [
-        {
-          "config": "intel",
-          "attributes": {
-            "AdditionalLibraryDirectories": "/./Logical/Libraries/Loupe/atn/lib/SG4/", 
-            "AdditionalLibraries": "AR",
-            "Debugging": "true"
-          }
-        },
-        {
-          "config": "arm",
-          "attributes": {
-            "AdditionalLibraryDirectories": "/./Logical/Libraries/Loupe/atn/lib/SG4/Arm/",
-            "AdditionalLibraries": "AR",
-            "Debugging": "true"
-          }
-        }
-      ]
-    }
+    "type": "library"
+  },
+  "dependencies": {
+    "@loupeteam/stringext": ">=1.0.0",
+    "@loupeteam/vartools": ">=1.0.0"
   }
 }

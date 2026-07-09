@@ -16,6 +16,8 @@
 
 using namespace atn;
 
+unsigned int bur_heap_size = 0xFFFFFF;
+
 Director *globalDirector = 0;
 
 outbuf::outbuf( char * data, size_t sz ) : _front(data), _current(data), _sz(sz)  {
