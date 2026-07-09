@@ -290,6 +290,20 @@ unsigned int State::count(){
     return this->PLCOpenState.size();
 }
 
+unsigned int State::removeOwner( const std::string owner ){
+    unsigned int removed = 0;
+    for( auto it = this->PLCOpenState.begin(); it != this->PLCOpenState.end(); ){
+        if( it->name == owner ){
+            it = this->PLCOpenState.erase( it );
+            removed++;
+        }
+        else{
+            ++it;
+        }
+    }
+    return removed;
+}
+
 void State::print( std::ostream &outbuf){
     outbuf << "\nState Check: " << this->name << "\n";
     for( auto state : this->PLCOpenState ){

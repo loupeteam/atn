@@ -47,5 +47,6 @@ namespace atn{
         void print( std::ostream &);
 		void plcopenReport( std::ostream &);
 		unsigned int count();
+        unsigned int removeOwner( const std::string owner );
     };
 }

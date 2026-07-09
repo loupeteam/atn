@@ -229,6 +229,14 @@ UDINT registerStateParameters( STRING *state, STRING *moduleName, UDINT * pParam
 	return 0;
 }
 
+UDINT unregister( STRING *state, STRING *owner ){
+	return globalDirector->removeRegistration( std::string((char*)state), std::string((char*)owner) ) ? 0 : 1;
+}
+
+UDINT unregisterAll( STRING *owner ){
+	return globalDirector->removeAllForOwner( std::string((char*)owner) );
+}
+
 UDINT registerStateApiParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters){
 
 	if(api){

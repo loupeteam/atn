@@ -77,6 +77,10 @@ namespace atn{
 		//Search for a command
 		State *getCommand( const std::string cmd);
 
+		//Registration lifecycle (online transfer): remove one or all registrations for an owner
+		bool removeRegistration( const std::string name, const std::string owner );
+		unsigned int removeAllForOwner( const std::string owner );
+
 		//Count of the number of active actions
 		unsigned int countActiveThreads();
 

@@ -76,6 +76,19 @@ FUNCTION registerToResource : UDINT
 		pResourceActive : BOOL;
 	END_VAR
 END_FUNCTION
+
+FUNCTION unregister : UDINT
+	VAR_INPUT
+		state : STRING[80];
+		owner : STRING[80];
+	END_VAR
+END_FUNCTION
+
+FUNCTION unregisterAll : UDINT
+	VAR_INPUT
+		owner : STRING[80];
+	END_VAR
+END_FUNCTION
 (*Subscribing*)
 
 FUNCTION subscribeCommandBool : UDINT
