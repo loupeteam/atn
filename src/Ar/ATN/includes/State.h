@@ -21,8 +21,10 @@ namespace atn{
 
     public:
 
-		std::vector<std::string> DependentState; 
-		std::vector<PLCOpen> PLCOpenState; 
+        std::vector<std::string> DependentState;
+        std::vector<PLCOpen> PLCOpenState;
+        std::string returnTopic;
+        size_t sReturn = 0;
 
         State( std:: string name);    
         ~State();

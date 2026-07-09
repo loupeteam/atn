@@ -229,6 +229,22 @@ UDINT registerStateParameters( STRING *state, STRING *moduleName, UDINT * pParam
 	return 0;
 }
 
+UDINT registerValue( STRING *state, STRING *owner, UDINT * pData, UDINT sData, plcbit *valid, UDINT sReturn, UDINT returnTopic ){
+	bool ok = globalDirector->addValue( std::string((char*)state), std::string((char*)owner), valid, pData, sData, sReturn );
+	if( returnTopic != 0 ){
+		char *out = (char*)returnTopic;
+		if( ok && sReturn > 0 ){
+			std::string derived = std::string((char*)state) + "~return";
+			strncpy( out, derived.c_str(), 80 );
+			out[80] = '\0';
+		}
+		else{
+			out[0] = '\0';
+		}
+	}
+	return ok ? 0 : 1;
+}
+
 UDINT unregister( STRING *state, STRING *owner ){
 	return globalDirector->removeRegistration( std::string((char*)state), std::string((char*)owner) ) ? 0 : 1;
 }

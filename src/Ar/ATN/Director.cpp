@@ -226,8 +226,49 @@ State * Director::getCommand( const std::string cmd ){
     }
 }
 
+bool Director::addValue( const std::string state, const std::string name, bool* valid, void* _pData, size_t _sData, size_t sReturn ){
+
+	auto it = values.find(state);
+
+	if (it != values.end()){
+		if( it->second.count() > 0 ){
+			if( this->outstream ){
+				*this->outstream << "ATN value already registered: " << state << "\n";
+			}
+			return false;
+		}
+		it->second.subscribe( name, valid, _pData, _sData );
+		it->second.sReturn = sReturn;
+		it->second.returnTopic = (sReturn > 0) ? (state + "~return") : "";
+	}
+	else{
+		State newValue( state );
+		newValue.subscribe( name, valid, _pData, _sData );
+		newValue.sReturn = sReturn;
+		newValue.returnTopic = (sReturn > 0) ? (state + "~return") : "";
+		values.insert( std::pair<std::string, State>(state, newValue) );
+	}
+	return true;
+}
+
+State * Director::getValue( const std::string state ){
+	auto it = values.find(state);
+
+	if (it != values.end()){
+		return &it->second;
+	}
+	else{
+		return 0;
+	}
+}
+
 bool Director::removeRegistration( const std::string name, const std::string owner ){
 	unsigned int removed = 0;
+
+	auto v = values.find(name);
+	if( v != values.end() ){
+		removed += v->second.removeOwner(owner);
+	}
 
 	auto s = states.find(name);
 	if( s != states.end() ){
@@ -244,6 +285,10 @@ bool Director::removeRegistration( const std::string name, const std::string own
 
 unsigned int Director::removeAllForOwner( const std::string owner ){
 	unsigned int removed = 0;
+
+	for( auto &kv : values ){
+		removed += kv.second.removeOwner(owner);
+	}
 
 	for( auto &kv : states ){
 		removed += kv.second.removeOwner(owner);

@@ -23,6 +23,7 @@ namespace atn{
 		std::unordered_map<std::string, Action> actions;	//These are actions that have been registered
 		std::unordered_map<std::string, State> commands;	//These are commands that have been subscribed
 		std::unordered_map<std::string, State> states;		//These are states that have been registered
+		std::unordered_map<std::string, State> values;		//Single-publisher value topics
 	
 		public:
 
@@ -76,6 +77,10 @@ namespace atn{
 
 		//Search for a command
 		State *getCommand( const std::string cmd);
+
+		//Single-publisher value topic (one producer per topic name)
+		bool addValue( const std::string state, const std::string moduleName, bool *valid, void *_pData, size_t _sData, size_t sReturn = 0 );
+		State *getValue( const std::string state );
 
 		//Registration lifecycle (online transfer): remove one or all registrations for an owner
 		bool removeRegistration( const std::string name, const std::string owner );

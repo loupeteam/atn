@@ -77,6 +77,41 @@ FUNCTION registerToResource : UDINT
 	END_VAR
 END_FUNCTION
 
+FUNCTION registerValue : UDINT
+	VAR_INPUT
+		state : STRING[80];
+		owner : STRING[80];
+		pData : REFERENCE TO UDINT;
+		sData : UDINT;
+		valid : REFERENCE TO BOOL;
+		sReturn : UDINT;
+		returnTopic : UDINT;
+	END_VAR
+END_FUNCTION
+
+FUNCTION_BLOCK valueRefFb
+	VAR_INPUT
+		update : BOOL;
+		state : {REDUND_UNREPLICABLE} STRING[80];
+		sData : {REDUND_UNREPLICABLE} UDINT;
+		owner : {REDUND_UNREPLICABLE} STRING[80];
+		pStatus : UDINT;
+		sStatus : UDINT;
+	END_VAR
+	VAR_OUTPUT
+		bound : BOOL;
+		valid : BOOL;
+		sizeMismatch : BOOL;
+		returnBound : BOOL;
+		data : UDINT;
+	END_VAR
+	VAR
+		cache : REFERENCE TO UDINT;
+		registered : BOOL;
+		registeredTopic : STRING[80];
+	END_VAR
+END_FUNCTION_BLOCK
+
 FUNCTION unregister : UDINT
 	VAR_INPUT
 		state : STRING[80];
