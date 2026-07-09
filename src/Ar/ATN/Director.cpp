@@ -226,7 +226,7 @@ State * Director::getCommand( const std::string cmd ){
     }
 }
 
-bool Director::removeRegistration( const std::string name, const std::string owner ){
+unsigned int Director::removeRegistration( const std::string name, const std::string owner ){
 	unsigned int removed = 0;
 
 	auto s = states.find(name);
@@ -239,7 +239,7 @@ bool Director::removeRegistration( const std::string name, const std::string own
 		removed += c->second.removeOwner(owner);
 	}
 
-	return removed > 0;
+	return removed;
 }
 
 unsigned int Director::removeAllForOwner( const std::string owner ){

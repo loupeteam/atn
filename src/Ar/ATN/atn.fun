@@ -80,7 +80,7 @@ END_FUNCTION
 
 FUNCTION unregister : UDINT (*Remove this owner's registrations and subscriptions from one state or command topic.
   owner must exactly match the moduleName used at registration.
-  Returns 0 if at least one registration was removed, 1 if none matched.
+  Returns the number of registrations removed. 0 is not an error.
   Does not remove behaviors registered with registerBehavior.*)
 	VAR_INPUT
 		name : STRING[80]; (*State or command name*)
