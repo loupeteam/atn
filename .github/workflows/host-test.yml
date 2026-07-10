@@ -1,0 +1,39 @@
+name: Host Unit Tests
+
+# Compiles ATN's C++ off-target with MSVC and runs the CMake unit test
+# (atn_test_main) on a GitHub-hosted runner. This is independent of the
+# Automation Studio target build in build.yml and needs no self-hosted runner.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'LICENSE'
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'LICENSE'
+
+jobs:
+  host-test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # windows-latest ships MSVC (VS 2022), CMake and Ninja. Build 32-bit
+      # (Win32) so unsigned long is 4 bytes, matching the SG4 data model the
+      # ATN sources assume.
+      - name: Configure
+        run: cmake -S . -B build -A Win32
+
+      - name: Build
+        run: cmake --build build --config Debug
+
+      - name: Test
+        run: ctest --test-dir build -C Debug --output-on-failure
