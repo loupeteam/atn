@@ -1,3 +1,9 @@
+2.0.0 - Remove deprecated Actions and Threads (breaking)
+		- Remove the Action/Behavior execution engine and Director thread handling
+		- Remove the action C-API (registerBehavior, executeAction, executeActionReport, oneShot, respond, readCallState)
+		- Remove action/thread types (AtnAPI_typ, AtnApiStatus_typ, AtnApiStatusLocal_typ, ATN_ST_enum, ATN_RESPONSE_ST, ATN_ERROR_enum) and the ATN_ACTION_NAME_LEN constant
+		- Replace the developer test suite with command/state/PLCOpen coverage
+1.0.0 - Update project to AS6, add publish workflow
 0.06.2 - Update for oss release
 0.06.1 - Remove bur_heap_size from director.cpp
 0.06.0 - Remove depricated functionality

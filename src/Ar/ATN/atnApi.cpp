@@ -2,9 +2,9 @@
  * File: atnApi.cpp
  * Copyright (c) 2023 Loupe
  * https://loupe.team
- * 
+ *
  * This file is part of All Together Now - ATN, licensed under the MIT License.
- * 
+ *
  */
 
 #include "atn.h"
@@ -28,7 +28,7 @@ outbuf::outbuf( char * data, size_t sz ) : _front(data), _current(data), _sz(sz)
 }
 int outbuf::overflow(int_type c ) {
 	// add the char to wherever you want it, for example:
-		
+
 	if(_current - _front > _sz){
 		_current = _front;
 		rolled = true;
@@ -44,7 +44,7 @@ int outbuf::overflow(int_type c ) {
 		default:
 			(*_current) = c;
 			_current++;
-			break;			
+			break;
 	}
 	return c;
 }
@@ -53,53 +53,14 @@ void outbuf::reset(){
 		// clear whole buffer if overflowed or first reset after initialization
 		rolled = false;
 		hasBeenReset = true;
-		memset( (void*)_front, 0, _sz );	
-	}		
+		memset( (void*)_front, 0, _sz );
+	}
 	else{
-		memset( (void*)_front, 0, _current - _front );	
+		memset( (void*)_front, 0, _current - _front );
 	}
 	_current = _front;
 }
 
-bool oneShot( AtnAPI_typ *Behavior ){
-	if( Behavior->response != Behavior->state ){
-		Behavior->response = Behavior->state;
-		return Behavior->state == ATN_EXECUTE;
-	}
-	return false;
-}
-
-bool oneShotReset( AtnAPI_typ *Behavior, bool *cmd ){
-	if( Behavior->response != Behavior->state ){
-		Behavior->response = Behavior->state;
-		if( cmd ){
-			Behavior->oneShot = true;
-			*cmd = true;
-		}
-		return Behavior->state == ATN_EXECUTE;
-	}
-	if( Behavior->oneShot ){
-		Behavior->oneShot = false;
-		if( cmd ){
-			*cmd = false;
-		}        
-	}
-	return false;
-}
-
-bool oneShotStatus( AtnAPI_typ *Behavior, STRING *status){
-	if( Behavior->response != Behavior->state ){
-		Behavior->response = Behavior->state;
-		strncpy( Behavior->moduleStatus, status, sizeof(Behavior->moduleStatus) );
-		return Behavior->state == ATN_EXECUTE;
-	}
-	return false;
-}
-
-ATN_ST_enum respond( AtnAPI_typ *Behavior ){
-	Behavior->response = Behavior->state;
-	return Behavior->state;
-}
 static outbuf *obuf = 0;
 
 void atnSetDirector( void *director ){
@@ -107,14 +68,14 @@ void atnSetDirector( void *director ){
 }
 
 unsigned long atninit( UDINT console, UDINT bufsize ){
-	
-	
+
+
 	if( !globalDirector ){
 		globalDirector = new Director();
 	}
 
 	if( console ){
-		obuf = new outbuf( (char*)console, bufsize );		
+		obuf = new outbuf( (char*)console, bufsize );
 		globalDirector->outstream = new std::ostream(obuf);
 	}
 
@@ -124,12 +85,12 @@ unsigned long atninit( UDINT console, UDINT bufsize ){
 }
 
 unsigned long atncyclic( UDINT console, UDINT bufsize ){
-	
+
 	char *command = (char*) console;
 
 	atn::State *state;
 	std::ostream *outstream = globalDirector->outstream;
-		
+
 	obuf->reset();
 	switch (command[0])
 	{
@@ -137,11 +98,9 @@ unsigned long atncyclic( UDINT console, UDINT bufsize ){
 			*outstream << "? for this help\n";
 			*outstream << "\\[commandName] to run a command\n";
 			*outstream << "=[commandName] to view a command status\n";
-			*outstream << "/[actionName] to run an action\n";
-			*outstream << "+[actionName] to view an action status\n";
-			*outstream << "[statename] to view a state status\n";			
+			*outstream << "[statename] to view a state status\n";
 			break;
-		case '\\':			
+		case '\\':
 			command[0] = '=';
 			globalDirector->executeCommand( &command[1] );
 		case '=':
@@ -153,12 +112,6 @@ unsigned long atncyclic( UDINT console, UDINT bufsize ){
 				*outstream << "state "<< command << " Not found\n";
 			}
 			break;
-		case '/':			
-			command[0] = '+';
-			globalDirector->executeAction( &command[1], 0, 0, 0);
-		case '+':			
-			globalDirector->printState( *outstream );
-			break;
 		default:
 			state = globalDirector->getState( &command[0] );
 			if( state ){
@@ -168,31 +121,11 @@ unsigned long atncyclic( UDINT console, UDINT bufsize ){
 				*outstream << "state "<< command << " Not found\n";
 				globalDirector->printCommands( *outstream );
 				globalDirector->printStates( *outstream );
-				globalDirector->printActions( *outstream );
 			}
 			break;
 	}
 
-
-	globalDirector->cyclic();
 	return (unsigned long)globalDirector;
-}
-
-void registerBehavior( const STRING *action, const STRING *moduleName, AtnAPI_typ *behavior, UDINT *_pParameters, UDINT _sParameters){
-	if( behavior == 0 ){
-		return;
-	}
-	strncpy( behavior->moduleName, (char*)moduleName, sizeof(behavior->moduleName) );
-
-	globalDirector->addBehavior( std::string((char*)action), behavior, _pParameters, _sParameters );
-}
-
-void executeActionReport( const STRING *action, AtnApiStatusLocal_typ *api){
-	globalDirector->executeAction( std::string((char*)action), &api->remote, 0, 0);
-}
-
-void executeAction( const STRING *action ){
-	globalDirector->executeAction( std::string((char*)action), 0, 0, 0);
 }
 
 plcbit executeCommand( STRING *command ){
@@ -239,10 +172,6 @@ UDINT registerStateApiParameters( STRING *state, STRING *moduleName, AtnAPIState
 	globalDirector->addState( std::string((char*)state), api, pParameters, sParameters);
 	return 0;
 }
-// bool registerStateBoolWithParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters){
-// 	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, 
-// 	return 0;
-// }
 
 UDINT subscribeCommandBool(plcstring* state, plcstring* moduleName, plcbit* value){
 	globalDirector->addCommandBool( std::string((char*)state), (char*)moduleName, value );
@@ -269,7 +198,7 @@ signed short commandCount( STRING* state ){
 	}
 }
 bool forState( STRING* state, signed short index, plcbit* active, unsigned long* pParameters, unsigned long sParameters){
-	
+
 	State *s = globalDirector->getState(std::string( (char*) state ));
 
 	if( s ){
@@ -279,7 +208,7 @@ bool forState( STRING* state, signed short index, plcbit* active, unsigned long*
 				*active = state.isTrue();
 			}
 			if( pParameters && state.pParameters && sParameters == state.sParameters){
-				memcpy(pParameters, state.pParameters, sParameters);				
+				memcpy(pParameters, state.pParameters, sParameters);
 			}
 			else{
 				if( pParameters ){
@@ -299,7 +228,7 @@ bool forState( STRING* state, signed short index, plcbit* active, unsigned long*
 }
 
 bool forStateGetPointer(plcstring* state, signed short index, plcbit* active, unsigned long* pParameters, unsigned long* sParameters){
-	
+
 	State *s = globalDirector->getState(std::string( (char*) state));
 
 	if( s ){
@@ -329,15 +258,5 @@ bool forStateGetPointer(plcstring* state, signed short index, plcbit* active, un
 	}
 	else{
 		return 0;
-	}	
-}
-
-void readCallState( AtnApiStatusLocal_typ *status){
-	if( status ){
-		memcpy( status, &(status->remote), sizeof(AtnApiStatus_typ));
-		if( status->remote.busy ){
-			return;
-		}
-		memset( &(status->remote), 0, sizeof(AtnApiStatus_typ));
 	}
 }

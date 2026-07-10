@@ -11,12 +11,7 @@ add_definitions(-D_SG4)
 
 add_executable(atn_test_main "test_main.cpp")
 
-file(GLOB subs_src
-"machineTest.cpp"
-"subsystems/*.cpp"
-)
-
-add_executable(atn_test_machine  ${subs_src})
-
 target_link_libraries(atn_test_main PUBLIC atn)
-target_link_libraries(atn_test_machine PUBLIC atn)
+
+enable_testing()
+add_test(NAME atn_test COMMAND atn_test_main)
