@@ -6,10 +6,12 @@
 # the sources expect (<bur/plctypes.h>, atn.h, stringext.h, vartools.h) are
 # supplied off-target by test/host-shim/.
 #
-# Configure as 32-bit to match the SG4 data model, e.g. with MSVC:
-#     cmake -S . -B build -A Win32
-#     cmake --build build
+# Linux / gcc (matches B&R's compiler family; used by CI):
+#     cmake -S . -B build && cmake --build build
 #     ctest --test-dir build --output-on-failure
+# Windows / MSVC (LLP64, so build 32-bit -> unsigned long == pointer, as on SG4):
+#     cmake -S . -B build -A Win32 && cmake --build build --config Debug
+#     ctest --test-dir build -C Debug --output-on-failure
 cmake_minimum_required(VERSION 3.11)
 
 project(atn CXX)
@@ -44,6 +46,11 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
 if(MSVC)
     # The ATN sources use strcpy/strncpy/memcpy; silence MSVC's _s nagging.
     target_compile_definitions(${PROJECT_NAME} PRIVATE _CRT_SECURE_NO_WARNINGS)
+else()
+    # Falling off the end of a non-void function is undefined behavior; gcc/clang
+    # only warn by default (as B&R's target build does), which let a couple of
+    # these slip through. Make that class of bug a hard error.
+    target_compile_options(${PROJECT_NAME} PRIVATE -Werror=return-type)
 endif()
 
 enable_testing()
