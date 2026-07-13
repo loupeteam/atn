@@ -340,6 +340,13 @@ void Director::printCommands( std::ostream &out ){
 
 }
 
+void Director::printValues( std::ostream &out ){
+	out << "\nValues:" << "\n";
+	for( auto value : values ){
+		out << value.first << "\n";
+	}
+}
+
 void Director::printSystemJson( std::ostream &out ){
 	bool comma;
 	out << "{";
@@ -354,8 +361,16 @@ void Director::printSystemJson( std::ostream &out ){
 	out << ",\"States\":[";
 	comma = 0;
 	for( auto state : states ){
-		if(comma) out << ","; 
+		if(comma) out << ",";
 		out << "\"" <<state.first << "\"";
+		comma = 1;
+	}
+	out << "]";
+	out << ",\"Values\":[";
+	comma = 0;
+	for( auto value : values ){
+		if(comma) out << ",";
+		out << "\"" <<value.first << "\"";
 		comma = 1;
 	}
 	out << "]";

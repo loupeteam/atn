@@ -48,6 +48,7 @@ namespace atn{
 		unsigned short getPLCOpenState( unsigned short fallback );
         void print( std::ostream &);
 		void plcopenReport( std::ostream &);
+		void printValue( std::ostream &);
 		unsigned int count();
         unsigned int removeOwner( const std::string owner );
     };
