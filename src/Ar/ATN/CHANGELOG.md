@@ -1,3 +1,4 @@
+0.07.0 - Add unregister and unregisterAll lifecycle APIs for transfer-safe cleanup in _EXIT
 0.06.2 - Update for oss release
 0.06.1 - Remove bur_heap_size from director.cpp
 0.06.0 - Remove depricated functionality

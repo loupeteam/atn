@@ -226,6 +226,48 @@ State * Director::getCommand( const std::string cmd ){
     }
 }
 
+unsigned int Director::removeRegistration( const std::string name, const std::string owner ){
+	unsigned int removed = 0;
+
+	auto s = states.find(name);
+	if( s != states.end() ){
+		removed += s->second.removeOwner(owner);
+	}
+
+	auto c = commands.find(name);
+	if( c != commands.end() ){
+		removed += c->second.removeOwner(owner);
+	}
+
+	auto a = actions.find(name);
+	if( a != actions.end() ){
+		removed += a->second.removeOwner(owner);
+	}
+
+	return removed;
+}
+
+unsigned int Director::removeAllForOwner( const std::string owner ){
+	unsigned int removed = 0;
+
+	for( auto &kv : states ){
+		removed += kv.second.removeOwner(owner);
+	}
+	for( auto &kv : commands ){
+		removed += kv.second.removeOwner(owner);
+	}
+	for( auto &kv : actions ){
+		removed += kv.second.removeOwner(owner);
+	}
+	//In-flight actions hold copies of the registered behaviors.
+	// Sweep them too, but do not count them as additional registrations.
+	for( auto &thread : threads ){
+		thread.removeOwner(owner);
+	}
+
+	return removed;
+}
+
 void Director::cyclic(){
 
     for (auto thread = threads.begin(); thread != threads.end(); ++thread){
