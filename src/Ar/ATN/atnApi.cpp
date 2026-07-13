@@ -14,11 +14,29 @@
 #include <cstring>
 #include <iostream>
 
+#ifndef _NOT_BR
+#include <sys_lib.h>
+#endif
+
 using namespace atn;
 
 unsigned int bur_heap_size = 0xFFFFFF;
 
 Director *globalDirector = 0;
+
+// Returns the name of the task currently executing this call (AR sys_lib ST_name).
+// Captured at registration so a task can later remove all of its own registrations by name.
+// On the host test build (_NOT_BR) there is no task context, so this returns "".
+std::string atnCurrentTaskName(){
+#ifdef _NOT_BR
+	return std::string();
+#else
+	char nameBuf[128] = {0};
+	USINT grp = 0;
+	ST_name( 0, nameBuf, &grp );
+	return std::string( nameBuf );
+#endif
+}
 
 outbuf::outbuf( char * data, size_t sz ) : _front(data), _current(data), _sz(sz)  {
 	// track first reset after initialization
@@ -184,7 +202,7 @@ void registerBehavior( const STRING *action, const STRING *moduleName, AtnAPI_ty
 	}
 	strncpy( behavior->moduleName, (char*)moduleName, sizeof(behavior->moduleName) );
 
-	globalDirector->addBehavior( std::string((char*)action), behavior, _pParameters, _sParameters );
+	globalDirector->addBehavior( std::string((char*)action), behavior, _pParameters, _sParameters, atnCurrentTaskName() );
 }
 
 void executeActionReport( const STRING *action, AtnApiStatusLocal_typ *api){
@@ -202,32 +220,32 @@ plcbit executeCommand( STRING *command ){
 UDINT registerState(plcstring* state, plcstring* moduleName, struct AtnAPIState_typ* api){
 
 	strncpy( api->moduleName, (char*)moduleName, sizeof(api->moduleName) );
-	globalDirector->addState( std::string((char*)state), api, 0, 0);
+	globalDirector->addState( std::string((char*)state), api, 0, 0, atnCurrentTaskName());
 	return 0;
 }
 UDINT registerStateExt1(plcstring* state, plcstring* moduleName, plcstring* moduleStatus, unsigned long* pParameters, unsigned long sParameters, plcbit* moduleByPass, plcbit* active){
-	globalDirector->addState( std::string((char*)state), std::string((char*)moduleName), moduleStatus, moduleByPass, active, pParameters, sParameters);
+	globalDirector->addState( std::string((char*)state), std::string((char*)moduleName), moduleStatus, moduleByPass, active, pParameters, sParameters, atnCurrentTaskName());
 	return 0;
 }
 
 UDINT registerStateBool(plcstring* state, plcstring* moduleName, plcbit* value){
-	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, value );
+	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, value, atnCurrentTaskName() );
 	return 0;
 }
 
 
 UDINT registerStateBoolAdr(plcstring* state, plcstring* moduleName, plcbit* value){
-	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, value );
+	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, value, atnCurrentTaskName() );
 	return 0;
 }
 
 UDINT registerToResource(plcstring* state, plcstring* moduleName, UDINT * pResourceUID, plcbit* value){
-	globalDirector->addResourceBool( std::string((char*)state), (char*)moduleName, pResourceUID, value );
+	globalDirector->addResourceBool( std::string((char*)state), (char*)moduleName, pResourceUID, value, atnCurrentTaskName() );
 	return 0;
 }
 
 UDINT registerStateParameters( STRING *state, STRING *moduleName, UDINT * pParameters, UDINT sParameters){
-	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, 0, pParameters, sParameters);
+	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, 0, pParameters, sParameters, atnCurrentTaskName());
 	return 0;
 }
 
@@ -236,9 +254,9 @@ UDINT unregister( STRING *state, STRING *owner ){
 	return globalDirector->removeRegistration( std::string((char*)state), std::string((char*)owner) );
 }
 
-UDINT unregisterAll( STRING *owner ){
+UDINT unregisterAll(){
 	if( !globalDirector ){ return 0; }
-	return globalDirector->removeAllForOwner( std::string((char*)owner) );
+	return globalDirector->removeAllForTask( atnCurrentTaskName() );
 }
 
 UDINT registerStateApiParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters){
@@ -246,7 +264,7 @@ UDINT registerStateApiParameters( STRING *state, STRING *moduleName, AtnAPIState
 	if(api){
 		strncpy( api->moduleName, (char*)moduleName, sizeof(api->moduleName) );
 	}
-	globalDirector->addState( std::string((char*)state), api, pParameters, sParameters);
+	globalDirector->addState( std::string((char*)state), api, pParameters, sParameters, atnCurrentTaskName());
 	return 0;
 }
 // bool registerStateBoolWithParameters( STRING *state, STRING *moduleName, AtnAPIState_typ *api, UDINT * pParameters, UDINT sParameters){
@@ -255,7 +273,7 @@ UDINT registerStateApiParameters( STRING *state, STRING *moduleName, AtnAPIState
 // }
 
 UDINT subscribeCommandBool(plcstring* state, plcstring* moduleName, plcbit* value){
-	globalDirector->addCommandBool( std::string((char*)state), (char*)moduleName, value );
+	globalDirector->addCommandBool( std::string((char*)state), (char*)moduleName, value, atnCurrentTaskName() );
 	return 0;
 }
 

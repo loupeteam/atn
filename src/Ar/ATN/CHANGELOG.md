@@ -1,4 +1,4 @@
-0.07.0 - Add unregister and unregisterAll lifecycle APIs for transfer-safe cleanup in _EXIT
+0.07.0 - Add lifecycle cleanup APIs: register/subscribe now capture the calling task name (ST_name); unregisterAll() takes no arguments and removes all of the calling task's registrations for transfer-safe _EXIT cleanup; unregister(name, owner) removes one owner's registration from a single topic
 0.06.2 - Update for oss release
 0.06.1 - Remove bur_heap_size from director.cpp
 0.06.0 - Remove depricated functionality

@@ -15,11 +15,9 @@ TYPE
 		TEST_SEQ_UNREGISTER_ONE,     (* 4 - unregister removes exactly one owner's entry *)
 		TEST_SEQ_VERIFY_REMAINING,   (* 5 - other owner unaffected *)
 		TEST_SEQ_UNREGISTER_UNKNOWN, (* 6 - unknown topic removes nothing *)
-		TEST_SEQ_SWEEP_OWNERA,       (* 7 - unregisterAll sweeps command subscriptions *)
-		TEST_SEQ_VERIFY_SWEPT,       (* 8 - swept bits no longer written *)
-		TEST_SEQ_SWEEP_OWNERB,       (* 9 - owners sweep independently *)
-		TEST_SEQ_VERIFY_EMPTY,       (* 10 - emptied topic behaves like never-created *)
-		TEST_SEQ_DONE                (* 11 *)
+		TEST_SEQ_SWEEP_TASK,         (* 7 - no-arg unregisterAll() sweeps all of this task's registrations *)
+		TEST_SEQ_VERIFY_EMPTY,       (* 8 - swept topics behave like never-created *)
+		TEST_SEQ_DONE                (* 9 *)
 		);
 	localInterfaceCommand_typ : 	STRUCT
 		run : BOOL; (* Run the self-test *)
