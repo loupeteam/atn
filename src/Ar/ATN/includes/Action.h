@@ -27,7 +27,7 @@ namespace atn{
 
         Action( std:: string name);    
         ~Action();
-        void subscribe(  AtnAPI_typ* api, void *_pParameters, size_t _sParameters, const std::string taskName  );
+        void subscribe(  AtnAPI_typ* api, void *_pParameters, size_t _sParameters, const std::string& taskName  );
         void start( );
         void start( AtnApiStatus_typ* pStatus, void *pParameters, size_t sParameters );
         bool update();
@@ -39,7 +39,7 @@ namespace atn{
         void release();
         void abort();
         unsigned int removeOwner( const std::string owner );
-        unsigned int removeTask( const std::string taskName );
+        unsigned int removeTask( const std::string& taskName );
         void print( std::ostream &);
 
     };

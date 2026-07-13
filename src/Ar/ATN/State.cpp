@@ -24,7 +24,7 @@ State::State( std:: string name ){
 State::~State(){};
 
 
-void State::subscribe( AtnAPIState_typ* api, void *_pParameters, size_t _sParameters, const std::string taskName ){
+void State::subscribe( AtnAPIState_typ* api, void *_pParameters, size_t _sParameters, const std::string& taskName ){
 
     PLCOpen state;
     state.pParameters = _pParameters;
@@ -38,7 +38,7 @@ void State::subscribe( AtnAPIState_typ* api, void *_pParameters, size_t _sParame
     this->PLCOpenState.push_back( state );
 }
 
-void State::subscribe(  const std:: string ModuleName, bool* value, const std::string taskName ){
+void State::subscribe(  const std:: string ModuleName, bool* value, const std::string& taskName ){
     PLCOpen state;
     state.name = ModuleName;
     state.taskName = taskName;
@@ -46,7 +46,7 @@ void State::subscribe(  const std:: string ModuleName, bool* value, const std::s
 
     this->PLCOpenState.push_back( state );
 }
-void State::subscribe(  const std:: string ModuleName, unsigned long int * pUid, bool* value, const std::string taskName ){
+void State::subscribe(  const std:: string ModuleName, unsigned long int * pUid, bool* value, const std::string& taskName ){
 	PLCOpen state;
 	state.name = ModuleName;
 	state.taskName = taskName;
@@ -60,7 +60,7 @@ void State::subscribe(  const std:: string ModuleName, unsigned long int * pUid,
 	this->PLCOpenState.push_back( state );
 }
 
-void State::subscribe(  const std:: string ModuleName, bool* active, bool* bypass, char * statusString, void *_pParameters, size_t _sParameters, const std::string taskName  ){
+void State::subscribe(  const std:: string ModuleName, bool* active, bool* bypass, char * statusString, void *_pParameters, size_t _sParameters, const std::string& taskName  ){
 
 	PLCOpen state;
 	state.name = ModuleName;
@@ -74,7 +74,7 @@ void State::subscribe(  const std:: string ModuleName, bool* active, bool* bypas
 	this->PLCOpenState.push_back( state );
 }
 
-void State::subscribe(  const std:: string ModuleName, bool* value, void *_pParameters, size_t _sParameters, const std::string taskName ){
+void State::subscribe(  const std:: string ModuleName, bool* value, void *_pParameters, size_t _sParameters, const std::string& taskName ){
 
     PLCOpen state;
     state.name = ModuleName;
@@ -86,7 +86,7 @@ void State::subscribe(  const std:: string ModuleName, bool* value, void *_pPara
     this->PLCOpenState.push_back( state );
 }
 
-void State::subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcOpenStatus *status, const std::string taskName ){
+void State::subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcOpenStatus *status, const std::string& taskName ){
 
 	PLCOpen state;
 	state.name = ModuleName;
@@ -102,7 +102,7 @@ void State::subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcO
 	this->PLCOpenState.push_back( state );
 }
 
-void State::subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcOpenStatus *status, void *_pParameters, size_t _sParameters, const std::string taskName   ){
+void State::subscribe(  const std:: string ModuleName,  plcbit* command, AtnPlcOpenStatus *status, void *_pParameters, size_t _sParameters, const std::string& taskName   ){
 
     PLCOpen state;
     state.name = ModuleName;
@@ -311,7 +311,7 @@ unsigned int State::removeOwner( const std::string owner ){
     return removed;
 }
 
-unsigned int State::removeTask( const std::string taskName ){
+unsigned int State::removeTask( const std::string& taskName ){
     unsigned int removed = 0;
     for( auto it = this->PLCOpenState.begin(); it != this->PLCOpenState.end(); ){
         if( it->taskName == taskName ){

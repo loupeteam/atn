@@ -23,7 +23,7 @@ Action::~Action()
 
 }
 
-void Action::subscribe( AtnAPI_typ* api, void *_pParameters, size_t _sParameters, const std::string taskName ){
+void Action::subscribe( AtnAPI_typ* api, void *_pParameters, size_t _sParameters, const std::string& taskName ){
 
     for( auto behavior : this->behaviors ){
         if( behavior.pAction == api ){
@@ -31,7 +31,7 @@ void Action::subscribe( AtnAPI_typ* api, void *_pParameters, size_t _sParameters
         }
     }
 
-    this->behaviors.push_back( Behavior(pParameters, sParameters, api, taskName) );
+    this->behaviors.push_back( Behavior(_pParameters, _sParameters, api, taskName) );
 
 }
 
@@ -209,7 +209,7 @@ unsigned int Action::removeOwner( const std::string owner ){
     return removed;
 }
 
-unsigned int Action::removeTask( const std::string taskName ){
+unsigned int Action::removeTask( const std::string& taskName ){
     unsigned int removed = 0;
     for( auto it = this->behaviors.begin(); it != this->behaviors.end(); ){
         if( it->taskName == taskName ){

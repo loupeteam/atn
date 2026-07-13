@@ -26,7 +26,7 @@ unsigned int Director::countActiveThreads(){
     return threads.size();
 }
 
-void Director::addBehavior( const std::string action,  AtnAPI_typ* api, void *_pParameters, size_t _sParameters, const std::string taskName ){
+void Director::addBehavior( const std::string action,  AtnAPI_typ* api, void *_pParameters, size_t _sParameters, const std::string& taskName ){
 
     auto it = actions.find(action);
 
@@ -40,7 +40,7 @@ void Director::addBehavior( const std::string action,  AtnAPI_typ* api, void *_p
     }
 }
 
-void Director::addState( const std::string state,  AtnAPIState_typ* api, void *_pParameters, size_t _sParameters, const std::string taskName ){
+void Director::addState( const std::string state,  AtnAPIState_typ* api, void *_pParameters, size_t _sParameters, const std::string& taskName ){
 
     auto it = states.find(state);
 
@@ -55,7 +55,7 @@ void Director::addState( const std::string state,  AtnAPIState_typ* api, void *_
 }
 
 
-void Director::addState( const std::string state, const std::string name, char *moduleStatus, plcbit* moduleByPass, bool* value, void *_pParameters, size_t _sParameters, const std::string taskName ){
+void Director::addState( const std::string state, const std::string name, char *moduleStatus, plcbit* moduleByPass, bool* value, void *_pParameters, size_t _sParameters, const std::string& taskName ){
 
 	auto it = states.find(state);
 
@@ -71,7 +71,7 @@ void Director::addState( const std::string state, const std::string name, char *
 
 }
 
-void Director::addStateBool( const std::string state, const std::string name, bool* value, const std::string taskName ){
+void Director::addStateBool( const std::string state, const std::string name, bool* value, const std::string& taskName ){
 
 	auto it = states.find(state);
 
@@ -85,7 +85,7 @@ void Director::addStateBool( const std::string state, const std::string name, bo
 	}
 }
 
-void Director::addResourceBool( const std::string state, const std::string name, unsigned long int *pResourceUid, bool *value, const std::string taskName ){
+void Director::addResourceBool( const std::string state, const std::string name, unsigned long int *pResourceUid, bool *value, const std::string& taskName ){
 
 	auto it = states.find(state);
 
@@ -101,7 +101,7 @@ void Director::addResourceBool( const std::string state, const std::string name,
 		
 
 
-void Director::addStateBool( const std::string state, const std::string name, bool* value,  void *_pParameters, size_t _sParameters, const std::string taskName){
+void Director::addStateBool( const std::string state, const std::string name, bool* value,  void *_pParameters, size_t _sParameters, const std::string& taskName){
 
 	auto it = states.find(state);
 
@@ -116,7 +116,7 @@ void Director::addStateBool( const std::string state, const std::string name, bo
 }
 
 //Registers a bool to be automatically monitored, without full API support
-void Director::addCommandBool( const std::string command, const std::string moduleName, bool *check, const std::string taskName ){
+void Director::addCommandBool( const std::string command, const std::string moduleName, bool *check, const std::string& taskName ){
 	auto it = commands.find(command);
 
 	if (it != commands.end()){
@@ -130,7 +130,7 @@ void Director::addCommandBool( const std::string command, const std::string modu
 }
 
 //Registers a bool to be automatically monitored, without full API support
-void Director::addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, AtnPlcOpenStatus * status, const std::string taskName ){
+void Director::addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, AtnPlcOpenStatus * status, const std::string& taskName ){
 	auto it = commands.find(command);
 
 	if (it != commands.end()){
@@ -144,7 +144,7 @@ void Director::addCommandPLCOpen( const std::string command, const std::string m
 }
 
 //Registers a bool to be automatically monitored, without full API support
-void Director::addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, AtnPlcOpenStatus * status,  void *_pParameters, size_t _sParameters, const std::string taskName ){
+void Director::addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, AtnPlcOpenStatus * status,  void *_pParameters, size_t _sParameters, const std::string& taskName ){
 	auto it = commands.find(command);
 
 	if (it != commands.end()){
@@ -247,7 +247,7 @@ unsigned int Director::removeRegistration( const std::string name, const std::st
 	return removed;
 }
 
-unsigned int Director::removeAllForTask( const std::string taskName ){
+unsigned int Director::removeAllForTask( const std::string& taskName ){
 	unsigned int removed = 0;
 
 	for( auto &kv : states ){
