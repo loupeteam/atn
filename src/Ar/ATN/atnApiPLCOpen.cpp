@@ -356,7 +356,7 @@ void AtnPLCOpenWithParameters(AtnPLCOpenWithParameters_typ* inst){
 					std::snprintf( msg, sizeof(msg),
 						"PLCOpen parameter size mismatch: sender %lu B vs follower %lu B - write DROPPED",
 						(unsigned long)inst->sParameters, (unsigned long)state.sParameters );
-					globalDirector->raise( ATN_DIAG_WARNING, ATN_DIAG_CODE_PARAM_SIZE_MISMATCH,
+					globalDirector->raise( ATN_DIAG_WARNING, ATN_DIAG_CODE_PARAM_MISMATCH,
 						state.name.c_str(), msg );
 				}
 				if( state.pFirstCycle ){

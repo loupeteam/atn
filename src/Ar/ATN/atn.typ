@@ -110,6 +110,6 @@ TYPE
 	AtnDiagCode_enum :
 		(
 		ATN_DIAG_CODE_NONE := 0, (*No specific diagnostic code*)
-		ATN_DIAG_CODE_PARAM_SIZE_MISMATCH := 1 (*PLCOpen parameter size mismatch - write dropped*)
+		ATN_DIAG_CODE_PARAM_MISMATCH := 1 (*PLCOpen parameter size mismatch - write dropped*)
 		);
 END_TYPE

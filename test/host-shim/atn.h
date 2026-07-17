@@ -67,7 +67,7 @@ typedef enum AtnDiagSeverity_enum
 
 typedef enum AtnDiagCode_enum
 {	ATN_DIAG_CODE_NONE = 0,
-	ATN_DIAG_CODE_PARAM_SIZE_MISMATCH = 1
+	ATN_DIAG_CODE_PARAM_MISMATCH = 1
 } AtnDiagCode_enum;
 
 typedef enum ATN_PLCOPEN_FUB_STATE_enum

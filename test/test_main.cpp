@@ -192,8 +192,8 @@ int main(int argc, char const *argv[]) try {
 		if( logThatShimCalls[0].severity != LOGTHAT_SHIM_WARNING ){
 			throw "mismatch should log a warning";
 		}
-		if( logThatShimCalls[0].code != ATN_DIAG_CODE_PARAM_SIZE_MISMATCH ){
-			throw "mismatch should use ATN_DIAG_CODE_PARAM_SIZE_MISMATCH";
+		if( logThatShimCalls[0].code != ATN_DIAG_CODE_PARAM_MISMATCH ){
+			throw "mismatch should use ATN_DIAG_CODE_PARAM_MISMATCH";
 		}
 		if( strstr( logThatShimCalls[0].message, "size mismatch" ) == 0 ){
 			throw "mismatch message should describe the size mismatch";
