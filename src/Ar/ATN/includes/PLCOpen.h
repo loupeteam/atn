@@ -31,6 +31,7 @@ namespace atn{
 
 		bool * pFirstCycle;
 		bool * pParameterWritten;
+		bool paramMismatchRaised;
 		//        struct AtnAPIState_typ* pCheck;
 		PLCOpen( );
         PLCOpen( std::string Name, bool * value );

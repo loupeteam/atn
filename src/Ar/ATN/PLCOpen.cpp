@@ -9,7 +9,9 @@
 
 #include <iostream>
 #include <cstring>
+#include <cstdio>
 #include "./includes/PLCOpen.h"
+#include "./includes/atnApi.h"
 
 using namespace atn;
 
@@ -51,6 +53,7 @@ PLCOpen::PLCOpen( ){
 	pFirstCycle = 0;
 	pCommandSource = 0;	
 	pResourceUser = 0;	
+	paramMismatchRaised = false;
 };
 
 PLCOpen::~PLCOpen( ){
@@ -106,10 +109,27 @@ unsigned short PLCOpen::PLCOpenStatus(){
 }
 
 void PLCOpen::writeParameters( void *pParameters, size_t sParameters){
-	if( pParameters && this->pParameters && sParameters == this->sParameters){
-		std::memcpy(this->pParameters, pParameters, this->sParameters);
-		if( this->pParameterWritten ){
-			*this->pParameterWritten = 1;
+	if( pParameters && this->pParameters ){
+		if( sParameters == this->sParameters ){
+			std::memcpy(this->pParameters, pParameters, this->sParameters);
+			if( this->pParameterWritten ){
+				*this->pParameterWritten = 1;
+			}
+			paramMismatchRaised = false;
+		}
+		else{
+			if( this->pParameterWritten ){
+				*this->pParameterWritten = 0;
+			}
+			if( !paramMismatchRaised ){
+				char msg[121];
+				std::snprintf( msg, sizeof(msg),
+					"PLCOpen parameter size mismatch: sender %u B vs follower %u B - write DROPPED",
+					(unsigned)sParameters, (unsigned)this->sParameters );
+				atnRaise( ATN_DIAG_WARNING, (signed long)this->sParameters,
+					(plcstring*)this->name.c_str(), (plcstring*)msg );
+				paramMismatchRaised = true;
+			}
 		}
 	}
 	else{

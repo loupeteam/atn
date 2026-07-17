@@ -353,3 +353,24 @@ FUNCTION isInhibited : BOOL
 		inhibit : STRING[80];
 	END_VAR
 END_FUNCTION
+
+FUNCTION atnRaise : UDINT
+	VAR_INPUT
+		severity : AtnDiagSeverity_enum;
+		code : DINT;
+		source : STRING[80];
+		message : STRING[120];
+	END_VAR
+END_FUNCTION
+
+FUNCTION atnPopDiagnostic : BOOL
+	VAR_IN_OUT
+		entry : AtnDiagnostic_typ;
+	END_VAR
+END_FUNCTION
+
+FUNCTION atnDiagnosticCount : UDINT
+END_FUNCTION
+
+FUNCTION atnDiagnosticsDropped : UDINT
+END_FUNCTION

@@ -93,5 +93,18 @@ namespace atn{
 		void printCommands( std::ostream &);
 		void printSystemJson( std::ostream &);
 
+		unsigned long raise( AtnDiagSeverity_enum severity, signed long code, const char* source, const char* message );
+		bool popDiagnostic( AtnDiagnostic_typ* entry );
+		unsigned long diagnosticCount();
+		unsigned long diagnosticsDropped();
+
+	private:
+		static const int DIAG_CAP = 64;
+		AtnDiagnostic_typ diagBuf[DIAG_CAP];
+		int diagHead;
+		int diagCount;
+		unsigned long diagSeq;
+		unsigned long diagDropped;
+
 	};
 };

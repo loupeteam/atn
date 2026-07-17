@@ -101,4 +101,17 @@ TYPE
 		ATN_PLCOPEN_FUB_DONE,
 		ATN_PLCOPEN_FUB_ABORTED
 		);
+	AtnDiagSeverity_enum :
+		(
+		ATN_DIAG_INFO,
+		ATN_DIAG_WARNING,
+		ATN_DIAG_ERROR
+		);
+	AtnDiagnostic_typ :	STRUCT
+		seq : UDINT;
+		severity : AtnDiagSeverity_enum;
+		code : DINT;
+		source : STRING[80];
+		message : STRING[120];
+	END_STRUCT;
 END_TYPE
