@@ -95,6 +95,7 @@ namespace atn{
 		void printActions( std::ostream &);
 		void printStates( std::ostream &);
 		void printCommands( std::ostream &);
+		void printValues( std::ostream &);
 		void printSystemJson( std::ostream &);
 
 	};

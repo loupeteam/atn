@@ -164,11 +164,15 @@ unsigned long atncyclic( UDINT console, UDINT bufsize ){
 			if( state ){
 				state->print( *outstream );
 			}
+			else if( ( state = globalDirector->getValue( &command[0] ) ) ){
+				state->printValue( *outstream );
+			}
 			else{
 				*outstream << "state "<< command << " Not found\n";
 				globalDirector->printCommands( *outstream );
 				globalDirector->printStates( *outstream );
 				globalDirector->printActions( *outstream );
+				globalDirector->printValues( *outstream );
 			}
 			break;
 	}
