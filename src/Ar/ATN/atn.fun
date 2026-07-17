@@ -78,22 +78,18 @@ FUNCTION registerToResource : UDINT
 END_FUNCTION
 (*Lifecycle*)
 
-FUNCTION unregister : UDINT (*Remove this owner's registrations, subscriptions, and behaviors from one state, command, or action topic.
-  owner must exactly match the moduleName used at registration.
+FUNCTION unregister : UDINT (*Remove the calling task's registrations, subscriptions, and behaviors from one state, command, or action topic.
+  The calling task is identified automatically via its task name (ST_name), the same way as unregisterAll().
   Returns the number of registrations removed. 0 is not an error.*)
 	VAR_INPUT
 		name : STRING[80]; (*State, command, or action name*)
-		owner : STRING[80]; (*moduleName used at registration*)
 	END_VAR
 END_FUNCTION
 
-FUNCTION unregisterAll : UDINT (*Remove this owner's registrations, subscriptions, and behaviors from all state, command, and action topics, including in-flight actions.
+FUNCTION unregisterAll : UDINT (*Remove all registrations, subscriptions, and behaviors created by the calling task, across all state, command, and action topics, including in-flight actions.
+  The calling task is identified automatically via its task name (ST_name), so no arguments are required.
   Intended for _EXIT so a task's registrations do not dangle across an online transfer.
-  owner must exactly match the moduleName used at registration.
   Returns the number of registrations removed. 0 is not an error.*)
-	VAR_INPUT
-		owner : STRING[80]; (*moduleName used at registration*)
-	END_VAR
 END_FUNCTION
 (*Subscribing*)
 

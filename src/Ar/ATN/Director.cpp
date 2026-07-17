@@ -26,134 +26,134 @@ unsigned int Director::countActiveThreads(){
     return threads.size();
 }
 
-void Director::addBehavior( const std::string action,  AtnAPI_typ* api, void *_pParameters, size_t _sParameters ){
+void Director::addBehavior( const std::string action,  AtnAPI_typ* api, void *_pParameters, size_t _sParameters, const std::string& taskName ){
 
     auto it = actions.find(action);
 
     if (it != actions.end()){
-        it->second.subscribe( api,_pParameters, _sParameters);
+        it->second.subscribe( api,_pParameters, _sParameters, taskName);
     }
     else{
         Action newAction(action);
-        newAction.subscribe(api,_pParameters, _sParameters);
-        actions.insert( std::pair<std::string, Action>(action, newAction));        
+        newAction.subscribe(api,_pParameters, _sParameters, taskName);
+        actions.insert( std::pair<std::string, Action>(action, newAction));
     }
 }
 
-void Director::addState( const std::string state,  AtnAPIState_typ* api, void *_pParameters, size_t _sParameters ){
+void Director::addState( const std::string state,  AtnAPIState_typ* api, void *_pParameters, size_t _sParameters, const std::string& taskName ){
 
     auto it = states.find(state);
 
     if (it != states.end()){
-        it->second.subscribe( api, _pParameters, _sParameters);
+        it->second.subscribe( api, _pParameters, _sParameters, taskName);
     }
     else{
         State newAction( state );
-        newAction.subscribe(api, _pParameters, _sParameters);
-        states.insert( std::pair<std::string, State>(state, newAction));        
+        newAction.subscribe(api, _pParameters, _sParameters, taskName);
+        states.insert( std::pair<std::string, State>(state, newAction));
     }
 }
 
 
-void Director::addState( const std::string state, const std::string name, char *moduleStatus, plcbit* moduleByPass, bool* value, void *_pParameters, size_t _sParameters ){
+void Director::addState( const std::string state, const std::string name, char *moduleStatus, plcbit* moduleByPass, bool* value, void *_pParameters, size_t _sParameters, const std::string& taskName ){
 
 	auto it = states.find(state);
 
 	if (it != states.end()){
-		it->second.subscribe( name, value, moduleByPass, moduleStatus, _pParameters, _sParameters);
+		it->second.subscribe( name, value, moduleByPass, moduleStatus, _pParameters, _sParameters, taskName);
 	}
 	else{
 		State newAction( state );
-		newAction.subscribe( name, value, moduleByPass, moduleStatus, _pParameters, _sParameters);
-		states.insert( std::pair<std::string, State>(state, newAction));        
+		newAction.subscribe( name, value, moduleByPass, moduleStatus, _pParameters, _sParameters, taskName);
+		states.insert( std::pair<std::string, State>(state, newAction));
 	}
 
-	
+
 }
 
-void Director::addStateBool( const std::string state, const std::string name, bool* value ){
+void Director::addStateBool( const std::string state, const std::string name, bool* value, const std::string& taskName ){
 
 	auto it = states.find(state);
 
 	if (it != states.end()){
-		it->second.subscribe( name, value);
+		it->second.subscribe( name, value, taskName);
 	}
 	else{
 		State newAction( state );
-		newAction.subscribe( name, value);
-		states.insert( std::pair<std::string, State>(state, newAction));        
+		newAction.subscribe( name, value, taskName);
+		states.insert( std::pair<std::string, State>(state, newAction));
 	}
 }
 
-void Director::addResourceBool( const std::string state, const std::string name, unsigned long int *pResourceUid, bool *value ){
+void Director::addResourceBool( const std::string state, const std::string name, unsigned long int *pResourceUid, bool *value, const std::string& taskName ){
 
 	auto it = states.find(state);
 
 	if (it != states.end()){
-		it->second.subscribe( name, pResourceUid, value);
+		it->second.subscribe( name, pResourceUid, value, taskName);
 	}
 	else{
 		State newAction( state );
-		newAction.subscribe( name, pResourceUid, value);
-		states.insert( std::pair<std::string, State>(state, newAction));        
+		newAction.subscribe( name, pResourceUid, value, taskName);
+		states.insert( std::pair<std::string, State>(state, newAction));
 	}
 }
 		
 
 
-void Director::addStateBool( const std::string state, const std::string name, bool* value,  void *_pParameters, size_t _sParameters){
+void Director::addStateBool( const std::string state, const std::string name, bool* value,  void *_pParameters, size_t _sParameters, const std::string& taskName){
 
 	auto it = states.find(state);
 
 	if (it != states.end()){
-		it->second.subscribe( name, value, _pParameters, _sParameters);
+		it->second.subscribe( name, value, _pParameters, _sParameters, taskName);
 	}
 	else{
 		State newAction( state );
-		newAction.subscribe( name, value, _pParameters, _sParameters);
-		states.insert( std::pair<std::string, State>(state, newAction));        
+		newAction.subscribe( name, value, _pParameters, _sParameters, taskName);
+		states.insert( std::pair<std::string, State>(state, newAction));
 	}
 }
 
 //Registers a bool to be automatically monitored, without full API support
-void Director::addCommandBool( const std::string command, const std::string moduleName, bool *check ){
+void Director::addCommandBool( const std::string command, const std::string moduleName, bool *check, const std::string& taskName ){
 	auto it = commands.find(command);
 
 	if (it != commands.end()){
-		it->second.subscribe( moduleName, check);
+		it->second.subscribe( moduleName, check, taskName);
 	}
 	else{
 		State newAction( command );
-		newAction.subscribe( moduleName, check);
-		commands.insert( std::pair<std::string, State>(command, newAction));        
+		newAction.subscribe( moduleName, check, taskName);
+		commands.insert( std::pair<std::string, State>(command, newAction));
 	}
 }
 
 //Registers a bool to be automatically monitored, without full API support
-void Director::addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, AtnPlcOpenStatus * status ){
+void Director::addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, AtnPlcOpenStatus * status, const std::string& taskName ){
 	auto it = commands.find(command);
 
 	if (it != commands.end()){
-		it->second.subscribe( moduleName, commandBit, status);
+		it->second.subscribe( moduleName, commandBit, status, taskName);
 	}
 	else{
 		State newAction( command );
-		newAction.subscribe( moduleName, commandBit, status);
-		commands.insert( std::pair<std::string, State>(command, newAction));        
+		newAction.subscribe( moduleName, commandBit, status, taskName);
+		commands.insert( std::pair<std::string, State>(command, newAction));
 	}
 }
 
 //Registers a bool to be automatically monitored, without full API support
-void Director::addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, AtnPlcOpenStatus * status,  void *_pParameters, size_t _sParameters ){
+void Director::addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, AtnPlcOpenStatus * status,  void *_pParameters, size_t _sParameters, const std::string& taskName ){
 	auto it = commands.find(command);
 
 	if (it != commands.end()){
-		it->second.subscribe( moduleName, commandBit, status, _pParameters, _sParameters);
+		it->second.subscribe( moduleName, commandBit, status, _pParameters, _sParameters, taskName);
 	}
 	else{
 		State newAction( command );
-		newAction.subscribe( moduleName, commandBit, status, _pParameters, _sParameters);
-		commands.insert( std::pair<std::string, State>(command, newAction));        
+		newAction.subscribe( moduleName, commandBit, status, _pParameters, _sParameters, taskName);
+		commands.insert( std::pair<std::string, State>(command, newAction));
 	}
 }
 
@@ -226,43 +226,43 @@ State * Director::getCommand( const std::string cmd ){
     }
 }
 
-unsigned int Director::removeRegistration( const std::string name, const std::string owner ){
+unsigned int Director::removeRegistration( const std::string& name, const std::string& taskName ){
 	unsigned int removed = 0;
 
 	auto s = states.find(name);
 	if( s != states.end() ){
-		removed += s->second.removeOwner(owner);
+		removed += s->second.removeTask(taskName);
 	}
 
 	auto c = commands.find(name);
 	if( c != commands.end() ){
-		removed += c->second.removeOwner(owner);
+		removed += c->second.removeTask(taskName);
 	}
 
 	auto a = actions.find(name);
 	if( a != actions.end() ){
-		removed += a->second.removeOwner(owner);
+		removed += a->second.removeTask(taskName);
 	}
 
 	return removed;
 }
 
-unsigned int Director::removeAllForOwner( const std::string owner ){
+unsigned int Director::removeAllForTask( const std::string& taskName ){
 	unsigned int removed = 0;
 
 	for( auto &kv : states ){
-		removed += kv.second.removeOwner(owner);
+		removed += kv.second.removeTask(taskName);
 	}
 	for( auto &kv : commands ){
-		removed += kv.second.removeOwner(owner);
+		removed += kv.second.removeTask(taskName);
 	}
 	for( auto &kv : actions ){
-		removed += kv.second.removeOwner(owner);
+		removed += kv.second.removeTask(taskName);
 	}
 	//In-flight actions hold copies of the registered behaviors.
 	// Sweep them too, but do not count them as additional registrations.
 	for( auto &thread : threads ){
-		thread.removeOwner(owner);
+		thread.removeTask(taskName);
 	}
 
 	return removed;

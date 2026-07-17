@@ -26,14 +26,14 @@ namespace atn{
 
         State( std:: string name);    
         ~State();
-        void subscribe(  AtnAPIState_typ* api, void *_pParameters, size_t _sParameters  );
-        void subscribe(  const std:: string ModuleName, bool* active);
-        void subscribe(  const std:: string ModuleName, bool* active, void *_pParameters, size_t _sParameters  );
-		void subscribe(  const std:: string ModuleName, bool* active, bool* bypass, char * statusString, void *_pParameters, size_t _sParameters  );
-		void subscribe(  const std:: string ModuleName, unsigned long int * pUid, bool* value );
-		
-		void subscribe(  const std:: string ModuleName,  bool* command, AtnPlcOpenStatus *status );
-		void subscribe(  const std:: string ModuleName,  bool* command, AtnPlcOpenStatus *status, void *_pParameters, size_t _sParameters  );
+        void subscribe(  AtnAPIState_typ* api, void *_pParameters, size_t _sParameters, const std::string& taskName  );
+        void subscribe(  const std:: string ModuleName, bool* active, const std::string& taskName);
+        void subscribe(  const std:: string ModuleName, bool* active, void *_pParameters, size_t _sParameters, const std::string& taskName  );
+		void subscribe(  const std:: string ModuleName, bool* active, bool* bypass, char * statusString, void *_pParameters, size_t _sParameters, const std::string& taskName  );
+		void subscribe(  const std:: string ModuleName, unsigned long int * pUid, bool* value, const std::string& taskName );
+
+		void subscribe(  const std:: string ModuleName,  bool* command, AtnPlcOpenStatus *status, const std::string& taskName );
+		void subscribe(  const std:: string ModuleName,  bool* command, AtnPlcOpenStatus *status, void *_pParameters, size_t _sParameters, const std::string& taskName  );
 		void subscribe(  const std:: string ModuleName,  const std::string state );
 		bool setTrigger(  );
 		bool setTrue(  );
@@ -47,6 +47,6 @@ namespace atn{
         void print( std::ostream &);
 		void plcopenReport( std::ostream &);
 		unsigned int count();
-        unsigned int removeOwner( const std::string owner );
+        unsigned int removeTask( const std::string& taskName );
     };
 }

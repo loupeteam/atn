@@ -5,9 +5,9 @@ ACTION TestSequence:
 	CASE task.status.sequence OF
 
 		TEST_SEQ_REGISTER:
-			(* Sweep any leftovers from a prior aborted run so counts start clean *)
-			internal.removedCount := unregisterAll('OwnerA');
-			internal.removedCount := unregisterAll('OwnerB');
+			(* Sweep any leftovers from a prior aborted run so counts start clean.
+			   No-arg unregisterAll() removes everything this task registered, regardless of owner. *)
+			internal.removedCount := unregisterAll();
 			internal.readyA := FALSE;
 			internal.readyB := FALSE;
 			internal.cmdBit := FALSE;
@@ -42,36 +42,51 @@ ACTION TestSequence:
 			task.status.sequence := TEST_SEQ_UNREGISTER_ONE;
 
 		TEST_SEQ_UNREGISTER_ONE:
-			internal.removedCount := unregister('TestState', 'OwnerA');
-			IF internal.removedCount <> 1 AND task.status.failedStep = -1 THEN
+			(* unregister(name) is task-scoped: it removes everything this task registered
+			   on the named topic, so both TestState owners go at once. *)
+			internal.removedCount := unregister('TestState');
+			IF internal.removedCount <> 2 AND task.status.failedStep = -1 THEN
 				task.status.failedStep := 4;
 			END_IF
 			task.status.sequence := TEST_SEQ_VERIFY_REMAINING;
 
 		TEST_SEQ_VERIFY_REMAINING:
+			(* Only the named topic was touched: TestState is now empty, command
+			   subscriptions on other topics still work. *)
 			internal.readyA := FALSE;
+			internal.readyB := FALSE;
 			internal.countResult := stateCount('TestState');
-			internal.allTrueResult := stateAllTrue('TestState', FALSE);
-			IF (internal.countResult <> 0 OR NOT internal.allTrueResult) AND task.status.failedStep = -1 THEN
+			IF internal.countResult <> -1 AND task.status.failedStep = -1 THEN
 				task.status.failedStep := 5;
 			END_IF
+			internal.cmdBit := FALSE;
+			internal.execResult := executeCommand('TestCmd');
+			IF (NOT internal.execResult OR NOT internal.cmdBit) AND task.status.failedStep = -1 THEN
+				task.status.failedStep := 5;
+			END_IF
+			internal.cmdBit := FALSE;
 			task.status.sequence := TEST_SEQ_UNREGISTER_UNKNOWN;
 
 		TEST_SEQ_UNREGISTER_UNKNOWN:
-			internal.removedCount := unregister('DoesNotExist', 'OwnerA');
+			internal.removedCount := unregister('DoesNotExist');
 			IF internal.removedCount <> 0 AND task.status.failedStep = -1 THEN
 				task.status.failedStep := 6;
 			END_IF
-			task.status.sequence := TEST_SEQ_SWEEP_OWNERA;
+			task.status.sequence := TEST_SEQ_SWEEP_TASK;
 
-		TEST_SEQ_SWEEP_OWNERA:
-			internal.removedCount := unregisterAll('OwnerA');
+		TEST_SEQ_SWEEP_TASK:
+			(* No-arg unregisterAll() removes every registration this task made across all
+			   remaining topics: TestCmd/OwnerA + TestCmd2/OwnerA = 2 *)
+			internal.removedCount := unregisterAll();
 			IF internal.removedCount <> 2 AND task.status.failedStep = -1 THEN
 				task.status.failedStep := 7;
 			END_IF
-			task.status.sequence := TEST_SEQ_VERIFY_SWEPT;
+			task.status.sequence := TEST_SEQ_VERIFY_EMPTY;
 
-		TEST_SEQ_VERIFY_SWEPT:
+		TEST_SEQ_VERIFY_EMPTY:
+			(* Swept command subscriptions are no longer written *)
+			internal.cmdBit := FALSE;
+			internal.cmd2Bit := FALSE;
 			internal.execResult := executeCommand('TestCmd');
 			IF internal.cmdBit AND task.status.failedStep = -1 THEN
 				task.status.failedStep := 8;
@@ -80,27 +95,18 @@ ACTION TestSequence:
 			IF internal.cmd2Bit AND task.status.failedStep = -1 THEN
 				task.status.failedStep := 8;
 			END_IF
-			task.status.sequence := TEST_SEQ_SWEEP_OWNERB;
-
-		TEST_SEQ_SWEEP_OWNERB:
-			internal.removedCount := unregisterAll('OwnerB');
-			IF internal.removedCount <> 1 AND task.status.failedStep = -1 THEN
-				task.status.failedStep := 9;
-			END_IF
-			task.status.sequence := TEST_SEQ_VERIFY_EMPTY;
-
-		TEST_SEQ_VERIFY_EMPTY:
+			(* Emptied state topic behaves like never-created *)
 			internal.countResult := stateCount('TestState');
 			IF internal.countResult <> -1 AND task.status.failedStep = -1 THEN
-				task.status.failedStep := 10;
+				task.status.failedStep := 8;
 			END_IF
 			internal.allTrueResult := stateAllTrue('TestState', TRUE);
 			IF NOT internal.allTrueResult AND task.status.failedStep = -1 THEN
-				task.status.failedStep := 10;
+				task.status.failedStep := 8;
 			END_IF
 			internal.allTrueResult := stateAllTrue('TestState', FALSE);
 			IF internal.allTrueResult AND task.status.failedStep = -1 THEN
-				task.status.failedStep := 10;
+				task.status.failedStep := 8;
 			END_IF
 			task.status.sequence := TEST_SEQ_DONE;
 
