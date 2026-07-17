@@ -13,7 +13,7 @@
 
 using namespace atn;
 
-Director::Director(/* args */)
+Director::Director(/* args */) : outstream(0)
 {
 }
 
@@ -270,12 +270,19 @@ unsigned int Director::removeAllForOwner( const std::string owner ){
 
 void Director::cyclic(){
 
-    for (auto thread = threads.begin(); thread != threads.end(); ++thread){
+    for (auto thread = threads.begin(); thread != threads.end(); ){
         //Run thread
         if( thread->update() ){
-            thread->print( *this->outstream );
-            //If it's done, remove it            
-            threads.erase( thread );
+            if( this->outstream ){
+                thread->print( *this->outstream );
+            }
+            //If it's done, remove it and advance to the next thread. erase()
+            //returns the iterator following the removed element; reusing the
+            //old iterator after erase() is undefined behavior.
+            thread = threads.erase( thread );
+        }
+        else {
+            ++thread;
         }
     }
 }
