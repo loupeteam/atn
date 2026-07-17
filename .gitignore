@@ -7,6 +7,9 @@
 # **/Output/
 # /Installer/Output/*.exe
 
+# CMake host-test build output
+/build/
+
 # AS temporary directories
 Binaries/
 Diagnosis/

@@ -23,6 +23,7 @@ extern "C" {
 #endif
 
 #include "Director.h"
+#include "atnApi.h"
 
 using namespace std;
 
@@ -142,6 +143,45 @@ int main(int argc, char const *argv[]) {
 		// A module-reported error dominates the group status.
 		st.status = 42;
 		REQUIRE( home->getPLCOpenState( 0 ) == 42, "PLCOpen group status should surface a module error code" );
+	}
+
+	///TEST 6: task-scoped unregister via the C API. On the host there is no AR
+	// task context; atnSetCurrentTaskName() stands in for ST_name so one thread
+	// can act as several tasks. These C-API calls target the same director.
+	{
+		atnSetDirector( &director );
+
+		char stateTopic[]   = "TestState";
+		char cmdTopic[]     = "TestCmd";
+		char unknownTopic[] = "DoesNotExist";
+		char ownerA[]       = "OwnerA";
+		char ownerB[]       = "OwnerB";
+		plcbit readyA = false;
+		plcbit readyB = false;
+		plcbit cmdBit = false;
+
+		atnSetCurrentTaskName( "TaskA" );
+		registerStateBool( stateTopic, ownerA, &readyA );
+		subscribeCommandBool( cmdTopic, ownerA, &cmdBit );
+
+		atnSetCurrentTaskName( "TaskB" );
+		registerStateBool( stateTopic, ownerB, &readyB );
+
+		REQUIRE( stateCount( stateTopic ) == 1, "both tasks should be registered on the shared state topic" );
+
+		// unregister(name) removes only the calling task's entries on the named topic
+		REQUIRE( unregister( stateTopic ) == 1, "unregister should remove the calling task's registration" );
+		REQUIRE( stateCount( stateTopic ) == 0, "unregister must not touch another task's registration" );
+		REQUIRE( unregister( unknownTopic ) == 0, "unregister should remove nothing for an unknown topic" );
+
+		// unregisterAll() sweeps the calling task's registrations across all topics
+		atnSetCurrentTaskName( "TaskA" );
+		REQUIRE( unregisterAll() == 2, "unregisterAll should remove all of the calling task's registrations" );
+
+		// Without an override, the thread id identifies the caller the same way
+		atnSetCurrentTaskName( 0 );
+		registerStateBool( stateTopic, ownerA, &readyA );
+		REQUIRE( unregisterAll() == 1, "thread-id task identity should group registrations" );
 	}
 
 	if( failures == 0 ){

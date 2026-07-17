@@ -76,6 +76,56 @@ FUNCTION registerToResource : UDINT
 		pResourceActive : BOOL;
 	END_VAR
 END_FUNCTION
+(*Lifecycle*)
+
+FUNCTION registerValue : UDINT
+	VAR_INPUT
+		state : STRING[80];
+		owner : STRING[80];
+		pData : REFERENCE TO UDINT;
+		sData : UDINT;
+		valid : REFERENCE TO BOOL;
+		sReturn : UDINT;
+		returnTopic : UDINT;
+	END_VAR
+END_FUNCTION
+
+FUNCTION_BLOCK valueRefFb
+	VAR_INPUT
+		update : BOOL;
+		state : {REDUND_UNREPLICABLE} STRING[80];
+		sData : {REDUND_UNREPLICABLE} UDINT;
+		owner : {REDUND_UNREPLICABLE} STRING[80];
+		pStatus : UDINT;
+		sStatus : UDINT;
+	END_VAR
+	VAR_OUTPUT
+		bound : BOOL;
+		valid : BOOL;
+		sizeMismatch : BOOL;
+		returnBound : BOOL;
+		data : UDINT;
+	END_VAR
+	VAR
+		cache : REFERENCE TO UDINT;
+		registered : BOOL;
+		registeredTopic : STRING[80];
+	END_VAR
+END_FUNCTION_BLOCK
+
+FUNCTION unregister : UDINT (*Remove the calling task's registrations and subscriptions from one state, command, or value topic.
+  The calling task is identified automatically via its task name (ST_name), the same way as unregisterAll().
+  Returns the number of registrations removed. 0 is not an error.*)
+	VAR_INPUT
+		name : STRING[80]; (*State, command, or value name*)
+	END_VAR
+END_FUNCTION
+
+FUNCTION unregisterAll : UDINT (*Remove all registrations and subscriptions created by the calling task, across all state, command, and value topics.
+  The calling task is identified automatically via its task name (ST_name), so no arguments are required.
+  Intended for _EXIT so a task's registrations do not dangle across an online transfer.
+  Returns the number of registrations removed. 0 is not an error.*)
+END_FUNCTION
 (*Subscribing*)
 
 FUNCTION subscribeCommandBool : UDINT

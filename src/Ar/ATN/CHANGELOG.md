@@ -4,6 +4,8 @@
 		- Remove action/thread types (AtnAPI_typ, AtnApiStatus_typ, AtnApiStatusLocal_typ, ATN_ST_enum, ATN_RESPONSE_ST, ATN_ERROR_enum) and the ATN_ACTION_NAME_LEN constant
 		- Replace the developer test suite with command/state/PLCOpen coverage
 1.0.0 - Update project to AS6, add publish workflow
+0.08.0 - Surface single-publisher value topics in the interactive console and system JSON
+0.07.0 - Add lifecycle cleanup APIs: register/subscribe now capture the calling task name (ST_name); unregisterAll() takes no arguments and removes all of the calling task's registrations for transfer-safe _EXIT cleanup; unregister(name) removes the calling task's registrations from a single topic
 0.06.2 - Update for oss release
 0.06.1 - Remove bur_heap_size from director.cpp
 0.06.0 - Remove depricated functionality

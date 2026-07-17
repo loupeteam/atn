@@ -17,14 +17,15 @@
 using namespace atn;
 
 extern Director *globalDirector;
+extern std::string atnCurrentTaskName();
 
 UDINT subscribePLCOpen(plcstring* commandName, plcstring* moduleName, plcbit* value, AtnPlcOpenStatus *status){
-	globalDirector->addCommandPLCOpen( std::string((char*)commandName), (char*)moduleName, value, status );
+	globalDirector->addCommandPLCOpen( std::string((char*)commandName), (char*)moduleName, value, status, atnCurrentTaskName() );
 	return 0;
 }
 
 UDINT subscribePLCOpenWithParameters(plcstring* commandName, plcstring* moduleName, unsigned long* pParameters, unsigned long sParameters, plcbit* command,  struct AtnPlcOpenStatus* status){
-	globalDirector->addCommandPLCOpen( std::string((char*)commandName), (char*)moduleName, command, status, pParameters, sParameters   );
+	globalDirector->addCommandPLCOpen( std::string((char*)commandName), (char*)moduleName, command, status, pParameters, sParameters, atnCurrentTaskName()   );
 	return 0;
 }
 
@@ -78,10 +79,11 @@ plcbit atnPLCOpenAbort(struct AtnPlcOpenStatus* status){
 			commandSrc->abort = 1;
 		}		
 		status->internal.fbk = 0;
-		status->parametersWritten = false;		
-	}			
+		status->parametersWritten = false;
+	}
 	status->internal.trig = 0;
 
+	return 1;
 }
 
 void AtnPLCOpen(AtnPLCOpen_typ* inst){

@@ -3,6 +3,7 @@
 <Library Version="2.0.0" SubType="ANSIC" xmlns="http://br-automation.co.at/AS/Library">
   <Objects>
     <Object Type="File">atn.typ</Object>
+    <Object Type="File">atn.var</Object>
     <Object Type="File">atn.fun</Object>
     <Object Type="File">atnApi.cpp</Object>
     <Object Type="File">atnApiPLCOpen.cpp</Object>
@@ -16,5 +17,6 @@
   <Dependencies>
     <Dependency ObjectName="StringExt" FromVersion="1.0.0" />
     <Dependency ObjectName="VarTools" FromVersion="1.0.0" />
+    <Dependency ObjectName="sys_lib" />
   </Dependencies>
 </Library>

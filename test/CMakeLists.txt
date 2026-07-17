@@ -1,17 +1,11 @@
-# version 3.11 or later of CMake or needed later for installing GoogleTest
-# so let's require it now.
-cmake_minimum_required(VERSION 3.11-3.18)
+# Host unit tests for ATN. Included from the top-level CMakeLists.txt, which
+# defines the `atn` library target (and carries the include dirs + defines the
+# tests inherit).
 
-project(atn_test)
+project(atn_test CXX)
 
-# add_compile_options(-fpermissive -Wno-write-strings)
-add_definitions(-D_BUR_FORMAT_BRELF)
-add_definitions(-D_REPLACE_CONST)
-add_definitions(-D_SG4)
-
+# Self-contained pass/fail logic test. Returns 0 and prints "Passed" on success,
+# throws otherwise. This is the target that runs in CI via ctest.
 add_executable(atn_test_main "test_main.cpp")
-
-target_link_libraries(atn_test_main PUBLIC atn)
-
-enable_testing()
-add_test(NAME atn_test COMMAND atn_test_main)
+target_link_libraries(atn_test_main PRIVATE atn)
+add_test(NAME atn_test_main COMMAND atn_test_main)

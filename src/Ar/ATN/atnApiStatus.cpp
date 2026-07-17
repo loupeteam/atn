@@ -118,5 +118,6 @@ plcbit systemJson(unsigned long buffer, unsigned long sBuffer){
 	buf.reset();
 
 	globalDirector->printSystemJson(out);
-	
+
+	return true;
 }
