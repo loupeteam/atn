@@ -77,10 +77,10 @@ namespace atn{
 		//Search for a command
 		State *getCommand( const std::string cmd);
 
-		//Registration lifecycle (online transfer): remove one registration by owner, or
-		// all of a task's registrations by the task name captured at registration.
+		//Registration lifecycle (online transfer): remove a task's registrations from one
+		// named topic, or from all topics, by the task name captured at registration.
 		// Both return the number of registrations removed.
-		unsigned int removeRegistration( const std::string name, const std::string owner );
+		unsigned int removeRegistration( const std::string& name, const std::string& taskName );
 		unsigned int removeAllForTask( const std::string& taskName );
 
 		//Count of the number of active actions

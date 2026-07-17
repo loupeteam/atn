@@ -297,20 +297,6 @@ unsigned int State::count(){
     return this->PLCOpenState.size();
 }
 
-unsigned int State::removeOwner( const std::string owner ){
-    unsigned int removed = 0;
-    for( auto it = this->PLCOpenState.begin(); it != this->PLCOpenState.end(); ){
-        if( it->name == owner ){
-            it = this->PLCOpenState.erase( it );
-            removed++;
-        }
-        else{
-            ++it;
-        }
-    }
-    return removed;
-}
-
 unsigned int State::removeTask( const std::string& taskName ){
     unsigned int removed = 0;
     for( auto it = this->PLCOpenState.begin(); it != this->PLCOpenState.end(); ){

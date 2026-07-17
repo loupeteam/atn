@@ -226,22 +226,22 @@ State * Director::getCommand( const std::string cmd ){
     }
 }
 
-unsigned int Director::removeRegistration( const std::string name, const std::string owner ){
+unsigned int Director::removeRegistration( const std::string& name, const std::string& taskName ){
 	unsigned int removed = 0;
 
 	auto s = states.find(name);
 	if( s != states.end() ){
-		removed += s->second.removeOwner(owner);
+		removed += s->second.removeTask(taskName);
 	}
 
 	auto c = commands.find(name);
 	if( c != commands.end() ){
-		removed += c->second.removeOwner(owner);
+		removed += c->second.removeTask(taskName);
 	}
 
 	auto a = actions.find(name);
 	if( a != actions.end() ){
-		removed += a->second.removeOwner(owner);
+		removed += a->second.removeTask(taskName);
 	}
 
 	return removed;

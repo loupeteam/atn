@@ -16,6 +16,9 @@
 
 #ifndef _NOT_BR
 #include <sys_lib.h>
+#else
+#include <sstream>
+#include <thread>
 #endif
 
 using namespace atn;
@@ -24,12 +27,31 @@ unsigned int bur_heap_size = 0xFFFFFF;
 
 Director *globalDirector = 0;
 
+#ifdef _NOT_BR
+// Host test hook: per-thread override of the reported task name, so a
+// single-threaded unit test can simulate registrations from multiple tasks.
+static std::string &hostTaskNameOverride(){
+	static thread_local std::string name;
+	return name;
+}
+
+void atnSetCurrentTaskName( const char *name ){
+	hostTaskNameOverride() = name ? name : "";
+}
+#endif
+
 // Returns the name of the task currently executing this call (AR sys_lib ST_name).
 // Captured at registration so a task can later remove all of its own registrations by name.
-// On the host test build (_NOT_BR) there is no task context, so this returns "".
+// On the host test build (_NOT_BR) there is no task context; the calling thread stands in
+// for the task, identified by its thread id unless overridden via atnSetCurrentTaskName().
 std::string atnCurrentTaskName(){
 #ifdef _NOT_BR
-	return std::string();
+	if( !hostTaskNameOverride().empty() ){
+		return hostTaskNameOverride();
+	}
+	std::ostringstream name;
+	name << "thread-" << std::this_thread::get_id();
+	return name.str();
 #else
 	char nameBuf[128] = {0};
 	USINT grp = 0;
@@ -249,9 +271,9 @@ UDINT registerStateParameters( STRING *state, STRING *moduleName, UDINT * pParam
 	return 0;
 }
 
-UDINT unregister( STRING *state, STRING *owner ){
+UDINT unregister( STRING *name ){
 	if( !globalDirector ){ return 0; }
-	return globalDirector->removeRegistration( std::string((char*)state), std::string((char*)owner) );
+	return globalDirector->removeRegistration( std::string((char*)name), atnCurrentTaskName() );
 }
 
 UDINT unregisterAll(){

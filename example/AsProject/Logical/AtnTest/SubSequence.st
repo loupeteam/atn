@@ -42,33 +42,43 @@ ACTION TestSequence:
 			task.status.sequence := TEST_SEQ_UNREGISTER_ONE;
 
 		TEST_SEQ_UNREGISTER_ONE:
-			internal.removedCount := unregister('TestState', 'OwnerA');
-			IF internal.removedCount <> 1 AND task.status.failedStep = -1 THEN
+			(* unregister(name) is task-scoped: it removes everything this task registered
+			   on the named topic, so both TestState owners go at once. *)
+			internal.removedCount := unregister('TestState');
+			IF internal.removedCount <> 2 AND task.status.failedStep = -1 THEN
 				task.status.failedStep := 4;
 			END_IF
 			task.status.sequence := TEST_SEQ_VERIFY_REMAINING;
 
 		TEST_SEQ_VERIFY_REMAINING:
+			(* Only the named topic was touched: TestState is now empty, command
+			   subscriptions on other topics still work. *)
 			internal.readyA := FALSE;
+			internal.readyB := FALSE;
 			internal.countResult := stateCount('TestState');
-			internal.allTrueResult := stateAllTrue('TestState', FALSE);
-			IF (internal.countResult <> 0 OR NOT internal.allTrueResult) AND task.status.failedStep = -1 THEN
+			IF internal.countResult <> -1 AND task.status.failedStep = -1 THEN
 				task.status.failedStep := 5;
 			END_IF
+			internal.cmdBit := FALSE;
+			internal.execResult := executeCommand('TestCmd');
+			IF (NOT internal.execResult OR NOT internal.cmdBit) AND task.status.failedStep = -1 THEN
+				task.status.failedStep := 5;
+			END_IF
+			internal.cmdBit := FALSE;
 			task.status.sequence := TEST_SEQ_UNREGISTER_UNKNOWN;
 
 		TEST_SEQ_UNREGISTER_UNKNOWN:
-			internal.removedCount := unregister('DoesNotExist', 'OwnerA');
+			internal.removedCount := unregister('DoesNotExist');
 			IF internal.removedCount <> 0 AND task.status.failedStep = -1 THEN
 				task.status.failedStep := 6;
 			END_IF
 			task.status.sequence := TEST_SEQ_SWEEP_TASK;
 
 		TEST_SEQ_SWEEP_TASK:
-			(* No-arg unregisterAll() removes every registration this task made, regardless of
-			   owner: TestState/OwnerB + TestCmd/OwnerA + TestCmd2/OwnerA = 3 *)
+			(* No-arg unregisterAll() removes every registration this task made across all
+			   remaining topics: TestCmd/OwnerA + TestCmd2/OwnerA = 2 *)
 			internal.removedCount := unregisterAll();
-			IF internal.removedCount <> 3 AND task.status.failedStep = -1 THEN
+			IF internal.removedCount <> 2 AND task.status.failedStep = -1 THEN
 				task.status.failedStep := 7;
 			END_IF
 			task.status.sequence := TEST_SEQ_VERIFY_EMPTY;

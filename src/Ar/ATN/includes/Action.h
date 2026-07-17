@@ -38,7 +38,6 @@ namespace atn{
         ATN_RESPONSE_ST checkState( ATN_ST_enum stateToCheck );
         void release();
         void abort();
-        unsigned int removeOwner( const std::string owner );
         unsigned int removeTask( const std::string& taskName );
         void print( std::ostream &);
 

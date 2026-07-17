@@ -195,20 +195,6 @@ void Action::release(  ){
     }
 }
 
-unsigned int Action::removeOwner( const std::string owner ){
-    unsigned int removed = 0;
-    for( auto it = this->behaviors.begin(); it != this->behaviors.end(); ){
-        if( it->pAction && owner == it->pAction->moduleName ){
-            it = this->behaviors.erase( it );
-            removed++;
-        }
-        else{
-            ++it;
-        }
-    }
-    return removed;
-}
-
 unsigned int Action::removeTask( const std::string& taskName ){
     unsigned int removed = 0;
     for( auto it = this->behaviors.begin(); it != this->behaviors.end(); ){

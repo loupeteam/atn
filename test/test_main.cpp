@@ -12,6 +12,7 @@ extern "C" {
 #endif
 
 #include "Director.h"
+#include "atnApi.h"
 
 using namespace std;
 
@@ -294,6 +295,55 @@ int main(int argc, char const *argv[]) {
 			break;
 	}
 
+
+	///TEST 4: task-scoped unregister via the C API. On the host there is no AR task
+	// context; atnSetCurrentTaskName() stands in for ST_name so one thread can act
+	// as several tasks.
+	atnSetDirector( &director );
+
+	char stateTopic[] = "TestState";
+	char cmdTopic[] = "TestCmd";
+	char unknownTopic[] = "DoesNotExist";
+	char ownerA[] = "OwnerA";
+	char ownerB[] = "OwnerB";
+	plcbit readyA = false;
+	plcbit readyB = false;
+	plcbit cmdBit = false;
+
+	atnSetCurrentTaskName( "TaskA" );
+	registerStateBool( stateTopic, ownerA, &readyA );
+	subscribeCommandBool( cmdTopic, ownerA, &cmdBit );
+
+	atnSetCurrentTaskName( "TaskB" );
+	registerStateBool( stateTopic, ownerB, &readyB );
+
+	if( stateCount( stateTopic ) != 1 ){
+		throw "Registrations missing";
+	}
+
+	// unregister(name) only removes the calling task's entries on the named topic
+	if( unregister( stateTopic ) != 1 ){
+		throw "unregister did not remove the calling task's registration";
+	}
+	if( stateCount( stateTopic ) != 0 ){
+		throw "unregister touched another task's registration";
+	}
+	if( unregister( unknownTopic ) != 0 ){
+		throw "unregister removed something for an unknown topic";
+	}
+
+	// unregisterAll() sweeps the calling task's registrations across all topics
+	atnSetCurrentTaskName( "TaskA" );
+	if( unregisterAll() != 2 ){
+		throw "unregisterAll did not remove all of the calling task's registrations";
+	}
+
+	// Without an override, the thread id identifies the caller the same way
+	atnSetCurrentTaskName( 0 );
+	registerStateBool( stateTopic, ownerA, &readyA );
+	if( unregisterAll() != 1 ){
+		throw "thread-id task identity did not group registrations";
+	}
 
 	std::cout << "Passed";
 	return 0;
