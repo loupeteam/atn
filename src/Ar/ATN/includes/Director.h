@@ -8,6 +8,8 @@
  */
 
 #include <unordered_map>
+#include <string>
+#include <ostream>
 #include "atn.h"
 #include "State.h"
 

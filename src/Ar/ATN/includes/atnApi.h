@@ -16,7 +16,7 @@
 
 void atnSetDirector( void *director );
 
-unsigned short PLCOpenStatus( const STRING *command );
+unsigned short PLCOpenStatus( const STRING *command, unsigned short fallback );
 
 bool forCommandGetPLCOpenStatus(plcstring* command, signed short index, unsigned short *status);
 
