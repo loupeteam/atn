@@ -240,7 +240,7 @@ UDINT registerValue( STRING *state, STRING *owner, UDINT * pData, UDINT sData, p
 	if( returnTopic != 0 ){
 		char *out = (char*)returnTopic;
 		if( ok && sReturn > 0 ){
-			std::string derived = std::string((char*)state) + "~return";
+			std::string derived = std::string((char*)state) + ATN_RETURN_TOPIC_SUFFIX;
 			strncpy( out, derived.c_str(), 80 );
 			out[80] = '\0';
 		}

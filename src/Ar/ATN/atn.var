@@ -8,4 +8,5 @@
  *)
 VAR CONSTANT
 	ATN_ACTION_NAME_LEN : USINT := 20;
+	ATN_RETURN_TOPIC_SUFFIX : STRING[7] := '~return'; (*Suffix appended to a value topic name to form its return topic*)
 END_VAR

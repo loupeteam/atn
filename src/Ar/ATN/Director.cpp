@@ -239,13 +239,13 @@ bool Director::addValue( const std::string state, const std::string name, bool* 
 		}
 		it->second.subscribe( name, valid, _pData, _sData );
 		it->second.sReturn = sReturn;
-		it->second.returnTopic = (sReturn > 0) ? (state + "~return") : "";
+		it->second.returnTopic = (sReturn > 0) ? (state + ATN_RETURN_TOPIC_SUFFIX) : "";
 	}
 	else{
 		State newValue( state );
 		newValue.subscribe( name, valid, _pData, _sData );
 		newValue.sReturn = sReturn;
-		newValue.returnTopic = (sReturn > 0) ? (state + "~return") : "";
+		newValue.returnTopic = (sReturn > 0) ? (state + ATN_RETURN_TOPIC_SUFFIX) : "";
 		values.insert( std::pair<std::string, State>(state, newValue) );
 	}
 	return true;
