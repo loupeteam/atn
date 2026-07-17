@@ -1,3 +1,16 @@
+/*
+ * File: test_main.cpp
+ * Copyright (c) 2023 Loupe
+ * https://loupe.team
+ *
+ * This file is part of All Together Now - ATN, licensed under the MIT License.
+ *
+ * Unit tests for the ATN command / state / PLCOpen / diagnostics system. The
+ * REQUIRE-based checks drive the Director C++ API directly; the throw-based
+ * diagnostics checks drive the IEC-facing C API (the same engine). A thrown
+ * message is reported by the catch handler instead of aborting silently.
+ */
+
 #include <iostream>
 #include <cstring>
 
@@ -6,46 +19,32 @@ extern "C" {
 #endif
 
 #include "atn.h"
-#include "LogThat.h"
 
 #ifdef __cplusplus
 }
 #endif
 
+#include "LogThat.h"
 #include "Director.h"
 #include "atnApi.h"
 
 using namespace std;
 
-typedef enum MOVE_Enumeration
-{	MOVE_SS_INIT = 0,
-	CHECK_INHIBITS = 1,
-	EXECUTE_LOAD = 2
-} MOVE_Enumeration;
+static int failures = 0;
 
-typedef struct MovePinPars_typ
-{	float Position;
-	float moveTime;
-} MovePinPars_typ;
+#define REQUIRE( cond, msg )                                        \
+	do {                                                            \
+		if( !(cond) ){                                              \
+			std::cout << "FAIL: " << (msg) << "\n";                 \
+			++failures;                                             \
+		}                                                           \
+	} while( 0 )
 
-
-const std::string stop = "stopall";
-const std::string runpump = "runpump";
-const std::string runvfd = "runvfd";
-const std::string runpumpandvfd = "runpumpandvfd";
-
-const std::string running = "running";
-
-atn::Director director;
-
-// Tests signal failure by throwing a message; report it instead of aborting
-// silently so CI logs show which check failed.
 int main(int argc, char const *argv[]) try {
 
-	int it =0;
-
-	bool finished;
-	bool finished2;
+	atn::Director director;
+	// Not-found paths guard on outstream; keep it null so tests stay quiet.
+	director.outstream = nullptr;
 
 	///TEST DIAG 0: diagnostics API with no director set
 	// (must run before atnSetDirector below)
@@ -62,6 +61,109 @@ int main(int argc, char const *argv[]) try {
 		throw "no log writes expected without a director";
 	}
 
+	///TEST 1: State aggregation (allTrue / anyTrue / allFalse / anyFalse)
+	{
+		bool a = false;
+		bool b = false;
+		director.addStateBool( "running", "ModA", &a );
+		director.addStateBool( "running", "ModB", &b );
+
+		atn::State *running = director.getState( "running" );
+		REQUIRE( running != 0, "state 'running' should be found after registration" );
+		REQUIRE( running->count() == 2, "state 'running' should have two subscribed modules" );
+
+		// both false
+		REQUIRE( running->allTrue( true ) == false,  "allTrue should be false when all members are false" );
+		REQUIRE( running->anyTrue( true ) == false,  "anyTrue should be false when all members are false" );
+		REQUIRE( running->allFalse( false ) == true, "allFalse should be true when all members are false" );
+
+		// one true
+		a = true;
+		REQUIRE( running->allTrue( true ) == false, "allTrue should be false when only one member is true" );
+		REQUIRE( running->anyTrue( false ) == true, "anyTrue should be true when one member is true" );
+		REQUIRE( running->anyFalse( false ) == true, "anyFalse should be true when one member is false" );
+
+		// both true
+		b = true;
+		REQUIRE( running->allTrue( false ) == true,  "allTrue should be true when all members are true" );
+		REQUIRE( running->anyFalse( true ) == false, "anyFalse should be false when all members are true" );
+	}
+
+	///TEST 2: Bypassed members are ignored by aggregation
+	{
+		bool live    = true;
+		bool bypVal  = false;   // false, but bypassed, so it must not drag allTrue down
+		bool bypass  = true;
+		char status[81] = { 0 };
+
+		director.addStateBool( "mix", "ModLive", &live );
+		director.addState( "mix", "ModBypassed", status, &bypass, &bypVal, 0, 0 );
+
+		atn::State *mix = director.getState( "mix" );
+		REQUIRE( mix != 0, "state 'mix' should be found" );
+		REQUIRE( mix->allTrue( false ) == true, "allTrue should skip bypassed members" );
+
+		// Un-bypass: now the false member counts and allTrue must drop to false.
+		bypass = false;
+		REQUIRE( mix->allTrue( false ) == false, "un-bypassed false member should make allTrue false" );
+	}
+
+	///TEST 3: Command bits (execute / reset)
+	{
+		bool startBit = false;
+		director.addCommandBool( "start", "ModA", &startBit );
+
+		REQUIRE( director.executeCommand( "start" ) == true, "executeCommand should succeed for a registered command" );
+		REQUIRE( startBit == true, "executeCommand should set the registered command bit true" );
+
+		director.resetCommand( "start" );
+		REQUIRE( startBit == false, "resetCommand should clear the registered command bit" );
+
+		REQUIRE( director.executeCommand( "does-not-exist" ) == false, "executeCommand should fail for an unknown command" );
+	}
+
+	///TEST 4: Resource sharing (allFalseExcept)
+	{
+		unsigned long userId = 0;
+		bool held = false;
+		director.addResourceBool( "conveyor", "ModA", &userId, &held );
+
+		atn::State *res = director.getState( "conveyor" );
+		REQUIRE( res != 0, "resource 'conveyor' should be found" );
+
+		// Nothing holding it -> available for anyone.
+		REQUIRE( res->allFalseExcept( true, 12345 ) == true, "free resource should be available" );
+
+		// ModA takes it. userId was seeded with its own address by addResourceBool.
+		held = true;
+		REQUIRE( res->allFalseExcept( true, userId ) == true,  "holder should still see the resource as available to itself" );
+		REQUIRE( res->allFalseExcept( true, userId + 1 ) == false, "a different user should see the resource as taken" );
+	}
+
+	///TEST 5: PLCOpen command status reporting
+	{
+		AtnPlcOpenStatus st = {};
+		bool cmdBit = false;
+		director.addCommandPLCOpen( "home", "ModAxis", &cmdBit, &st );
+
+		atn::State *home = director.getCommand( "home" );
+		REQUIRE( home != 0, "PLCOpen command 'home' should be found" );
+
+		// Idle module reports 0 (done) as the group status.
+		st.status = 0;
+		REQUIRE( home->getPLCOpenState( 0 ) == 0, "idle PLCOpen command should report 0" );
+
+		// Executing the command sets the bit and marks the module busy (65535).
+		REQUIRE( director.executeCommand( "home" ) == true, "executeCommand should succeed for a PLCOpen command" );
+		REQUIRE( cmdBit == true, "executeCommand should set the PLCOpen command bit" );
+		REQUIRE( home->getPLCOpenState( 0 ) == 65535, "an executing PLCOpen command should report busy (65535)" );
+
+		// A module-reported error dominates the group status.
+		st.status = 42;
+		REQUIRE( home->getPLCOpenState( 0 ) == 42, "PLCOpen group status should surface a module error code" );
+	}
+
+	// Wire the C API to this director for the diagnostics and unregister tests.
 	atnSetDirector( &director );
 
 	///TEST DIAG 1: atnRaise forwards to the event logger
@@ -236,309 +338,50 @@ int main(int argc, char const *argv[]) try {
 		}
 	}
 
-	
-	AtnAPI_typ runpumpBehavior = {};
-	AtnAPI_typ runvfdBehavior = {};
-	const std::string runpump = "runpump";
-	const std::string runvfd = "runvfd";
-	const std::string runpumpandvfd = "runpumpandvfd";
-	director.addBehavior( runpump, &runpumpBehavior, 0, 0);
-	director.addBehavior( runvfd, &runvfdBehavior, 0, 0);
-	director.addBehavior( runpumpandvfd, &runpumpBehavior, 0, 0);
-	director.addBehavior( runpumpandvfd, &runvfdBehavior, 0, 0);
-
-	//Run for a bit
-	while( it++ < 10 ){
-
-		director.cyclic();
-
-	}
-	switch (runpumpBehavior.state)
+	///TEST 6: task-scoped unregister via the C API. On the host there is no AR
+	// task context; atnSetCurrentTaskName() stands in for ST_name so one thread
+	// can act as several tasks. The C API is already wired to this director above.
 	{
-		case ATN_IDLE:
-			break;			
-		default:
-			throw "Behavior not in idle";
-			break;
+		char stateTopic[]   = "TestState";
+		char cmdTopic[]     = "TestCmd";
+		char unknownTopic[] = "DoesNotExist";
+		char ownerA[]       = "OwnerA";
+		char ownerB[]       = "OwnerB";
+		plcbit readyA = false;
+		plcbit readyB = false;
+		plcbit cmdBit = false;
+
+		atnSetCurrentTaskName( "TaskA" );
+		registerStateBool( stateTopic, ownerA, &readyA );
+		subscribeCommandBool( cmdTopic, ownerA, &cmdBit );
+
+		atnSetCurrentTaskName( "TaskB" );
+		registerStateBool( stateTopic, ownerB, &readyB );
+
+		REQUIRE( stateCount( stateTopic ) == 1, "both tasks should be registered on the shared state topic" );
+
+		// unregister(name) removes only the calling task's entries on the named topic
+		REQUIRE( unregister( stateTopic ) == 1, "unregister should remove the calling task's registration" );
+		REQUIRE( stateCount( stateTopic ) == 0, "unregister must not touch another task's registration" );
+		REQUIRE( unregister( unknownTopic ) == 0, "unregister should remove nothing for an unknown topic" );
+
+		// unregisterAll() sweeps the calling task's registrations across all topics
+		atnSetCurrentTaskName( "TaskA" );
+		REQUIRE( unregisterAll() == 2, "unregisterAll should remove all of the calling task's registrations" );
+
+		// Without an override, the thread id identifies the caller the same way
+		atnSetCurrentTaskName( 0 );
+		registerStateBool( stateTopic, ownerA, &readyA );
+		REQUIRE( unregisterAll() == 1, "thread-id task identity should group registrations" );
 	}
 
-	director.executeAction( runpump , 0, 0, 0);
-	if( director.countActiveThreads() != 1 ){
-		throw "Thread not started";
+	if( failures == 0 ){
+		std::cout << "Passed\n";
+		return 0;
 	}
 
-	///TEST 1: Single behavior
-	switch (runpumpBehavior.state)
-	{
-		case ATN_EXECUTE:
-			break;			
-		default:
-			throw "Thread not started";
-			break;
-	}
-	finished = false;
-	while( 1 ){
-
-		director.cyclic();
-
-		switch (runpumpBehavior.state)
-		{
-			case ATN_EXECUTE:
-				if(finished){
-					throw "Extra calls";
-				}
-				finished = true;
-				runpumpBehavior.response = runpumpBehavior.state;				
-				break;
-			
-			case ATN_IDLE:
-				if(!finished){
-					throw "Thread not started";
-				}
-				break;
-			default:				
-				throw "Thread not started";
-				break;
-		}
-
-		if( director.countActiveThreads() == 0 ){
-			break;
-		}
-
-	}
-	switch (runpumpBehavior.state)
-	{
-		case ATN_IDLE:
-			break;			
-		default:
-			throw "Thread not finished";
-			break;
-	}
-
-	///TEST 2: 2 Behavior
-	director.executeAction( runpumpandvfd , 0, 0, 0);
-	if( director.countActiveThreads() != 1 ){
-		throw "Thread not started";
-	}
-
-
-	switch (runpumpBehavior.state)
-	{
-		case ATN_EXECUTE:
-			break;			
-		default:
-			throw "Thread not started";
-			break;
-	}
-	switch (runvfdBehavior.state)
-	{
-		case ATN_EXECUTE:
-			break;			
-		default:
-			throw "Thread not started";
-			break;
-	}
-
-	finished = false;
-	finished2 = false;
-	while( 1 ){
-
-		director.cyclic();
-
-		switch (runpumpBehavior.state)
-		{
-			case ATN_EXECUTE:
-				if(finished){
-					throw "Extra calls";
-				}
-				finished = true;
-				runpumpBehavior.response = runpumpBehavior.state;				
-				break;
-			
-			case ATN_IDLE:
-				if(!finished){
-					throw "Thread not started";
-				}
-				break;
-			default:				
-				throw "Thread not started";
-				break;
-		}
-
-		switch (runvfdBehavior.state)
-		{
-			case ATN_EXECUTE:
-				if(finished2){
-					throw "Extra calls";
-				}
-				finished2 = true;
-				runvfdBehavior.response = runvfdBehavior.state;				
-				break;
-			
-			case ATN_IDLE:
-				if(!finished2){
-					throw "Thread not started";
-				}
-				break;
-			default:				
-				throw "Thread not started";
-				break;
-		}
-
-		if( director.countActiveThreads() == 0 ){
-			break;
-		}
-
-	}
-	switch (runpumpBehavior.state)
-	{
-		case ATN_IDLE:
-			break;			
-		default:
-			throw "Thread not finished";
-			break;
-	}
-
-	switch (runvfdBehavior.state)
-	{
-		case ATN_IDLE:
-			break;			
-		default:
-			throw "Thread not finished";
-			break;
-	}
-
-	///TEST 3: 2 Behavior interupt
-	director.executeAction( runpump , 0, 0, 0);
-	director.executeAction( runpumpandvfd , 0, 0, 0);
-
-	if( director.countActiveThreads() != 2 ){
-		throw "Thread not started";
-	}
-
-
-	switch (runpumpBehavior.state)
-	{
-		case ATN_EXECUTE:
-			break;			
-		default:
-			throw "Thread not started";
-			break;
-	}
-	switch (runvfdBehavior.state)
-	{
-		case ATN_IDLE:
-			break;			
-		default:
-			throw "Thread started";
-			break;
-	}
-
-	finished = false;
-	finished2 = false;
-	while( 1 ){
-
-		director.cyclic();
-
-		switch (runpumpBehavior.state)
-		{
-			case ATN_EXECUTE:
-				runpumpBehavior.response = runpumpBehavior.state;				
-				break;
-			
-			case ATN_IDLE:
-				break;
-			default:				
-				break;
-		}
-
-		switch (runvfdBehavior.state)
-		{
-			case ATN_EXECUTE:
-				runvfdBehavior.response = runvfdBehavior.state;				
-				break;
-			
-			case ATN_IDLE:
-				break;
-			default:				
-				break;
-		}
-
-		if( director.countActiveThreads() == 0 ){
-			break;
-		}
-
-	}
-	switch (runpumpBehavior.state)
-	{
-		case ATN_IDLE:
-			break;			
-		default:
-			throw "Thread not finished";
-			break;
-	}
-
-	switch (runvfdBehavior.state)
-	{
-		case ATN_IDLE:
-			break;			
-		default:
-			throw "Thread not finished";
-			break;
-	}
-
-
-	///TEST 4: task-scoped unregister via the C API. On the host there is no AR task
-	// context; atnSetCurrentTaskName() stands in for ST_name so one thread can act
-	// as several tasks.
-	atnSetDirector( &director );
-
-	char stateTopic[] = "TestState";
-	char cmdTopic[] = "TestCmd";
-	char unknownTopic[] = "DoesNotExist";
-	char ownerA[] = "OwnerA";
-	char ownerB[] = "OwnerB";
-	plcbit readyA = false;
-	plcbit readyB = false;
-	plcbit cmdBit = false;
-
-	atnSetCurrentTaskName( "TaskA" );
-	registerStateBool( stateTopic, ownerA, &readyA );
-	subscribeCommandBool( cmdTopic, ownerA, &cmdBit );
-
-	atnSetCurrentTaskName( "TaskB" );
-	registerStateBool( stateTopic, ownerB, &readyB );
-
-	if( stateCount( stateTopic ) != 1 ){
-		throw "Registrations missing";
-	}
-
-	// unregister(name) only removes the calling task's entries on the named topic
-	if( unregister( stateTopic ) != 1 ){
-		throw "unregister did not remove the calling task's registration";
-	}
-	if( stateCount( stateTopic ) != 0 ){
-		throw "unregister touched another task's registration";
-	}
-	if( unregister( unknownTopic ) != 0 ){
-		throw "unregister removed something for an unknown topic";
-	}
-
-	// unregisterAll() sweeps the calling task's registrations across all topics
-	atnSetCurrentTaskName( "TaskA" );
-	if( unregisterAll() != 2 ){
-		throw "unregisterAll did not remove all of the calling task's registrations";
-	}
-
-	// Without an override, the thread id identifies the caller the same way
-	atnSetCurrentTaskName( 0 );
-	registerStateBool( stateTopic, ownerA, &readyA );
-	if( unregisterAll() != 1 ){
-		throw "thread-id task identity did not group registrations";
-	}
-
-	std::cout << "Passed";
-	return 0;
+	std::cout << failures << " check(s) failed\n";
+	return 1;
 }
 catch( const char* msg ) {
 	std::cerr << "FAILED: " << msg << std::endl;

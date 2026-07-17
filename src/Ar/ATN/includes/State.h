@@ -15,7 +15,6 @@ namespace atn{
     {
     private:
         std::string name;
-        AtnApiStatus_typ * pStatus;
         void * pParameters;
         size_t sParameters;
 

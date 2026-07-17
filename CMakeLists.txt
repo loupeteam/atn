@@ -27,7 +27,7 @@ add_library(${PROJECT_NAME} STATIC ${SRC})
 target_sources(${PROJECT_NAME} PRIVATE "test/host-shim/logthat_stub.cpp")
 
 # host-shim first so #include "atn.h" / <bur/plctypes.h> resolve to the stubs;
-# includes/ provides Director.h, Action.h, State.h, atnApi.h. Both are PUBLIC so
+# includes/ provides Director.h, State.h, PLCOpen.h, atnApi.h. Both are PUBLIC so
 # the test targets inherit them.
 target_include_directories(${PROJECT_NAME} PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/test/host-shim"

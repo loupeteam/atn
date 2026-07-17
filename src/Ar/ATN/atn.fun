@@ -113,15 +113,15 @@ FUNCTION_BLOCK valueRefFb
 	END_VAR
 END_FUNCTION_BLOCK
 
-FUNCTION unregister : UDINT (*Remove the calling task's registrations, subscriptions, and behaviors from one state, command, or action topic.
+FUNCTION unregister : UDINT (*Remove the calling task's registrations and subscriptions from one state, command, or value topic.
   The calling task is identified automatically via its task name (ST_name), the same way as unregisterAll().
   Returns the number of registrations removed. 0 is not an error.*)
 	VAR_INPUT
-		name : STRING[80]; (*State, command, or action name*)
+		name : STRING[80]; (*State, command, or value name*)
 	END_VAR
 END_FUNCTION
 
-FUNCTION unregisterAll : UDINT (*Remove all registrations, subscriptions, and behaviors created by the calling task, across all state, command, and action topics, including in-flight actions.
+FUNCTION unregisterAll : UDINT (*Remove all registrations and subscriptions created by the calling task, across all state, command, and value topics.
   The calling task is identified automatically via its task name (ST_name), so no arguments are required.
   Intended for _EXIT so a task's registrations do not dangle across an online transfer.
   Returns the number of registrations removed. 0 is not an error.*)

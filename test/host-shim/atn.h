@@ -1,6 +1,6 @@
 /* Automation Studio generated header file */
 /* Do not edit ! */
-/* ATN 1.0.0 */
+/* ATN 2.0.0 */
 
 #ifndef _ATN_
 #define _ATN_
@@ -9,7 +9,7 @@ extern "C"
 {
 #endif
 #ifndef _ATN_VERSION
-#define _ATN_VERSION 1.0.0
+#define _ATN_VERSION 2.0.0
 #endif
 
 #include <bur/plctypes.h>
@@ -32,33 +32,6 @@ extern "C"
 
 
 /* Datatypes and datatypes of function blocks */
-typedef enum ATN_ST_enum
-{	ATN_IDLE,
-	ATN_EXECUTE,
-	ATN_WAITING,
-	ATN_DONE,
-	ATN_ABORT,
-	ATN_ERROR,
-	ATN_BYPASSED
-} ATN_ST_enum;
-
-typedef enum ATN_ERROR_enum
-{	ATN_ERROR_OK = 0,
-	ATN_ERROR_ACTIVE,
-	ATN_ERROR_ABORTED,
-	ATN_ERROR_ACTIONS_FULL,
-	ATN_ERROR_BUSY = 65535
-} ATN_ERROR_enum;
-
-typedef enum ATN_RESPONSE_ST
-{	ATN_RESPONSE_ST_NONE,
-	ATN_RESPONSE_ST_ERROR,
-	ATN_RESPONSE_ST_STEP_DONE,
-	ATN_RESPONSE_ST_NEXT_STEP,
-	ATN_RESPONSE_ST_STATE_DONE,
-	ATN_RESPONSE_ST_BUSY
-} ATN_RESPONSE_ST;
-
 typedef enum AtnDiagSeverity_enum
 {	ATN_DIAG_INFO,
 	ATN_DIAG_WARNING,
@@ -82,41 +55,6 @@ typedef enum ATN_PLCOPEN_FUB_STATE_enum
 	ATN_PLCOPEN_FUB_DONE,
 	ATN_PLCOPEN_FUB_ABORTED
 } ATN_PLCOPEN_FUB_STATE_enum;
-
-typedef struct AtnApiStatus_typ
-{	plcbit active;
-	plcbit busy;
-	plcbit done;
-	plcbit aborted;
-	plcbit error;
-	unsigned long errorID;
-} AtnApiStatus_typ;
-
-typedef struct AtnApiStatusLocal_typ
-{	plcbit active;
-	plcbit busy;
-	plcbit done;
-	plcbit aborted;
-	plcbit error;
-	unsigned long errorID;
-	struct AtnApiStatus_typ remote;
-} AtnApiStatusLocal_typ;
-
-typedef struct AtnAPI_typ
-{	plcstring moduleName[81];
-	plcstring moduleStatus[81];
-	plcstring request[21];
-	enum ATN_ST_enum state;
-	enum ATN_ST_enum response;
-	unsigned long subState;
-	unsigned long subStateReq;
-	plcbit oneShot;
-	plcbit moduleBypass;
-	plcbit moduleIsBypassed;
-	unsigned long* activeThread;
-	unsigned long* waitingThread;
-	unsigned char waitingDirectorID;
-} AtnAPI_typ;
 
 typedef struct AtnAPIState_typ
 {	plcstring moduleName[81];
@@ -316,10 +254,8 @@ _BUR_PUBLIC signed long atnSetDiagnosticLogger(plcstring* loggerName);
 
 /* Constants */
 #ifdef _REPLACE_CONST
- #define ATN_ACTION_NAME_LEN 20U
  #define ATN_RETURN_TOPIC_SUFFIX "~return"
 #else
- _GLOBAL_CONST unsigned char ATN_ACTION_NAME_LEN;
  _GLOBAL_CONST plcstring ATN_RETURN_TOPIC_SUFFIX[8];
 #endif
 
