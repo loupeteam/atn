@@ -17,6 +17,7 @@
 using namespace atn;
 
 extern Director *globalDirector;
+extern std::string atnCurrentTaskName();
 
 bool stateAllTrue( STRING *state, bool fallback ){
 	State *s = globalDirector->getState(std::string((char*)state));
@@ -157,11 +158,11 @@ void valueRefFb(struct valueRefFb* inst){
 		}
 		else{
 			if( inst->registered && strncmp((char*)inst->registeredTopic, s->returnTopic.c_str(), 80) != 0 ){
-				globalDirector->removeRegistration( std::string((char*)inst->registeredTopic), std::string((char*)inst->owner) );
+				globalDirector->removeRegistration( std::string((char*)inst->registeredTopic), atnCurrentTaskName() );
 				inst->registered = false;
 			}
 			if( !inst->registered ){
-				globalDirector->addStateBool( s->returnTopic, std::string((char*)inst->owner), 0, (void*)inst->pStatus, inst->sStatus );
+				globalDirector->addStateBool( s->returnTopic, std::string((char*)inst->owner), 0, (void*)inst->pStatus, inst->sStatus, atnCurrentTaskName() );
 				strncpy( (char*)inst->registeredTopic, s->returnTopic.c_str(), 80 );
 				((char*)inst->registeredTopic)[80] = '\0';
 				inst->registered = true;

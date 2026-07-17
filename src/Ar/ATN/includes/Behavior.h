@@ -18,8 +18,9 @@ namespace atn{
         void * pParameters;
         size_t sParameters;
         struct AtnAPI_typ* pAction;
+        std::string taskName;
         Behavior( );
-        Behavior( void * pParameters, size_t parameterSize, struct AtnAPI_typ* pAction);
+        Behavior( void * pParameters, size_t parameterSize, struct AtnAPI_typ* pAction, const std::string& taskName );
         ~Behavior();
         bool updateState( ATN_ST_enum state, void *_pParameters, size_t _sParameters );
         bool updateSubstate( unsigned long state );

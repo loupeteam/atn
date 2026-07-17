@@ -274,8 +274,12 @@ _BUR_PUBLIC unsigned long registerStateExt1(plcstring* state, plcstring* moduleN
 _BUR_PUBLIC unsigned long registerToResource(plcstring* resource, plcstring* moduleName, unsigned long* pResourceUserId, plcbit* pResourceActive);
 _BUR_PUBLIC unsigned long registerValue(plcstring* state, plcstring* owner, unsigned long* pData, unsigned long sData, plcbit* valid, unsigned long sReturn, unsigned long returnTopic);
 _BUR_PUBLIC void valueRefFb(struct valueRefFb* inst);
-_BUR_PUBLIC unsigned long unregister(plcstring* name, plcstring* owner);
-_BUR_PUBLIC unsigned long unregisterAll(plcstring* owner);
+_BUR_PUBLIC unsigned long unregister(plcstring* name);
+_BUR_PUBLIC unsigned long unregisterAll(void);
+/* Host-shim only, not part of the AS library interface: overrides the task name
+   reported by atnCurrentTaskName() for the calling thread, so a single-threaded
+   test can simulate multiple tasks. Pass 0 or "" to revert to the thread-id name. */
+_BUR_PUBLIC void atnSetCurrentTaskName(const char* name);
 _BUR_PUBLIC unsigned long subscribeCommandBool(plcstring* commandName, plcstring* moduleName, plcbit* command);
 _BUR_PUBLIC unsigned long subscribePLCOpen(plcstring* commandName, plcstring* moduleName, plcbit* command, struct AtnPlcOpenStatus* status);
 _BUR_PUBLIC unsigned long subscribePLCOpenWithParameters(plcstring* commandName, plcstring* moduleName, unsigned long* pParameters, unsigned long sParameters, plcbit* command, struct AtnPlcOpenStatus* status);
