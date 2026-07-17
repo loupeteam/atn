@@ -1,9 +1,10 @@
-0.08.0 - Add non-fatal diagnostics channel backed by the event logger (LogThat)
+0.09.0 - Add non-fatal diagnostics channel backed by the event logger (LogThat)
 		- atnRaise writes to the user logbook ($arlogusr) by default; atnSetDiagnosticLogger overrides the logbook
 		- atnDiagnosticCount reports the total diagnostics raised since startup
 		- PLCOpen parameter size mismatches raise a warning once per occurrence instead of silently dropping the write
 		- Iterate PLCOpenState by reference in the PLCOpen FUB loops
-0.07.0 - Add unregister and unregisterAll lifecycle APIs for transfer-safe cleanup in _EXIT
+0.08.0 - Surface single-publisher value topics in the interactive console and system JSON
+0.07.0 - Add lifecycle cleanup APIs: register/subscribe now capture the calling task name (ST_name); unregisterAll() takes no arguments and removes all of the calling task's registrations for transfer-safe _EXIT cleanup; unregister(name) removes the calling task's registrations from a single topic
 0.06.2 - Update for oss release
 0.06.1 - Remove bur_heap_size from director.cpp
 0.06.0 - Remove depricated functionality

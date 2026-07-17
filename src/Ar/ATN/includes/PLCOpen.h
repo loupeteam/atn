@@ -16,6 +16,7 @@ namespace atn{
     {
     public:
 		std::string name;
+		std::string taskName;
 		char * pActiveCommand;
 		char * pStatusString;
 		bool * pValue;

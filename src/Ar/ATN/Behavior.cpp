@@ -30,11 +30,12 @@ Behavior::Behavior( ) {
 	sParameters = 0;
 	pAction = 0;
 };
-Behavior::Behavior( void * pParameters, size_t parameterSize, struct AtnAPI_typ* pAction)
+Behavior::Behavior( void * pParameters, size_t parameterSize, struct AtnAPI_typ* pAction, const std::string& taskName)
 {
     this->pParameters = pParameters;
     this->sParameters = parameterSize;
     this->pAction = pAction;
+    this->taskName = taskName;
 }
 Behavior::~Behavior()
 {

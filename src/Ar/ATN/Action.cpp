@@ -23,15 +23,15 @@ Action::~Action()
 
 }
 
-void Action::subscribe( AtnAPI_typ* api, void *_pParameters, size_t _sParameters ){
+void Action::subscribe( AtnAPI_typ* api, void *_pParameters, size_t _sParameters, const std::string& taskName ){
 
     for( auto behavior : this->behaviors ){
         if( behavior.pAction == api ){
             throw "action added twice to same behavior";
-        }        
+        }
     }
 
-    this->behaviors.push_back( Behavior(pParameters, sParameters, api) );
+    this->behaviors.push_back( Behavior(_pParameters, _sParameters, api, taskName) );
 
 }
 
@@ -195,10 +195,10 @@ void Action::release(  ){
     }
 }
 
-unsigned int Action::removeOwner( const std::string owner ){
+unsigned int Action::removeTask( const std::string& taskName ){
     unsigned int removed = 0;
     for( auto it = this->behaviors.begin(); it != this->behaviors.end(); ){
-        if( it->pAction && owner == it->pAction->moduleName ){
+        if( it->taskName == taskName ){
             it = this->behaviors.erase( it );
             removed++;
         }
