@@ -168,5 +168,5 @@ void valueRefFb(struct valueRefFb* inst){
 			}
 		}
 	}
-	inst->returnBound = inst->registered;
+	inst->returnBound = inst->registered && inst->bound;
 }
