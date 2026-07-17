@@ -252,10 +252,12 @@ UDINT registerValue( STRING *state, STRING *owner, UDINT * pData, UDINT sData, p
 }
 
 UDINT unregister( STRING *state, STRING *owner ){
-	return globalDirector->removeRegistration( std::string((char*)state), std::string((char*)owner) ) ? 0 : 1;
+	if( !globalDirector ){ return 0; }
+	return globalDirector->removeRegistration( std::string((char*)state), std::string((char*)owner) );
 }
 
 UDINT unregisterAll( STRING *owner ){
+	if( !globalDirector ){ return 0; }
 	return globalDirector->removeAllForOwner( std::string((char*)owner) );
 }
 

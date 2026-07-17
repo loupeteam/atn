@@ -76,6 +76,7 @@ FUNCTION registerToResource : UDINT
 		pResourceActive : BOOL;
 	END_VAR
 END_FUNCTION
+(*Lifecycle*)
 
 FUNCTION registerValue : UDINT
 	VAR_INPUT
@@ -112,16 +113,21 @@ FUNCTION_BLOCK valueRefFb
 	END_VAR
 END_FUNCTION_BLOCK
 
-FUNCTION unregister : UDINT
+FUNCTION unregister : UDINT (*Remove this owner's registrations, subscriptions, and behaviors from one state, command, or action topic.
+  owner must exactly match the moduleName used at registration.
+  Returns the number of registrations removed. 0 is not an error.*)
 	VAR_INPUT
-		state : STRING[80];
-		owner : STRING[80];
+		name : STRING[80]; (*State, command, or action name*)
+		owner : STRING[80]; (*moduleName used at registration*)
 	END_VAR
 END_FUNCTION
 
-FUNCTION unregisterAll : UDINT
+FUNCTION unregisterAll : UDINT (*Remove this owner's registrations, subscriptions, and behaviors from all state, command, and action topics, including in-flight actions.
+  Intended for _EXIT so a task's registrations do not dangle across an online transfer.
+  owner must exactly match the moduleName used at registration.
+  Returns the number of registrations removed. 0 is not an error.*)
 	VAR_INPUT
-		owner : STRING[80];
+		owner : STRING[80]; (*moduleName used at registration*)
 	END_VAR
 END_FUNCTION
 (*Subscribing*)

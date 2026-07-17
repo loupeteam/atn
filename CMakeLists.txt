@@ -1,25 +1,57 @@
-# version 3.11 or later of CMake or needed later for installing GoogleTest
-# so let's require it now.
-cmake_minimum_required(VERSION 3.11-3.18)
+# Off-target (host) build of the ATN library for unit testing.
+#
+# ATN normally builds inside Automation Studio for the PLC target. This CMake
+# project compiles the same C/C++ sources on a PC so the logic can be exercised
+# by the unit tests in test/ (locally and in CI). The B&R runtime headers that
+# the sources expect (<bur/plctypes.h>, atn.h, stringext.h, vartools.h) are
+# supplied off-target by test/host-shim/.
+#
+# Linux / gcc (matches B&R's compiler family; used by CI):
+#     cmake -S . -B build && cmake --build build
+#     ctest --test-dir build --output-on-failure
+# Windows / MSVC (LLP64, so build 32-bit -> unsigned long == pointer, as on SG4):
+#     cmake -S . -B build -A Win32 && cmake --build build --config Debug
+#     ctest --test-dir build -C Debug --output-on-failure
+cmake_minimum_required(VERSION 3.11)
 
-project(atn)
+project(atn CXX)
 
 file(GLOB SRC
-"src/Ar/ATN/*.cpp"
-"src/Ar/ATN/*.c"
+    "src/Ar/ATN/*.cpp"
+    "src/Ar/ATN/*.c"
 )
 
-include_directories( ./src/Ar/ATN/includes )
+add_library(${PROJECT_NAME} STATIC ${SRC})
 
+# host-shim first so #include "atn.h" / <bur/plctypes.h> resolve to the stubs;
+# includes/ provides Director.h, Action.h, State.h, atnApi.h. Both are PUBLIC so
+# the test targets inherit them.
+target_include_directories(${PROJECT_NAME} PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/test/host-shim"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/Ar/ATN/includes"
+)
 
-# add_compile_options(-fpermissive -Wno-write-strings)
-add_definitions(-D_BUR_FORMAT_BRELF)
-add_definitions(-D_REPLACE_CONST)
-add_definitions(-D_SG4)
-add_definitions(-D_NOT_BR)
-add_library(${PROJECT_NAME} ${SRC})
-link_libraries(${PROJECT_NAME} StringExt)
+# _REPLACE_CONST is required off-target: it makes atn.h define the length
+# constants as macros instead of extern _GLOBAL_CONST symbols that nothing
+# provides. _SG4 selects the SG4 include paths (satisfied by the shim stubs).
+target_compile_definitions(${PROJECT_NAME} PUBLIC
+    _BUR_FORMAT_BRELF
+    _REPLACE_CONST
+    _SG4
+    _NOT_BR
+)
 
-set_property(TARGET atn PROPERTY CXX_STANDARD 11)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
 
-add_subdirectory (test)
+if(MSVC)
+    # The ATN sources use strcpy/strncpy/memcpy; silence MSVC's _s nagging.
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _CRT_SECURE_NO_WARNINGS)
+else()
+    # Falling off the end of a non-void function is undefined behavior; gcc/clang
+    # only warn by default (as B&R's target build does), which let a couple of
+    # these slip through. Make that class of bug a hard error.
+    target_compile_options(${PROJECT_NAME} PRIVATE -Werror=return-type)
+endif()
+
+enable_testing()
+add_subdirectory(test)

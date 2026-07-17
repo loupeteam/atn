@@ -13,7 +13,7 @@
 
 using namespace atn;
 
-Director::Director(/* args */)
+Director::Director(/* args */) : outstream(0)
 {
 }
 
@@ -262,7 +262,7 @@ State * Director::getValue( const std::string state ){
 	}
 }
 
-bool Director::removeRegistration( const std::string name, const std::string owner ){
+unsigned int Director::removeRegistration( const std::string name, const std::string owner ){
 	unsigned int removed = 0;
 
 	auto v = values.find(name);
@@ -280,7 +280,12 @@ bool Director::removeRegistration( const std::string name, const std::string own
 		removed += c->second.removeOwner(owner);
 	}
 
-	return removed > 0;
+	auto a = actions.find(name);
+	if( a != actions.end() ){
+		removed += a->second.removeOwner(owner);
+	}
+
+	return removed;
 }
 
 unsigned int Director::removeAllForOwner( const std::string owner ){
@@ -296,18 +301,33 @@ unsigned int Director::removeAllForOwner( const std::string owner ){
 	for( auto &kv : commands ){
 		removed += kv.second.removeOwner(owner);
 	}
+	for( auto &kv : actions ){
+		removed += kv.second.removeOwner(owner);
+	}
+	//In-flight actions hold copies of the registered behaviors.
+	// Sweep them too, but do not count them as additional registrations.
+	for( auto &thread : threads ){
+		thread.removeOwner(owner);
+	}
 
 	return removed;
 }
 
 void Director::cyclic(){
 
-    for (auto thread = threads.begin(); thread != threads.end(); ++thread){
+    for (auto thread = threads.begin(); thread != threads.end(); ){
         //Run thread
         if( thread->update() ){
-            thread->print( *this->outstream );
-            //If it's done, remove it            
-            threads.erase( thread );
+            if( this->outstream ){
+                thread->print( *this->outstream );
+            }
+            //If it's done, remove it and advance to the next thread. erase()
+            //returns the iterator following the removed element; reusing the
+            //old iterator after erase() is undefined behavior.
+            thread = threads.erase( thread );
+        }
+        else {
+            ++thread;
         }
     }
 }

@@ -82,8 +82,9 @@ namespace atn{
 		bool addValue( const std::string state, const std::string moduleName, bool *valid, void *_pData, size_t _sData, size_t sReturn = 0 );
 		State *getValue( const std::string state );
 
-		//Registration lifecycle (online transfer): remove one or all registrations for an owner
-		bool removeRegistration( const std::string name, const std::string owner );
+		//Registration lifecycle (online transfer): remove one or all registrations for an owner.
+		// Both return the number of registrations removed.
+		unsigned int removeRegistration( const std::string name, const std::string owner );
 		unsigned int removeAllForOwner( const std::string owner );
 
 		//Count of the number of active actions
