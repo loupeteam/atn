@@ -44,10 +44,9 @@ unsigned short PLCOpenStatus( const STRING *action );
 
 bool forCommandGetPLCOpenStatus(plcstring* command, signed short index, unsigned short *status);
 
-unsigned long atnRaise( AtnDiagSeverity_enum severity, signed long code, plcstring* source, plcstring* message );
-plcbit atnPopDiagnostic( AtnDiagnostic_typ* entry );
+signed long atnRaise( AtnDiagSeverity_enum severity, unsigned short code, plcstring* source, plcstring* message );
 unsigned long atnDiagnosticCount( void );
-unsigned long atnDiagnosticsDropped( void );
+signed long atnSetDiagnosticLogger( plcstring* loggerName );
 
 #ifdef __cplusplus
 	};

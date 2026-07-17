@@ -93,18 +93,21 @@ namespace atn{
 		void printCommands( std::ostream &);
 		void printSystemJson( std::ostream &);
 
-		unsigned long raise( AtnDiagSeverity_enum severity, signed long code, const char* source, const char* message );
-		bool popDiagnostic( AtnDiagnostic_typ* entry );
+		//Write a non-fatal diagnostic to the event logger.
+		// Returns 0 on success, otherwise the logger StatusID.
+		signed long raise( AtnDiagSeverity_enum severity, unsigned short code, const char* source, const char* message );
+
+		//Total number of diagnostics raised since startup (including failed writes)
 		unsigned long diagnosticCount();
-		unsigned long diagnosticsDropped();
+
+		//Select the logbook that raise() writes to. Defaults to the user logbook ($arlogusr).
+		// Returns 0 on success, -1 on an invalid name.
+		signed long setDiagnosticLogger( const char* loggerName );
 
 	private:
-		static const int DIAG_CAP = 64;
-		AtnDiagnostic_typ diagBuf[DIAG_CAP];
-		int diagHead;
-		int diagCount;
-		unsigned long diagSeq;
-		unsigned long diagDropped;
+		static const int DIAG_LOGGER_NAME_MAX = 80;
+		char diagLoggerName[DIAG_LOGGER_NAME_MAX + 1];
+		unsigned long raiseCount;
 
 	};
 };

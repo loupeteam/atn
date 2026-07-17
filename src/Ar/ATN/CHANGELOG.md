@@ -1,3 +1,8 @@
+0.08.0 - Add non-fatal diagnostics channel backed by the event logger (LogThat)
+		- atnRaise writes to the user logbook ($arlogusr) by default; atnSetDiagnosticLogger overrides the logbook
+		- atnDiagnosticCount reports the total diagnostics raised since startup
+		- PLCOpen parameter size mismatches raise a warning once per occurrence instead of silently dropping the write
+		- Iterate PLCOpenState by reference in the PLCOpen FUB loops
 0.07.0 - Add unregister and unregisterAll lifecycle APIs for transfer-safe cleanup in _EXIT
 0.06.2 - Update for oss release
 0.06.1 - Remove bur_heap_size from director.cpp

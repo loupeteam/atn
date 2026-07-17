@@ -9,9 +9,7 @@
 
 #include <iostream>
 #include <cstring>
-#include <cstdio>
 #include "./includes/PLCOpen.h"
-#include "./includes/atnApi.h"
 
 using namespace atn;
 
@@ -108,7 +106,7 @@ unsigned short PLCOpen::PLCOpenStatus(){
     }
 }
 
-void PLCOpen::writeParameters( void *pParameters, size_t sParameters){
+PLCOpen::WriteParamsResult PLCOpen::writeParameters( const void *pParameters, size_t sParameters){
 	if( pParameters && this->pParameters ){
 		if( sParameters == this->sParameters ){
 			std::memcpy(this->pParameters, pParameters, this->sParameters);
@@ -116,26 +114,27 @@ void PLCOpen::writeParameters( void *pParameters, size_t sParameters){
 				*this->pParameterWritten = 1;
 			}
 			paramMismatchRaised = false;
+			return WRITE_PARAMS_WRITTEN;
 		}
 		else{
 			if( this->pParameterWritten ){
 				*this->pParameterWritten = 0;
 			}
 			if( !paramMismatchRaised ){
-				char msg[121];
-				std::snprintf( msg, sizeof(msg),
-					"PLCOpen parameter size mismatch: sender %u B vs follower %u B - write DROPPED",
-					(unsigned)sParameters, (unsigned)this->sParameters );
-				atnRaise( ATN_DIAG_WARNING, (signed long)this->sParameters,
-					(plcstring*)this->name.c_str(), (plcstring*)msg );
 				paramMismatchRaised = true;
+				return WRITE_PARAMS_MISMATCH;
 			}
+			return WRITE_PARAMS_MISMATCH_LATCHED;
 		}
 	}
 	else{
+		//Abort/cleanup path: clears the written flag but does NOT re-arm the
+		// mismatch latch, so a persistent mismatch reports once per occurrence,
+		// not once per command invocation.
 		if( this->pParameterWritten ){
 			*this->pParameterWritten = 0;
 		}
+		return WRITE_PARAMS_CLEARED;
 	}
 }
 

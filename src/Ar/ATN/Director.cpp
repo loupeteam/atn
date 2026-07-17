@@ -9,69 +9,59 @@
 
 #include <iostream>
 #include <cstring>
+#include <cstdio>
 
 #include "./includes/Director.h"
+
+#ifdef __cplusplus
+	extern "C"
+	{
+#endif
+	#include "LogThat.h"
+#ifdef __cplusplus
+	};
+#endif
 
 using namespace atn;
 
 Director::Director(/* args */) : outstream(0)
 {
-	diagHead = 0;
-	diagCount = 0;
-	diagSeq = 0;
-	diagDropped = 0;
+	std::strcpy(diagLoggerName, "$arlogusr");
+	raiseCount = 0;
 }
 
-unsigned long Director::raise( AtnDiagSeverity_enum severity, signed long code, const char* source, const char* message )
+signed long Director::raise( AtnDiagSeverity_enum severity, unsigned short code, const char* source, const char* message )
 {
-	if( diagCount >= DIAG_CAP ){
-		diagHead = (diagHead + 1) % DIAG_CAP;
-		diagCount--;
-		diagDropped++;
-	}
-	int tail = (diagHead + diagCount) % DIAG_CAP;
-	AtnDiagnostic_typ* e = &diagBuf[tail];
+	//Advisory counter: concurrent raises from preempting task classes may lose an
+	// increment; the logged entries themselves are serialized by the AR Logger service.
+	raiseCount++;
 
-	e->seq = ++diagSeq;
-	e->severity = severity;
-	e->code = code;
-	if( source ){
-		std::strncpy((char*)e->source, source, sizeof(e->source) - 1);
-		((char*)e->source)[sizeof(e->source) - 1] = 0;
-	}
-	else{
-		e->source[0] = 0;
-	}
-	if( message ){
-		std::strncpy((char*)e->message, message, sizeof(e->message) - 1);
-		((char*)e->message)[sizeof(e->message) - 1] = 0;
-	}
-	else{
-		e->message[0] = 0;
-	}
+	//320 matches LogThat's LOG_STRLEN_MESSAGE (the generated constant is a
+	// _GLOBAL_CONST on target and cannot be used as an array dimension here)
+	char msg[320];
+	std::snprintf(msg, sizeof(msg), "[%s] %s", source ? source : "", message ? message : "");
 
-	diagCount++;
-	return e->seq;
+	switch( severity ){
+		case ATN_DIAG_INFO:
+			return logInfo(diagLoggerName, code, msg, 0);
+		case ATN_DIAG_WARNING:
+			return logWarning(diagLoggerName, code, msg, 0);
+		case ATN_DIAG_ERROR:
+		default:
+			return logError(diagLoggerName, code, msg, 0);
+	}
 }
 
-bool Director::popDiagnostic( AtnDiagnostic_typ* entry )
+unsigned long Director::diagnosticCount(){ return raiseCount; }
+
+signed long Director::setDiagnosticLogger( const char* loggerName )
 {
-	if( diagCount <= 0 ){
-		if( entry ){
-			entry->seq = 0;
-		}
-		return false;
+	if( !loggerName || !loggerName[0] || std::strlen(loggerName) > DIAG_LOGGER_NAME_MAX ){
+		return -1;
 	}
-	if( entry ){
-		*entry = diagBuf[diagHead];
-	}
-	diagHead = (diagHead + 1) % DIAG_CAP;
-	diagCount--;
-	return true;
+	std::strcpy(diagLoggerName, loggerName);
+	return 0;
 }
-
-unsigned long Director::diagnosticCount(){ return (unsigned long)diagCount; }
-unsigned long Director::diagnosticsDropped(){ return diagDropped; }
 
 Director::~Director()
 {

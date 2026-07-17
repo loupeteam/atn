@@ -107,11 +107,9 @@ TYPE
 		ATN_DIAG_WARNING,
 		ATN_DIAG_ERROR
 		);
-	AtnDiagnostic_typ :	STRUCT
-		seq : UDINT;
-		severity : AtnDiagSeverity_enum;
-		code : DINT;
-		source : STRING[80];
-		message : STRING[120];
-	END_STRUCT;
+	AtnDiagCode_enum :
+		(
+		ATN_DIAG_CODE_NONE := 0, (*No specific diagnostic code*)
+		ATN_DIAG_CODE_PARAM_SIZE_MISMATCH := 1 (*PLCOpen parameter size mismatch - write dropped*)
+		);
 END_TYPE

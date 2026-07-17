@@ -352,21 +352,11 @@ void readCallState( AtnApiStatusLocal_typ *status){
 	}
 }
 
-unsigned long atnRaise( AtnDiagSeverity_enum severity, signed long code, plcstring* source, plcstring* message ){
+signed long atnRaise( AtnDiagSeverity_enum severity, unsigned short code, plcstring* source, plcstring* message ){
 	if( !globalDirector ){
-		return 0;
+		return -1;
 	}
 	return globalDirector->raise( severity, code, (const char*)source, (const char*)message );
-}
-
-plcbit atnPopDiagnostic( AtnDiagnostic_typ* entry ){
-	if( !globalDirector ){
-		if( entry ){
-			entry->seq = 0;
-		}
-		return 0;
-	}
-	return globalDirector->popDiagnostic( entry );
 }
 
 unsigned long atnDiagnosticCount( void ){
@@ -376,9 +366,9 @@ unsigned long atnDiagnosticCount( void ){
 	return globalDirector->diagnosticCount();
 }
 
-unsigned long atnDiagnosticsDropped( void ){
+signed long atnSetDiagnosticLogger( plcstring* loggerName ){
 	if( !globalDirector ){
-		return 0;
+		return -1;
 	}
-	return globalDirector->diagnosticsDropped();
+	return globalDirector->setDiagnosticLogger( (const char*)loggerName );
 }

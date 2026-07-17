@@ -3,6 +3,7 @@
   <Objects>
     <Object Type="Library" Language="ANSIC" Reference="true">..\..\src\Ar\ATN\ANSIC.lby</Object>
     <Object Type="Library" Language="Binary">vartools</Object>
+    <Object Type="Library" Language="Binary">logthat</Object>
     <Object Type="Library" Language="Binary">stringext</Object>
   </Objects>
 </Package>

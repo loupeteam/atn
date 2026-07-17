@@ -19,5 +19,6 @@
   <Dependencies>
     <Dependency ObjectName="StringExt" FromVersion="1.0.0" />
     <Dependency ObjectName="VarTools" FromVersion="1.0.0" />
+    <Dependency ObjectName="LogThat" FromVersion="1.0.0" />
   </Dependencies>
 </Library>

@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@loupeteam/librarybuilderproject": "^1.0.1",
+    "@loupeteam/logthat": "^1.0.0",
     "@loupeteam/stringext": "^1.0.0",
     "@loupeteam/vartools": "^1.0.0"
   }
