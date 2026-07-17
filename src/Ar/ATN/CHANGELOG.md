@@ -1,3 +1,4 @@
+0.08.0 - Surface single-publisher value topics in the interactive console and system JSON
 0.07.0 - Add lifecycle cleanup APIs: register/subscribe now capture the calling task name (ST_name); unregisterAll() takes no arguments and removes all of the calling task's registrations for transfer-safe _EXIT cleanup; unregister(name) removes the calling task's registrations from a single topic
 0.06.2 - Update for oss release
 0.06.1 - Remove bur_heap_size from director.cpp

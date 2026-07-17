@@ -204,11 +204,15 @@ unsigned long atncyclic( UDINT console, UDINT bufsize ){
 			if( state ){
 				state->print( *outstream );
 			}
+			else if( ( state = globalDirector->getValue( &command[0] ) ) ){
+				state->printValue( *outstream );
+			}
 			else{
 				*outstream << "state "<< command << " Not found\n";
 				globalDirector->printCommands( *outstream );
 				globalDirector->printStates( *outstream );
 				globalDirector->printActions( *outstream );
+				globalDirector->printValues( *outstream );
 			}
 			break;
 	}
@@ -269,6 +273,22 @@ UDINT registerToResource(plcstring* state, plcstring* moduleName, UDINT * pResou
 UDINT registerStateParameters( STRING *state, STRING *moduleName, UDINT * pParameters, UDINT sParameters){
 	globalDirector->addStateBool( std::string((char*)state), (char*)moduleName, 0, pParameters, sParameters, atnCurrentTaskName());
 	return 0;
+}
+
+UDINT registerValue( STRING *state, STRING *owner, UDINT * pData, UDINT sData, plcbit *valid, UDINT sReturn, UDINT returnTopic ){
+	bool ok = globalDirector->addValue( std::string((char*)state), std::string((char*)owner), valid, pData, sData, sReturn, atnCurrentTaskName() );
+	if( returnTopic != 0 ){
+		char *out = (char*)returnTopic;
+		if( ok && sReturn > 0 ){
+			std::string derived = std::string((char*)state) + ATN_RETURN_TOPIC_SUFFIX;
+			strncpy( out, derived.c_str(), 80 );
+			out[80] = '\0';
+		}
+		else{
+			out[0] = '\0';
+		}
+	}
+	return ok ? 0 : 1;
 }
 
 UDINT unregister( STRING *name ){

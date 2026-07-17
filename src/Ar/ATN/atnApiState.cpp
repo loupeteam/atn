@@ -17,6 +17,7 @@
 using namespace atn;
 
 extern Director *globalDirector;
+extern std::string atnCurrentTaskName();
 
 bool stateAllTrue( STRING *state, bool fallback ){
 	State *s = globalDirector->getState(std::string((char*)state));
@@ -126,4 +127,47 @@ void stateAnyFalseFb(struct stateAnyFalseFb* inst){
 	else{
 		inst->value = inst->fallback;
 	}
+}
+
+void valueRefFb(struct valueRefFb* inst){
+	if( inst->update || inst->cache == 0 ){
+		inst->cache = (UDINT*)globalDirector->getValue(std::string((char*)inst->state));
+	}
+	State *s = (State *)inst->cache;
+	inst->bound = false;
+	inst->valid = false;
+	inst->sizeMismatch = false;
+	inst->data = 0;
+	if( s && s->count() > 0 ){
+		PLCOpen entry = s->PLCOpenState.at(0);
+		if( inst->sData != 0 && inst->sData != entry.sParameters ){
+			inst->sizeMismatch = true;
+		}
+		else{
+			inst->bound = true;
+			inst->data = (UDINT)entry.pParameters;
+			if( entry.pValue ){
+				inst->valid = *entry.pValue;
+			}
+		}
+	}
+
+	if( inst->pStatus != 0 && inst->bound && s && !s->returnTopic.empty() ){
+		if( inst->sStatus != s->sReturn ){
+			inst->sizeMismatch = true;
+		}
+		else{
+			if( inst->registered && strncmp((char*)inst->registeredTopic, s->returnTopic.c_str(), 80) != 0 ){
+				globalDirector->removeRegistration( std::string((char*)inst->registeredTopic), atnCurrentTaskName() );
+				inst->registered = false;
+			}
+			if( !inst->registered ){
+				globalDirector->addStateBool( s->returnTopic, std::string((char*)inst->owner), 0, (void*)inst->pStatus, inst->sStatus, atnCurrentTaskName() );
+				strncpy( (char*)inst->registeredTopic, s->returnTopic.c_str(), 80 );
+				((char*)inst->registeredTopic)[80] = '\0';
+				inst->registered = true;
+			}
+		}
+	}
+	inst->returnBound = inst->registered && inst->bound;
 }

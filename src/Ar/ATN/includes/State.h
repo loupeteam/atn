@@ -21,8 +21,10 @@ namespace atn{
 
     public:
 
-		std::vector<std::string> DependentState; 
-		std::vector<PLCOpen> PLCOpenState; 
+        std::vector<std::string> DependentState;
+        std::vector<PLCOpen> PLCOpenState;
+        std::string returnTopic;
+        size_t sReturn = 0;
 
         State( std:: string name);    
         ~State();
@@ -46,6 +48,7 @@ namespace atn{
 		unsigned short getPLCOpenState( unsigned short fallback );
         void print( std::ostream &);
 		void plcopenReport( std::ostream &);
+		void printValue( std::ostream &);
 		unsigned int count();
         unsigned int removeTask( const std::string& taskName );
     };

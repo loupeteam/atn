@@ -226,8 +226,49 @@ State * Director::getCommand( const std::string cmd ){
     }
 }
 
+bool Director::addValue( const std::string state, const std::string name, bool* valid, void* _pData, size_t _sData, size_t sReturn, const std::string& taskName ){
+
+	auto it = values.find(state);
+
+	if (it != values.end()){
+		if( it->second.count() > 0 ){
+			if( this->outstream ){
+				*this->outstream << "ATN value already registered: " << state << "\n";
+			}
+			return false;
+		}
+		it->second.subscribe( name, valid, _pData, _sData, taskName );
+		it->second.sReturn = sReturn;
+		it->second.returnTopic = (sReturn > 0) ? (state + ATN_RETURN_TOPIC_SUFFIX) : "";
+	}
+	else{
+		State newValue( state );
+		newValue.subscribe( name, valid, _pData, _sData, taskName );
+		newValue.sReturn = sReturn;
+		newValue.returnTopic = (sReturn > 0) ? (state + ATN_RETURN_TOPIC_SUFFIX) : "";
+		values.insert( std::pair<std::string, State>(state, newValue) );
+	}
+	return true;
+}
+
+State * Director::getValue( const std::string state ){
+	auto it = values.find(state);
+
+	if (it != values.end()){
+		return &it->second;
+	}
+	else{
+		return 0;
+	}
+}
+
 unsigned int Director::removeRegistration( const std::string& name, const std::string& taskName ){
 	unsigned int removed = 0;
+
+	auto v = values.find(name);
+	if( v != values.end() ){
+		removed += v->second.removeTask(taskName);
+	}
 
 	auto s = states.find(name);
 	if( s != states.end() ){
@@ -249,6 +290,10 @@ unsigned int Director::removeRegistration( const std::string& name, const std::s
 
 unsigned int Director::removeAllForTask( const std::string& taskName ){
 	unsigned int removed = 0;
+
+	for( auto &kv : values ){
+		removed += kv.second.removeTask(taskName);
+	}
 
 	for( auto &kv : states ){
 		removed += kv.second.removeTask(taskName);
@@ -315,6 +360,13 @@ void Director::printCommands( std::ostream &out ){
 
 }
 
+void Director::printValues( std::ostream &out ){
+	out << "\nValues:" << "\n";
+	for( auto value : values ){
+		out << value.first << "\n";
+	}
+}
+
 void Director::printSystemJson( std::ostream &out ){
 	bool comma;
 	out << "{";
@@ -329,8 +381,16 @@ void Director::printSystemJson( std::ostream &out ){
 	out << ",\"States\":[";
 	comma = 0;
 	for( auto state : states ){
-		if(comma) out << ","; 
+		if(comma) out << ",";
 		out << "\"" <<state.first << "\"";
+		comma = 1;
+	}
+	out << "]";
+	out << ",\"Values\":[";
+	comma = 0;
+	for( auto value : values ){
+		if(comma) out << ",";
+		out << "\"" <<value.first << "\"";
 		comma = 1;
 	}
 	out << "]";

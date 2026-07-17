@@ -333,5 +333,23 @@ void State::plcopenReport( std::ostream &outbuf){
 		}
 		outbuf << "\n";
 	}
-	
+
+}
+
+void State::printValue( std::ostream &outbuf){
+	outbuf << "\nValue: " << this->name << "\n";
+	for( auto state : this->PLCOpenState ){
+		outbuf << "Owner: " << state.name;
+		if( state.pValue ){
+			outbuf << " | Valid: " << (bool) *state.pValue;
+		}
+		else{
+			outbuf << " | Valid: None";
+		}
+		outbuf << " | Size: " << state.sParameters << "\n";
+	}
+	if( !this->returnTopic.empty() ){
+		outbuf << "Return topic: " << this->returnTopic << " (" << this->sReturn << " bytes)\n";
+	}
+	outbuf << "\n";
 }

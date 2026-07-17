@@ -20,15 +20,15 @@ extern "C"
 #ifdef _SG3
 		#include "vartools.h"
 		#include "stringext.h"
-#endif
+#endif
 #ifdef _SG4
 		#include "vartools.h"
 		#include "stringext.h"
-#endif
+#endif
 #ifdef _SGC
 		#include "vartools.h"
 		#include "stringext.h"
-#endif
+#endif
 
 
 /* Datatypes and datatypes of function blocks */
@@ -184,6 +184,30 @@ typedef struct stateAnyFalseFb
 	plcbit value;
 } stateAnyFalseFb_typ;
 
+typedef struct valueRefFb
+{
+	/* VAR_INPUT (analog) */
+	plcstring state[81];
+	unsigned long sData;
+	plcstring owner[81];
+	unsigned long pStatus;
+	unsigned long sStatus;
+	/* VAR_OUTPUT (analog) */
+	unsigned long data;
+	/* VAR (analog) */
+	unsigned long* cache;
+	plcstring registeredTopic[81];
+	/* VAR_INPUT (digital) */
+	plcbit update;
+	/* VAR_OUTPUT (digital) */
+	plcbit bound;
+	plcbit valid;
+	plcbit sizeMismatch;
+	plcbit returnBound;
+	/* VAR (digital) */
+	plcbit registered;
+} valueRefFb_typ;
+
 typedef struct AtnPLCOpen
 {
 	/* VAR_INPUT (analog) */
@@ -248,6 +272,8 @@ _BUR_PUBLIC unsigned long registerStateBoolAdr(plcstring* state, plcstring* modu
 _BUR_PUBLIC unsigned long registerStateParameters(plcstring* state, plcstring* moduleName, unsigned long* pParameters, unsigned long sParameters);
 _BUR_PUBLIC unsigned long registerStateExt1(plcstring* state, plcstring* moduleName, plcstring* pModuleStatus, unsigned long* pParameters, unsigned long sParameters, plcbit* pModuleByPass, plcbit* pActive);
 _BUR_PUBLIC unsigned long registerToResource(plcstring* resource, plcstring* moduleName, unsigned long* pResourceUserId, plcbit* pResourceActive);
+_BUR_PUBLIC unsigned long registerValue(plcstring* state, plcstring* owner, unsigned long* pData, unsigned long sData, plcbit* valid, unsigned long sReturn, unsigned long returnTopic);
+_BUR_PUBLIC void valueRefFb(struct valueRefFb* inst);
 _BUR_PUBLIC unsigned long unregister(plcstring* name);
 _BUR_PUBLIC unsigned long unregisterAll(void);
 /* Host-shim only, not part of the AS library interface: overrides the task name
@@ -277,8 +303,10 @@ _BUR_PUBLIC plcbit isInhibited(plcstring* inhibit);
 /* Constants */
 #ifdef _REPLACE_CONST
  #define ATN_ACTION_NAME_LEN 20U
+ #define ATN_RETURN_TOPIC_SUFFIX "~return"
 #else
  _GLOBAL_CONST unsigned char ATN_ACTION_NAME_LEN;
+ _GLOBAL_CONST plcstring ATN_RETURN_TOPIC_SUFFIX[8];
 #endif
 
 
