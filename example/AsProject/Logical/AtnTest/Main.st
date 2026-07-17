@@ -7,6 +7,11 @@ PROGRAM _INIT
 	task.status.failedStep := -1;
 	task.status.state := TEST_ST_READY;
 
+	(* Auto-run once at boot so the self-test (including the diagnostics end-to-end
+	   steps) executes without an external trigger. The verdict is published to the
+	   user logbook at TEST_SEQ_DONE, so a headless run can be checked by reading it. *)
+	task.command.run := TRUE;
+
 END_PROGRAM
 
 PROGRAM _CYCLIC
@@ -47,6 +52,13 @@ PROGRAM _CYCLIC
 				TEST_SEQ_DONE:
 					task.status.done := TRUE;
 					task.status.passed := task.status.failedStep = -1;
+					(* Publish the verdict to the user logbook via atnRaise (INFO/ERROR),
+					   so a headless run is observable by reading $arlogusr. *)
+					IF task.status.passed THEN
+						internal.diagStatusResult := atnRaise(ATN_DIAG_INFO, 100, 'AtnTest', 'ATN diagnostics e2e self-check PASSED');
+					ELSE
+						internal.diagStatusResult := atnRaise(ATN_DIAG_ERROR, 101, 'AtnTest', 'ATN diagnostics e2e self-check FAILED');
+					END_IF
 					task.status.state := TEST_ST_DONE;
 				ELSE
 					IF task.parameters.stopOnFirstFailure AND task.status.failedStep <> -1 THEN
