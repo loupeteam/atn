@@ -79,10 +79,11 @@ plcbit atnPLCOpenAbort(struct AtnPlcOpenStatus* status){
 			commandSrc->abort = 1;
 		}		
 		status->internal.fbk = 0;
-		status->parametersWritten = false;		
-	}			
+		status->parametersWritten = false;
+	}
 	status->internal.trig = 0;
 
+	return 1;
 }
 
 void AtnPLCOpen(AtnPLCOpen_typ* inst){

@@ -1,0 +1,40 @@
+name: Host Unit Tests
+
+# Compiles ATN's C++ off-target with gcc and runs the CMake unit test
+# (atn_test_main) on a GitHub-hosted Linux runner. gcc matches B&R's compiler
+# family, and Linux is closer to the target's POSIX-like environment than MSVC.
+# This is independent of the Automation Studio target build in build.yml.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'LICENSE'
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'LICENSE'
+
+jobs:
+  host-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ubuntu-latest ships gcc and cmake. A native 64-bit build is fine: on
+      # LP64 unsigned long == pointer, matching the SG4 assumption that pointers
+      # fit in unsigned long (on Windows/MSVC that needs -A Win32 instead).
+      - name: Configure
+        run: cmake -S . -B build
+
+      - name: Build
+        run: cmake --build build -j
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
