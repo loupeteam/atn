@@ -384,3 +384,27 @@ FUNCTION isInhibited : BOOL
 		inhibit : STRING[80];
 	END_VAR
 END_FUNCTION
+
+(*Writes a non-fatal diagnostic to the event logger (default: the user logbook, $arlogusr). The logger provides timestamp, ordering, storage, and persistence. Thread-safe: may be called from any task class. The write runs synchronously in the caller's context - raise on events, not every scan. code is a stable ATN diagnostic code (see AtnDiagCode_enum; 0-99 reserved for ATN). source identifies the raising module and is prepended to the logged message. Returns 0 on success, -1 if no director exists (atninit not called), otherwise the ArEventLog/LogThat StatusID (e.g. logbook not found).*)
+
+FUNCTION atnRaise : DINT
+	VAR_INPUT
+		severity : AtnDiagSeverity_enum;
+		code : UINT;
+		source : STRING[80];
+		message : STRING[120];
+	END_VAR
+END_FUNCTION
+
+(*Returns the total number of diagnostics raised since startup (monotonic; NOT the number pending anywhere). Includes raises whose logger write failed. Returns 0 if no director exists. The counter is advisory: a concurrent raise from a preempting task class may occasionally lose an increment.*)
+
+FUNCTION atnDiagnosticCount : UDINT
+END_FUNCTION
+
+(*Selects the logbook that atnRaise writes to. Defaults to the user logbook ($arlogusr), which always exists. A custom logbook must be created separately (e.g. LogThat's createLogInit in an INIT program) before diagnostics can be written to it. Call after atninit. Returns 0 on success, -1 if no director exists or the name is empty/longer than 80 characters.*)
+
+FUNCTION atnSetDiagnosticLogger : DINT
+	VAR_INPUT
+		loggerName : STRING[80];
+	END_VAR
+END_FUNCTION

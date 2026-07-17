@@ -12,6 +12,7 @@
 #include "./includes/Director.h"
 #include <string>
 #include <cstring>
+#include <cstdio>
 #include <iostream>
 
 using namespace atn;
@@ -35,7 +36,7 @@ bool forCommandGetPLCOpenStatus(plcstring* state, signed short index, unsigned s
 
 	if( s ){
 		if( index < s->count() ){
-			PLCOpen state = s->PLCOpenState.at(index);
+			PLCOpen &state = s->PLCOpenState.at(index);
 
 			if( status ){
 				*status = state.PLCOpenStatus();
@@ -144,7 +145,7 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 		//Abort any commands that was active using the same PLCOpen state
 		case ATN_PLCOPEN_FUB_ABORT_OLD:
 			if(command){
-				for( auto state : command->PLCOpenState ){
+				for( auto& state : command->PLCOpenState ){
 					if( state.pBypass && *state.pBypass ){
 						continue;
 					}
@@ -163,7 +164,7 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 		
 		//Write any parameters that we need to write
 		case ATN_PLCOPEN_FUB_WRITE_PAR:
-			for( auto state : command->PLCOpenState ){
+			for( auto& state : command->PLCOpenState ){
 				if( state.pBypass && *state.pBypass ){
 					continue;
 				}
@@ -218,7 +219,7 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 		case ATN_PLCOPEN_FUB_CLEANUP:
 			//Remove self from the source command
 			if(command){
-				for( auto state : command->PLCOpenState ){
+				for( auto& state : command->PLCOpenState ){
 					if( state.pBypass && *state.pBypass ){
 						continue;
 					}
@@ -326,7 +327,7 @@ void AtnPLCOpenWithParameters(AtnPLCOpenWithParameters_typ* inst){
 		//Abort any commands that was active using the same PLCOpen state
 		case ATN_PLCOPEN_FUB_ABORT_OLD:
 			if(command){
-				for( auto state : command->PLCOpenState ){
+				for( auto& state : command->PLCOpenState ){
 					if( state.pBypass && *state.pBypass ){
 						continue;
 					}
@@ -345,11 +346,19 @@ void AtnPLCOpenWithParameters(AtnPLCOpenWithParameters_typ* inst){
 		
 		//Write any parameters that we need to write
 		case ATN_PLCOPEN_FUB_WRITE_PAR:
-			for( auto state : command->PLCOpenState ){
+			for( auto& state : command->PLCOpenState ){
 				if( state.pBypass && *state.pBypass ){
 					continue;
 				}
-				state.writeParameters( inst->pParameters, inst->sParameters );
+				PLCOpen::WriteParamsResult wr = state.writeParameters( inst->pParameters, inst->sParameters );
+				if( wr == PLCOpen::WRITE_PARAMS_MISMATCH ){
+					char msg[121];
+					std::snprintf( msg, sizeof(msg),
+						"PLCOpen parameter size mismatch: sender %lu B vs follower %lu B - write DROPPED",
+						(unsigned long)inst->sParameters, (unsigned long)state.sParameters );
+					globalDirector->raise( ATN_DIAG_WARNING, ATN_DIAG_CODE_PARAM_MISMATCH,
+						state.name.c_str(), msg );
+				}
 				if( state.pFirstCycle ){
 					*state.pFirstCycle = 1;
 				}
@@ -400,7 +409,7 @@ void AtnPLCOpenWithParameters(AtnPLCOpenWithParameters_typ* inst){
 		case ATN_PLCOPEN_FUB_CLEANUP:
 			//Remove self from the source command
 			if(command){
-				for( auto state : command->PLCOpenState ){
+				for( auto& state : command->PLCOpenState ){
 					if( state.pBypass && *state.pBypass ){
 						continue;
 					}

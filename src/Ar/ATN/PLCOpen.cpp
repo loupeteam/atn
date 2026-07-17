@@ -51,6 +51,7 @@ PLCOpen::PLCOpen( ){
 	pFirstCycle = 0;
 	pCommandSource = 0;	
 	pResourceUser = 0;	
+	paramMismatchRaised = false;
 };
 
 PLCOpen::~PLCOpen( ){
@@ -105,17 +106,35 @@ unsigned short PLCOpen::PLCOpenStatus(){
     }
 }
 
-void PLCOpen::writeParameters( void *pParameters, size_t sParameters){
-	if( pParameters && this->pParameters && sParameters == this->sParameters){
-		std::memcpy(this->pParameters, pParameters, this->sParameters);
-		if( this->pParameterWritten ){
-			*this->pParameterWritten = 1;
+PLCOpen::WriteParamsResult PLCOpen::writeParameters( const void *pParameters, size_t sParameters){
+	if( pParameters && this->pParameters ){
+		if( sParameters == this->sParameters ){
+			std::memcpy(this->pParameters, pParameters, this->sParameters);
+			if( this->pParameterWritten ){
+				*this->pParameterWritten = 1;
+			}
+			paramMismatchRaised = false;
+			return WRITE_PARAMS_WRITTEN;
+		}
+		else{
+			if( this->pParameterWritten ){
+				*this->pParameterWritten = 0;
+			}
+			if( !paramMismatchRaised ){
+				paramMismatchRaised = true;
+				return WRITE_PARAMS_MISMATCH;
+			}
+			return WRITE_PARAMS_MISMATCH_LATCHED;
 		}
 	}
 	else{
+		//Abort/cleanup path: clears the written flag but does NOT re-arm the
+		// mismatch latch, so a persistent mismatch reports once per occurrence,
+		// not once per command invocation.
 		if( this->pParameterWritten ){
 			*this->pParameterWritten = 0;
 		}
+		return WRITE_PARAMS_CLEARED;
 	}
 }
 

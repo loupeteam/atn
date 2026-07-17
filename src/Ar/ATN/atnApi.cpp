@@ -330,3 +330,24 @@ bool forStateGetPointer(plcstring* state, signed short index, plcbit* active, un
 		return 0;
 	}
 }
+
+signed long atnRaise( AtnDiagSeverity_enum severity, unsigned short code, plcstring* source, plcstring* message ){
+	if( !globalDirector ){
+		return -1;
+	}
+	return globalDirector->raise( severity, code, (const char*)source, (const char*)message );
+}
+
+unsigned long atnDiagnosticCount( void ){
+	if( !globalDirector ){
+		return 0;
+	}
+	return globalDirector->diagnosticCount();
+}
+
+signed long atnSetDiagnosticLogger( plcstring* loggerName ){
+	if( !globalDirector ){
+		return -1;
+	}
+	return globalDirector->setDiagnosticLogger( (const char*)loggerName );
+}

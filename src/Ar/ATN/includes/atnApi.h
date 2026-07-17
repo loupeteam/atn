@@ -20,6 +20,10 @@ unsigned short PLCOpenStatus( const STRING *command );
 
 bool forCommandGetPLCOpenStatus(plcstring* command, signed short index, unsigned short *status);
 
+signed long atnRaise( AtnDiagSeverity_enum severity, unsigned short code, plcstring* source, plcstring* message );
+unsigned long atnDiagnosticCount( void );
+signed long atnSetDiagnosticLogger( plcstring* loggerName );
+
 #ifdef __cplusplus
 	};
 #endif

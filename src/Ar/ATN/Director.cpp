@@ -8,13 +8,59 @@
  */
 
 #include <iostream>
+#include <cstring>
+#include <cstdio>
 
 #include "./includes/Director.h"
+
+#ifdef __cplusplus
+	extern "C"
+	{
+#endif
+	#include "LogThat.h"
+#ifdef __cplusplus
+	};
+#endif
 
 using namespace atn;
 
 Director::Director(/* args */) : outstream(0)
 {
+	std::strcpy(diagLoggerName, "$arlogusr");
+	raiseCount = 0;
+}
+
+signed long Director::raise( AtnDiagSeverity_enum severity, unsigned short code, const char* source, const char* message )
+{
+	//Advisory counter: concurrent raises from preempting task classes may lose an
+	// increment; the logged entries themselves are serialized by the AR Logger service.
+	raiseCount++;
+
+	//320 matches LogThat's LOG_STRLEN_MESSAGE (the generated constant is a
+	// _GLOBAL_CONST on target and cannot be used as an array dimension here)
+	char msg[320];
+	std::snprintf(msg, sizeof(msg), "[%s] %s", source ? source : "", message ? message : "");
+
+	switch( severity ){
+		case ATN_DIAG_INFO:
+			return logInfo(diagLoggerName, code, msg, 0);
+		case ATN_DIAG_WARNING:
+			return logWarning(diagLoggerName, code, msg, 0);
+		case ATN_DIAG_ERROR:
+		default:
+			return logError(diagLoggerName, code, msg, 0);
+	}
+}
+
+unsigned long Director::diagnosticCount(){ return raiseCount; }
+
+signed long Director::setDiagnosticLogger( const char* loggerName )
+{
+	if( !loggerName || !loggerName[0] || std::strlen(loggerName) > DIAG_LOGGER_NAME_MAX ){
+		return -1;
+	}
+	std::strcpy(diagLoggerName, loggerName);
+	return 0;
 }
 
 Director::~Director()

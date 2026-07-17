@@ -23,6 +23,9 @@ file(GLOB SRC
 
 add_library(${PROJECT_NAME} STATIC ${SRC})
 
+# Off-target stand-in for the LogThat dependency (captures log writes for tests).
+target_sources(${PROJECT_NAME} PRIVATE "test/host-shim/logthat_stub.cpp")
+
 # host-shim first so #include "atn.h" / <bur/plctypes.h> resolve to the stubs;
 # includes/ provides Director.h, State.h, PLCOpen.h, atnApi.h. Both are PUBLIC so
 # the test targets inherit them.

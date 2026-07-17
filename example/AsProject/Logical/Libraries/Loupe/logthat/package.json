@@ -1,0 +1,21 @@
+{
+  "name": "@loupeteam/logthat",
+  "version": "1.0.0",
+  "description": "Logging library for B&R Automation Studio (ANSIC library)",
+  "homepage": "https://loupeteam.github.io/LoupeDocs/libraries/logthat.html",
+  "author": "Loupe",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/loupeteam/LogThat"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "lpm": {
+    "type": "library"
+  },
+  "dependencies": {
+    "@loupeteam/stringext": "*"
+  }
+}

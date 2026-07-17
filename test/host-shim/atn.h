@@ -32,6 +32,17 @@ extern "C"
 
 
 /* Datatypes and datatypes of function blocks */
+typedef enum AtnDiagSeverity_enum
+{	ATN_DIAG_INFO,
+	ATN_DIAG_WARNING,
+	ATN_DIAG_ERROR
+} AtnDiagSeverity_enum;
+
+typedef enum AtnDiagCode_enum
+{	ATN_DIAG_CODE_NONE = 0,
+	ATN_DIAG_CODE_PARAM_MISMATCH = 1
+} AtnDiagCode_enum;
+
 typedef enum ATN_PLCOPEN_FUB_STATE_enum
 {	ATN_PLCOPEN_FUB_IDLE,
 	ATN_PLCOPEN_FUB_NEW_COMMAND,
@@ -236,6 +247,9 @@ _BUR_PUBLIC plcbit stateStatus(plcstring* state, unsigned long buffer, unsigned 
 _BUR_PUBLIC plcbit systemJson(unsigned long buffer, unsigned long sBuffer);
 _BUR_PUBLIC plcbit resourceIsAvailable(plcstring* resourceName, unsigned long resourceUserId);
 _BUR_PUBLIC plcbit isInhibited(plcstring* inhibit);
+_BUR_PUBLIC signed long atnRaise(enum AtnDiagSeverity_enum severity, unsigned short code, plcstring* source, plcstring* message);
+_BUR_PUBLIC unsigned long atnDiagnosticCount(void);
+_BUR_PUBLIC signed long atnSetDiagnosticLogger(plcstring* loggerName);
 
 
 /* Constants */
