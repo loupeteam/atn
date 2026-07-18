@@ -90,8 +90,10 @@ namespace atn{
 		//- so one local call drives them all and arbitrates against remote callers
 		//through their shared status structs, with no string lookup. Returns 0 when
 		//the bit has no registered followers. The by-bit index is built in the
-		//register/unregister paths, so this is a PURE READ at cyclic time (safe for
-		//concurrent callers across cores without a lock).
+		//register/unregister paths, so this call never mutates bitGroups - it is a
+		//pure read. Concurrent local callers are therefore safe against each other
+		//without a lock PROVIDED registration/unregistration stay in _INIT/_EXIT (the
+		//ATN convention) so nothing mutates the index during cyclic operation.
 		State *resolveByBool( bool* commandBit );
 
 		//Single-publisher value topic (one producer per topic name)

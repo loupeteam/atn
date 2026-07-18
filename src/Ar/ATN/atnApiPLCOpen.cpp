@@ -104,15 +104,20 @@ plcbit atnPLCOpenAbort(struct AtnPlcOpenStatus* status){
  * so whichever caller last claimed it owns the follower, and a newcomer aborts it.
  * ------------------------------------------------------------------------- */
 
+/* pCommandSource points at status.internal.fbk, a UDINT that stores the owning
+ * AtnPlcOpenCall as an integer (pointer-width on every SG4 target). Read/write it
+ * as the integer it is and cast the value - punning it as AtnPlcOpenCall** would
+ * break strict aliasing. This matches how atnPLCOpenAbort() reads the same field. */
+
 //Abort whichever *other* caller currently owns each follower in the group.
 static void plcopenAbortOthers( State* command, AtnPlcOpenCall* self ){
 	if( !command ) return;
-	for( auto follower : command->PLCOpenState ){
+	for( auto& follower : command->PLCOpenState ){
 		if( follower.pBypass && *follower.pBypass ){
 			continue;
 		}
 		if( follower.pCommandSource ){
-			AtnPlcOpenCall* owner = *(AtnPlcOpenCall**)(follower.pCommandSource);
+			AtnPlcOpenCall* owner = (AtnPlcOpenCall*)( *follower.pCommandSource );
 			if( owner != 0 && owner != self ){
 				owner->abort = 1;
 			}
@@ -124,7 +129,7 @@ static void plcopenAbortOthers( State* command, AtnPlcOpenCall* self ){
 static void plcopenClaimAndWrite( State* command, AtnPlcOpenCall* self,
                                   void* pParameters, size_t sParameters, const char* activeName ){
 	if( !command ) return;
-	for( auto follower : command->PLCOpenState ){
+	for( auto& follower : command->PLCOpenState ){
 		if( follower.pBypass && *follower.pBypass ){
 			continue;
 		}
@@ -133,7 +138,7 @@ static void plcopenClaimAndWrite( State* command, AtnPlcOpenCall* self,
 			*follower.pFirstCycle = 1;
 		}
 		if( follower.pCommandSource ){
-			*((AtnPlcOpenCall**)follower.pCommandSource) = self;
+			*follower.pCommandSource = (unsigned long)self;
 		}
 		if( follower.pActiveCommand && activeName ){
 			strcpy( follower.pActiveCommand, activeName );
@@ -144,14 +149,14 @@ static void plcopenClaimAndWrite( State* command, AtnPlcOpenCall* self,
 //Release each follower that `self` still owns, clearing its command source.
 static void plcopenRelease( State* command, AtnPlcOpenCall* self ){
 	if( !command ) return;
-	for( auto follower : command->PLCOpenState ){
+	for( auto& follower : command->PLCOpenState ){
 		if( follower.pBypass && *follower.pBypass ){
 			continue;
 		}
 		if( follower.pCommandSource ){
-			AtnPlcOpenCall* owner = *(AtnPlcOpenCall**)(follower.pCommandSource);
+			AtnPlcOpenCall* owner = (AtnPlcOpenCall*)( *follower.pCommandSource );
 			if( owner != 0 && owner == self ){
-				*((AtnPlcOpenCall**)follower.pCommandSource) = 0;
+				*follower.pCommandSource = 0;
 				follower.writeParameters( 0, 0 );
 			}
 		}
