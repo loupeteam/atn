@@ -24,7 +24,12 @@ namespace atn{
 		std::unordered_map<std::string, State> commands;	//These are commands that have been subscribed
 		std::unordered_map<std::string, State> states;		//These are states that have been registered
 		std::unordered_map<std::string, State> values;		//Single-publisher value topics
-		std::unordered_map<bool*, State> bitGroups;		//Cached bit->follower groups backing resolveByBool()
+		std::unordered_map<bool*, State> bitGroups;		//By-bit follower index backing resolveByBool()
+
+		//By-bit index maintenance. Called only from the register/unregister paths, so the
+		//index is frozen during cyclic operation and resolveByBool() is a pure read.
+		State* bitGroupFor( bool* commandBit );      //find-or-create a bit's group (register)
+		void   rebuildBitGroup( bool* commandBit );  //re-derive a bit's group from `commands` (unregister)
 	
 		public:
 
@@ -81,11 +86,12 @@ namespace atn{
 
 		//Resolve, by command bit, the group of PLCOpen followers that share it.
 		//Backs in-task PLCOpen calls (AtnPLCOpenLocal): the caller passes only the
-		//command bit and we collect every follower registered against that exact bit
+		//command bit and we return every follower registered against that exact bit
 		//- so one local call drives them all and arbitrates against remote callers
 		//through their shared status structs, with no string lookup. Returns 0 when
-		//the bit is not registered. The returned group is cached for pointer stability
-		//across the command and rebuilt on each call so it tracks (un)registration.
+		//the bit has no registered followers. The by-bit index is built in the
+		//register/unregister paths, so this is a PURE READ at cyclic time (safe for
+		//concurrent callers across cores without a lock).
 		State *resolveByBool( bool* commandBit );
 
 		//Single-publisher value topic (one producer per topic name)

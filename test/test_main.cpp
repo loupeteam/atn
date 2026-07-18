@@ -716,6 +716,35 @@ int main(int argc, char const *argv[]) {
 		unregisterAll();
 	}
 
+	///TEST 19: single-topic unregister rebuilds the by-bit index precisely. The same bit
+	// is registered under two names; unregistering one must drop only that follower and
+	// leave the other, so the bit still resolves and drives via the survivor's status.
+	{
+		char nameA[] = "Reg.A";
+		char nameB[] = "Reg.B";
+		char owner[] = "OwnerReg";
+		plcbit cmd = false;
+		AtnPlcOpenStatus stA = {};
+		AtnPlcOpenStatus stB = {};
+		subscribePLCOpen( nameA, owner, &cmd, &stA );
+		subscribePLCOpen( nameB, owner, &cmd, &stB );   // same bit, two names, two statuses
+
+		unregister( nameA );                             // drop only nameA's follower
+
+		AtnPLCOpenLocal_typ fb = {};
+		fb.Command = &cmd; fb.Execute = true;
+		bool done = false;
+		for( int c = 0; c < 10 && !done; c++ ){
+			AtnPLCOpenLocal( &fb );
+			if( cmd ){ stB.status = 0; }                 // only nameB's follower remains to complete
+			done = fb.Done;
+		}
+		// Done proves the survivor (nameB/stB) is still in the group AND the removed one
+		// (nameA/stA, never completed) is gone - otherwise the group would hang or be empty.
+		if( !done ){ throw "Reg: single-topic unregister broke the by-bit index (lost survivor or kept the removed)"; }
+		unregisterAll();
+	}
+
 	std::cout << "Passed";
 	return 0;
 }

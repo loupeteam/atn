@@ -141,6 +141,13 @@ void Director::addCommandPLCOpen( const std::string command, const std::string m
 		newAction.subscribe( moduleName, commandBit, status, taskName);
 		commands.insert( std::pair<std::string, State>(command, newAction));
 	}
+
+	//Mirror the follower into the by-bit index so resolveByBool is a pure read at
+	//cyclic time (all container mutation stays in the register/unregister paths).
+	State* group = bitGroupFor( commandBit );
+	if( group ){
+		group->subscribe( moduleName, commandBit, status, taskName );
+	}
 }
 
 //Registers a bool to be automatically monitored, without full API support
@@ -154,6 +161,12 @@ void Director::addCommandPLCOpen( const std::string command, const std::string m
 		State newAction( command );
 		newAction.subscribe( moduleName, commandBit, status, _pParameters, _sParameters, taskName);
 		commands.insert( std::pair<std::string, State>(command, newAction));
+	}
+
+	//Mirror into the by-bit index (see the non-parameter overload above).
+	State* group = bitGroupFor( commandBit );
+	if( group ){
+		group->subscribe( moduleName, commandBit, status, _pParameters, _sParameters, taskName );
 	}
 }
 
@@ -226,40 +239,57 @@ State * Director::getCommand( const std::string cmd ){
     }
 }
 
-State * Director::resolveByBool( bool* commandBit ){
-
+//Find-or-create the by-bit group for a command bit. Register-time only (mutates
+//bitGroups), so it never runs concurrently with cyclic resolveByBool readers.
+State * Director::bitGroupFor( bool* commandBit ){
     if( !commandBit ){
         return 0;
     }
-
-    //Collect every command follower registered against this exact bit. One bit may
-    //be subscribed under several names / with several status structs (a feature),
-    //so we gather them all and drive them as a group - the same way the string path
-    //drives a State's PLCOpenState vector. The copies carry the followers' pointers
-    //(into their real status structs), so acting through the group hits real memory.
+    auto it = bitGroups.find( commandBit );
+    if( it != bitGroups.end() ){
+        return &it->second;
+    }
     State group( "" );
+    auto res = bitGroups.insert( std::pair<bool*, State>( commandBit, group ) );
+    return &res.first->second;
+}
+
+//Re-derive a bit's group from the authoritative `commands` map. Used by the
+//single-topic unregister path, where removing by task name alone could drop a
+//follower this task registered for the same bit under a different name. Reassigns
+//in place (the node address is stable) so a caller holding the group keeps a valid
+//pointer. Unregister-time only.
+void Director::rebuildBitGroup( bool* commandBit ){
+    if( !commandBit ){
+        return;
+    }
+    auto it = bitGroups.find( commandBit );
+    if( it == bitGroups.end() ){
+        return;
+    }
+    State fresh( "" );
     for( auto &kv : commands ){
         for( auto &follower : kv.second.PLCOpenState ){
             if( follower.pValue == commandBit ){
-                group.PLCOpenState.push_back( follower );
+                fresh.PLCOpenState.push_back( follower );
             }
         }
     }
+    it->second = fresh;
+}
 
-    if( group.PLCOpenState.empty() ){
-        return 0;   //bit not registered -> the local FB reports Error/Fallback
+//Resolve, by command bit, the group of PLCOpen followers that share it. This is the
+//cyclic-time entry point (AtnPLCOpenLocal): it is a PURE READ of bitGroups - the
+//index is built/maintained only in the register/unregister paths - so concurrent
+//callers across cores never race on the container. Returns 0 when the bit has no
+//registered followers, so the local FB reports Error.
+State * Director::resolveByBool( bool* commandBit ){
+    if( !commandBit ){
+        return 0;
     }
-
-    //Cache by bit so the returned pointer stays valid while the caller runs the
-    //command. Reassign in place when the bit is already cached (rather than
-    //erase+re-insert) so a second caller resolving the same bit cannot free a group
-    //another caller is still holding - only the contents change, not the node.
     auto it = bitGroups.find( commandBit );
-    if( it == bitGroups.end() ){
-        it = bitGroups.emplace( commandBit, group ).first;
-    }
-    else{
-        it->second = group;
+    if( it == bitGroups.end() || it->second.count() == 0 ){
+        return 0;
     }
     return &it->second;
 }
@@ -315,7 +345,19 @@ unsigned int Director::removeRegistration( const std::string& name, const std::s
 
 	auto c = commands.find(name);
 	if( c != commands.end() ){
+		//Remember the bits this topic touched, then re-derive their by-bit groups
+		//after removal so we drop only this topic's followers. Removing by task name
+		//alone would over-remove when a task registered the same bit under two names.
+		std::vector<bool*> affected;
+		for( auto &follower : c->second.PLCOpenState ){
+			if( follower.pValue ){
+				affected.push_back( follower.pValue );
+			}
+		}
 		removed += c->second.removeTask(taskName);
+		for( auto bit : affected ){
+			rebuildBitGroup( bit );
+		}
 	}
 
 	auto a = actions.find(name);
@@ -338,6 +380,11 @@ unsigned int Director::removeAllForTask( const std::string& taskName ){
 	}
 	for( auto &kv : commands ){
 		removed += kv.second.removeTask(taskName);
+	}
+	//Keep the by-bit index (a mirror of the command followers) in step. Not counted:
+	//these same registrations are already tallied via `commands` above.
+	for( auto &kv : bitGroups ){
+		kv.second.removeTask(taskName);
 	}
 	for( auto &kv : actions ){
 		removed += kv.second.removeTask(taskName);
