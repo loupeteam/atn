@@ -1,3 +1,4 @@
+0.09.0 - Add AtnPLCOpenLocal: an in-task PLCOpen caller bound by command bit (its status is resolved from the ATN registration, so no name/status wiring and no string lookup); it owns only its own bit and status, a bit registered more than once drives all of them, local and remote calls cancel each other through the shared status, and an unregistered bit is a hard error rather than a silent Done
 0.08.0 - Surface single-publisher value topics in the interactive console and system JSON
 0.07.0 - Add lifecycle cleanup APIs: register/subscribe now capture the calling task name (ST_name); unregisterAll() takes no arguments and removes all of the calling task's registrations for transfer-safe _EXIT cleanup; unregister(name) removes the calling task's registrations from a single topic
 0.06.2 - Update for oss release

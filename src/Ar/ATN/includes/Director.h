@@ -24,6 +24,7 @@ namespace atn{
 		std::unordered_map<std::string, State> commands;	//These are commands that have been subscribed
 		std::unordered_map<std::string, State> states;		//These are states that have been registered
 		std::unordered_map<std::string, State> values;		//Single-publisher value topics
+		std::unordered_map<bool*, State> bitGroups;		//Cached bit->follower groups backing resolveByBool()
 	
 		public:
 
@@ -77,6 +78,15 @@ namespace atn{
 
 		//Search for a command
 		State *getCommand( const std::string cmd);
+
+		//Resolve, by command bit, the group of PLCOpen followers that share it.
+		//Backs in-task PLCOpen calls (AtnPLCOpenLocal): the caller passes only the
+		//command bit and we collect every follower registered against that exact bit
+		//- so one local call drives them all and arbitrates against remote callers
+		//through their shared status structs, with no string lookup. Returns 0 when
+		//the bit is not registered. The returned group is cached for pointer stability
+		//across the command and rebuilt on each call so it tracks (un)registration.
+		State *resolveByBool( bool* commandBit );
 
 		//Single-publisher value topic (one producer per topic name)
 		bool addValue( const std::string state, const std::string moduleName, bool *valid, void *_pData, size_t _sData, size_t sReturn = 0, const std::string& taskName = "" );

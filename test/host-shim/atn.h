@@ -256,6 +256,28 @@ typedef struct AtnPLCOpenWithParameters
 	plcbit _execute;
 } AtnPLCOpenWithParameters_typ;
 
+typedef struct AtnPLCOpenLocal
+{
+	/* VAR_INPUT (analog) */
+	plcbit* Command;
+	/* VAR_OUTPUT (analog) */
+	signed long Status;
+	plcstring StatusMessage[10][81];
+	/* VAR (analog) */
+	unsigned char _state;
+	unsigned long _command;
+	struct AtnPlcOpenCall _call;
+	/* VAR_INPUT (digital) */
+	plcbit Execute;
+	/* VAR_OUTPUT (digital) */
+	plcbit Busy;
+	plcbit Done;
+	plcbit Aborted;
+	plcbit Error;
+	/* VAR (digital) */
+	plcbit _execute;
+} AtnPLCOpenLocal_typ;
+
 
 
 /* Prototyping of functions and function blocks */
@@ -265,6 +287,7 @@ _BUR_PUBLIC void stateAllFalseFb(struct stateAllFalseFb* inst);
 _BUR_PUBLIC void stateAnyFalseFb(struct stateAnyFalseFb* inst);
 _BUR_PUBLIC void AtnPLCOpen(struct AtnPLCOpen* inst);
 _BUR_PUBLIC void AtnPLCOpenWithParameters(struct AtnPLCOpenWithParameters* inst);
+_BUR_PUBLIC void AtnPLCOpenLocal(struct AtnPLCOpenLocal* inst);
 _BUR_PUBLIC unsigned long atninit(unsigned long buff, unsigned long bufsize);
 _BUR_PUBLIC unsigned long atncyclic(unsigned long buff, unsigned long bufsize);
 _BUR_PUBLIC unsigned long registerStateBool(plcstring* state, plcstring* moduleName, plcbit* value);

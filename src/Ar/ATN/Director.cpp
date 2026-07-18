@@ -219,11 +219,49 @@ State * Director::getCommand( const std::string cmd ){
     auto it = commands.find(cmd);
 
     if (it != commands.end()){
-        return &it->second;        
+        return &it->second;
     }
     else{
         return 0;
     }
+}
+
+State * Director::resolveByBool( bool* commandBit ){
+
+    if( !commandBit ){
+        return 0;
+    }
+
+    //Collect every command follower registered against this exact bit. One bit may
+    //be subscribed under several names / with several status structs (a feature),
+    //so we gather them all and drive them as a group - the same way the string path
+    //drives a State's PLCOpenState vector. The copies carry the followers' pointers
+    //(into their real status structs), so acting through the group hits real memory.
+    State group( "" );
+    for( auto &kv : commands ){
+        for( auto &follower : kv.second.PLCOpenState ){
+            if( follower.pValue == commandBit ){
+                group.PLCOpenState.push_back( follower );
+            }
+        }
+    }
+
+    if( group.PLCOpenState.empty() ){
+        return 0;   //bit not registered -> the local FB reports Error/Fallback
+    }
+
+    //Cache by bit so the returned pointer stays valid while the caller runs the
+    //command. Reassign in place when the bit is already cached (rather than
+    //erase+re-insert) so a second caller resolving the same bit cannot free a group
+    //another caller is still holding - only the contents change, not the node.
+    auto it = bitGroups.find( commandBit );
+    if( it == bitGroups.end() ){
+        it = bitGroups.emplace( commandBit, group ).first;
+    }
+    else{
+        it->second = group;
+    }
+    return &it->second;
 }
 
 bool Director::addValue( const std::string state, const std::string name, bool* valid, void* _pData, size_t _sData, size_t sReturn, const std::string& taskName ){
