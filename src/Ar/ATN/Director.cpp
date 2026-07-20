@@ -130,43 +130,43 @@ void Director::addCommandBool( const std::string command, const std::string modu
 }
 
 //Registers a bool to be automatically monitored, without full API support
-void Director::addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, AtnPlcOpenStatus * status, const std::string& taskName ){
+void Director::addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBool, AtnPlcOpenStatus * status, const std::string& taskName ){
 	auto it = commands.find(command);
 
 	if (it != commands.end()){
-		it->second.subscribe( moduleName, commandBit, status, taskName);
+		it->second.subscribe( moduleName, commandBool, status, taskName);
 	}
 	else{
 		State newAction( command );
-		newAction.subscribe( moduleName, commandBit, status, taskName);
+		newAction.subscribe( moduleName, commandBool, status, taskName);
 		commands.insert( std::pair<std::string, State>(command, newAction));
 	}
 
-	//Mirror the follower into the by-bit index so resolveByBool is a pure read at
+	//Mirror the follower into the by-bool index so resolveByBool is a pure read at
 	//cyclic time (all container mutation stays in the register/unregister paths).
-	State* group = bitGroupFor( commandBit );
+	State* group = boolGroupFor( commandBool );
 	if( group ){
-		group->subscribe( moduleName, commandBit, status, taskName );
+		group->subscribe( moduleName, commandBool, status, taskName );
 	}
 }
 
 //Registers a bool to be automatically monitored, without full API support
-void Director::addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, AtnPlcOpenStatus * status,  void *_pParameters, size_t _sParameters, const std::string& taskName ){
+void Director::addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBool, AtnPlcOpenStatus * status,  void *_pParameters, size_t _sParameters, const std::string& taskName ){
 	auto it = commands.find(command);
 
 	if (it != commands.end()){
-		it->second.subscribe( moduleName, commandBit, status, _pParameters, _sParameters, taskName);
+		it->second.subscribe( moduleName, commandBool, status, _pParameters, _sParameters, taskName);
 	}
 	else{
 		State newAction( command );
-		newAction.subscribe( moduleName, commandBit, status, _pParameters, _sParameters, taskName);
+		newAction.subscribe( moduleName, commandBool, status, _pParameters, _sParameters, taskName);
 		commands.insert( std::pair<std::string, State>(command, newAction));
 	}
 
-	//Mirror into the by-bit index (see the non-parameter overload above).
-	State* group = bitGroupFor( commandBit );
+	//Mirror into the by-bool index (see the non-parameter overload above).
+	State* group = boolGroupFor( commandBool );
 	if( group ){
-		group->subscribe( moduleName, commandBit, status, _pParameters, _sParameters, taskName );
+		group->subscribe( moduleName, commandBool, status, _pParameters, _sParameters, taskName );
 	}
 }
 
@@ -239,38 +239,38 @@ State * Director::getCommand( const std::string cmd ){
     }
 }
 
-//Find-or-create the by-bit group for a command bit. Register-time only (mutates
-//bitGroups), so it never runs concurrently with cyclic resolveByBool readers.
-State * Director::bitGroupFor( bool* commandBit ){
-    if( !commandBit ){
+//Find-or-create the by-bool group for a command bool. Register-time only (mutates
+//boolGroups), so it never runs concurrently with cyclic resolveByBool readers.
+State * Director::boolGroupFor( bool* commandBool ){
+    if( !commandBool ){
         return 0;
     }
-    auto it = bitGroups.find( commandBit );
-    if( it != bitGroups.end() ){
+    auto it = boolGroups.find( commandBool );
+    if( it != boolGroups.end() ){
         return &it->second;
     }
     State group( "" );
-    auto res = bitGroups.insert( std::pair<bool*, State>( commandBit, group ) );
+    auto res = boolGroups.insert( std::pair<bool*, State>( commandBool, group ) );
     return &res.first->second;
 }
 
-//Re-derive a bit's group from the authoritative `commands` map. Used by the
+//Re-derive a bool's group from the authoritative `commands` map. Used by the
 //single-topic unregister path, where removing by task name alone could drop a
-//follower this task registered for the same bit under a different name. Reassigns
+//follower this task registered for the same bool under a different name. Reassigns
 //in place (the node address is stable) so a caller holding the group keeps a valid
 //pointer. Unregister-time only.
-void Director::rebuildBitGroup( bool* commandBit ){
-    if( !commandBit ){
+void Director::rebuildBoolGroup( bool* commandBool ){
+    if( !commandBool ){
         return;
     }
-    auto it = bitGroups.find( commandBit );
-    if( it == bitGroups.end() ){
+    auto it = boolGroups.find( commandBool );
+    if( it == boolGroups.end() ){
         return;
     }
     State fresh( "" );
     for( auto &kv : commands ){
         for( auto &follower : kv.second.PLCOpenState ){
-            if( follower.pValue == commandBit ){
+            if( follower.pValue == commandBool ){
                 fresh.PLCOpenState.push_back( follower );
             }
         }
@@ -278,17 +278,17 @@ void Director::rebuildBitGroup( bool* commandBit ){
     it->second = fresh;
 }
 
-//Resolve, by command bit, the group of PLCOpen followers that share it. This is the
-//cyclic-time entry point (AtnPLCOpenLocal): it is a PURE READ of bitGroups - the
+//Resolve, by command bool, the group of PLCOpen followers that share it. This is the
+//cyclic-time entry point (AtnPLCOpenLocal): it is a PURE READ of boolGroups - the
 //index is built/maintained only in the register/unregister paths - so concurrent
-//callers across cores never race on the container. Returns 0 when the bit has no
+//callers across cores never race on the container. Returns 0 when the bool has no
 //registered followers, so the local FB reports Error.
-State * Director::resolveByBool( bool* commandBit ){
-    if( !commandBit ){
+State * Director::resolveByBool( bool* commandBool ){
+    if( !commandBool ){
         return 0;
     }
-    auto it = bitGroups.find( commandBit );
-    if( it == bitGroups.end() || it->second.count() == 0 ){
+    auto it = boolGroups.find( commandBool );
+    if( it == boolGroups.end() || it->second.count() == 0 ){
         return 0;
     }
     return &it->second;
@@ -345,9 +345,9 @@ unsigned int Director::removeRegistration( const std::string& name, const std::s
 
 	auto c = commands.find(name);
 	if( c != commands.end() ){
-		//Remember the bits this topic touched, then re-derive their by-bit groups
+		//Remember the bools this topic touched, then re-derive their by-bool groups
 		//after removal so we drop only this topic's followers. Removing by task name
-		//alone would over-remove when a task registered the same bit under two names.
+		//alone would over-remove when a task registered the same bool under two names.
 		std::vector<bool*> affected;
 		for( auto &follower : c->second.PLCOpenState ){
 			if( follower.pValue ){
@@ -355,8 +355,8 @@ unsigned int Director::removeRegistration( const std::string& name, const std::s
 			}
 		}
 		removed += c->second.removeTask(taskName);
-		for( auto bit : affected ){
-			rebuildBitGroup( bit );
+		for( auto commandBool : affected ){
+			rebuildBoolGroup( commandBool );
 		}
 	}
 
@@ -381,9 +381,9 @@ unsigned int Director::removeAllForTask( const std::string& taskName ){
 	for( auto &kv : commands ){
 		removed += kv.second.removeTask(taskName);
 	}
-	//Keep the by-bit index (a mirror of the command followers) in step. Not counted:
+	//Keep the by-bool index (a mirror of the command followers) in step. Not counted:
 	//these same registrations are already tallied via `commands` above.
-	for( auto &kv : bitGroups ){
+	for( auto &kv : boolGroups ){
 		kv.second.removeTask(taskName);
 	}
 	for( auto &kv : actions ){

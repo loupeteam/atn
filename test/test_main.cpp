@@ -345,7 +345,7 @@ int main(int argc, char const *argv[]) {
 		throw "thread-id task identity did not group registrations";
 	}
 
-	///TEST 5: AtnPLCOpenLocal drives a registered follower to Done by command BIT
+	///TEST 5: AtnPLCOpenLocal drives a registered follower to Done by command BOOL
 	// (no topic name, no status wiring - the status is resolved from the registration).
 	atnSetCurrentTaskName( "TaskLocal" );
 	{
@@ -363,15 +363,15 @@ int main(int argc, char const *argv[]) {
 		for( int c = 0; c < 10 && !done; c++ ){
 			AtnPLCOpenLocal( &fb );
 			if( cmd ){ st.status = 0; }          // follower reports complete
-			if( fb.Error ){ throw "Local: unexpected Error driving a registered bit"; }
+			if( fb.Error ){ throw "Local: unexpected Error driving a registered bool"; }
 			done = fb.Done;
 		}
 		if( !done ){ throw "Local: never reached Done"; }
 		unregisterAll();
 	}
 
-	///TEST 6: an unregistered bit is a hard Error, never a silent Done. A local call
-	// owns only its own bit+status; a miss must never no-op (there is no Fallback).
+	///TEST 6: an unregistered bool is a hard Error, never a silent Done. A local call
+	// owns only its own bool+status; a miss must never no-op (there is no Fallback).
 	{
 		plcbit orphan = false;
 		AtnPLCOpenLocal_typ fb = {};
@@ -379,8 +379,8 @@ int main(int argc, char const *argv[]) {
 		fb.Execute = true;
 		AtnPLCOpenLocal( &fb );                  // NEW_COMMAND: resolveByBool -> 0
 		AtnPLCOpenLocal( &fb );                  // STATUS: hard Error
-		if( fb.Done ){ throw "Local: unregistered bit silently reported Done"; }
-		if( !fb.Error || fb.Status == 0 ){ throw "Local: unregistered bit did not report Error"; }
+		if( fb.Done ){ throw "Local: unregistered bool silently reported Done"; }
+		if( !fb.Error || fb.Status == 0 ){ throw "Local: unregistered bool did not report Error"; }
 	}
 
 	///TEST 7: a local call takes over an in-flight remote call, and the remote sees the
@@ -417,7 +417,7 @@ int main(int argc, char const *argv[]) {
 		unregisterAll();
 	}
 
-	///TEST 8: one command bit registered twice (two status structs) drives BOTH
+	///TEST 8: one command bool registered twice (two status structs) drives BOTH
 	// followers as a group - Done only once every follower has reported.
 	{
 		char nameA[] = "Multi.A";
@@ -452,7 +452,7 @@ int main(int argc, char const *argv[]) {
 	}
 
 	///TEST 9: the reverse of TEST 7 - a remote call takes over an in-flight LOCAL call,
-	// and the local call sees the abort. Arbitration is symmetric across bit/name.
+	// and the local call sees the abort. Arbitration is symmetric across bool/name.
 	{
 		char name[]  = "Rev.Cmd";
 		char owner[] = "OwnerRev";
@@ -484,8 +484,8 @@ int main(int argc, char const *argv[]) {
 		unregisterAll();
 	}
 
-	///TEST 10: two local callers on the same bit - the second takes over and the first is
-	// aborted (also exercises the in-place group-cache reassignment for a shared bit).
+	///TEST 10: two local callers on the same bool - the second takes over and the first is
+	// aborted (also exercises the in-place group-cache reassignment for a shared bool).
 	{
 		char name[]  = "L2L.Cmd";
 		char owner[] = "OwnerL2L";
@@ -592,7 +592,7 @@ int main(int argc, char const *argv[]) {
 		unregisterAll();
 	}
 
-	///TEST 14: the same bit registered twice sharing ONE status struct behaves like a
+	///TEST 14: the same bool registered twice sharing ONE status struct behaves like a
 	// single follower (idempotent claim/aggregate).
 	{
 		char nameA[] = "Shr.A";
@@ -601,7 +601,7 @@ int main(int argc, char const *argv[]) {
 		plcbit cmd = false;
 		AtnPlcOpenStatus st = {};
 		subscribePLCOpen( nameA, owner, &cmd, &st );
-		subscribePLCOpen( nameB, owner, &cmd, &st );   // same bit, same status
+		subscribePLCOpen( nameB, owner, &cmd, &st );   // same bool, same status
 
 		AtnPLCOpenLocal_typ fb = {};
 		fb.Command = &cmd; fb.Execute = true;
@@ -618,7 +618,7 @@ int main(int argc, char const *argv[]) {
 		unregisterAll();
 	}
 
-	///TEST 15: a bypassed follower is skipped - the bit is not driven and the FB completes
+	///TEST 15: a bypassed follower is skipped - the bool is not driven and the FB completes
 	// immediately (the all-bypassed -> Done default that replaced Fallback).
 	{
 		char name[]  = "Byp.Cmd";
@@ -632,13 +632,13 @@ int main(int argc, char const *argv[]) {
 		fb.Command = &cmd; fb.Execute = true;
 		AtnPLCOpenLocal( &fb );
 		AtnPLCOpenLocal( &fb );
-		if( cmd ){ throw "Byp: drove the bit of a bypassed follower"; }
+		if( cmd ){ throw "Byp: drove the bool of a bypassed follower"; }
 		if( !fb.Done || fb.Error ){ throw "Byp: bypassed follower did not complete cleanly"; }
 		unregisterAll();
 	}
 
 	///TEST 16: resolveByBool re-scans each command, so once a follower unregisters the
-	// same bit resolves to nothing -> Error (no stale group is served from the cache).
+	// same bool resolves to nothing -> Error (no stale group is served from the cache).
 	{
 		char name[]  = "Unreg.Cmd";
 		char owner[] = "OwnerUnreg";
@@ -663,7 +663,7 @@ int main(int argc, char const *argv[]) {
 		fb.Execute = true;
 		AtnPLCOpenLocal( &fb );                     // resolveByBool -> 0 now
 		AtnPLCOpenLocal( &fb );
-		if( !fb.Error ){ throw "Unreg: bit still resolved after unregister (stale group)"; }
+		if( !fb.Error ){ throw "Unreg: bool still resolved after unregister (stale group)"; }
 	}
 
 	///TEST 17: atnPLCOpenAbort() is the follower's "abort whoever is driving me" call.
@@ -716,9 +716,9 @@ int main(int argc, char const *argv[]) {
 		unregisterAll();
 	}
 
-	///TEST 19: single-topic unregister rebuilds the by-bit index precisely. The same bit
+	///TEST 19: single-topic unregister rebuilds the by-bool index precisely. The same bool
 	// is registered under two names; unregistering one must drop only that follower and
-	// leave the other, so the bit still resolves and drives via the survivor's status.
+	// leave the other, so the bool still resolves and drives via the survivor's status.
 	{
 		char nameA[] = "Reg.A";
 		char nameB[] = "Reg.B";
@@ -727,7 +727,7 @@ int main(int argc, char const *argv[]) {
 		AtnPlcOpenStatus stA = {};
 		AtnPlcOpenStatus stB = {};
 		subscribePLCOpen( nameA, owner, &cmd, &stA );
-		subscribePLCOpen( nameB, owner, &cmd, &stB );   // same bit, two names, two statuses
+		subscribePLCOpen( nameB, owner, &cmd, &stB );   // same bool, two names, two statuses
 
 		unregister( nameA );                             // drop only nameA's follower
 
@@ -741,7 +741,7 @@ int main(int argc, char const *argv[]) {
 		}
 		// Done proves the survivor (nameB/stB) is still in the group AND the removed one
 		// (nameA/stA, never completed) is gone - otherwise the group would hang or be empty.
-		if( !done ){ throw "Reg: single-topic unregister broke the by-bit index (lost survivor or kept the removed)"; }
+		if( !done ){ throw "Reg: single-topic unregister broke the by-bool index (lost survivor or kept the removed)"; }
 		unregisterAll();
 	}
 

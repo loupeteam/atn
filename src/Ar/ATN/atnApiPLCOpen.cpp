@@ -20,8 +20,8 @@ extern Director *globalDirector;
 extern std::string atnCurrentTaskName();
 
 /* AtnPLCOpenLocal reports this as a hard Error (independent of Fallback) when the
- * command bit matches no ATN registration - so an unwired or mistyped bit fails
- * loud instead of silently reporting Done. A local call owns only its own bit and
+ * command bool matches no ATN registration - so an unwired or mistyped bool fails
+ * loud instead of silently reporting Done. A local call owns only its own bool and
  * status; with neither registered there is nothing to command, complete, or abort. */
 #define ERR_ATN_LOCAL_NOT_REGISTERED 50100
 
@@ -97,7 +97,7 @@ plcbit atnPLCOpenAbort(struct AtnPlcOpenStatus* status){
  *
  * A "command" here is a State whose PLCOpenState vector is the group of
  * followers the caller drives. AtnPLCOpen/AtnPLCOpenWithParameters resolve that
- * State by name (getCommand); AtnPLCOpenLocal resolves it by command bit
+ * State by name (getCommand); AtnPLCOpenLocal resolves it by command bool
  * (resolveByBool). Everything downstream is identical and lives here so the two
  * resolution paths cannot drift. Arbitration between callers - local or remote -
  * runs through each follower's shared status: pCommandSource is &status.internal.fbk,
@@ -299,10 +299,10 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 	}
 }
 
-/* In-task PLCOpen caller: same handshake as AtnPLCOpen, but bound by command BIT
+/* In-task PLCOpen caller: same handshake as AtnPLCOpen, but bound by command BOOL
  * instead of by name. The follower's status struct is looked up from the ATN
- * registrations (resolveByBool), so the caller passes only the bit - a command
- * bit and a mismatched status can no longer be wired together. A bit registered
+ * registrations (resolveByBool), so the caller passes only the bool - a command
+ * bool and a mismatched status can no longer be wired together. A bool registered
  * more than once resolves to the whole group. Because it claims the same
  * status.internal.fbk that remote callers use, local and remote calls cancel each
  * other automatically. Parameters, when needed, are shared in-task (both sides see
@@ -340,7 +340,7 @@ void AtnPLCOpenLocal(AtnPLCOpenLocal_typ* inst){
 			inst->Aborted = false;
 			break;
 
-		//Start a new command by resolving the follower group bound to the bit
+		//Start a new command by resolving the follower group bound to the bool
 		case ATN_PLCOPEN_FUB_NEW_COMMAND:
 			inst->Status = ERR_FUB_BUSY;
 			inst->Busy = true;
@@ -354,11 +354,11 @@ void AtnPLCOpenLocal(AtnPLCOpenLocal_typ* inst){
 				//No break;
 			}
 			else{
-				//Bit matches no registration -> fail loud (ignore Fallback): a local
-				//call owns only its own bit+status, and neither is present here.
+				//Bool matches no registration -> fail loud (ignore Fallback): a local
+				//call owns only its own bool+status, and neither is present here.
 				inst->Status = ERR_ATN_LOCAL_NOT_REGISTERED;
 				buf.reset();
-				out << "AtnPLCOpenLocal: command bit is not registered";
+				out << "AtnPLCOpenLocal: command bool is not registered";
 				inst->_state = ATN_PLCOPEN_FUB_STATUS;
 				break;
 			}

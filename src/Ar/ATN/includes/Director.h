@@ -24,12 +24,12 @@ namespace atn{
 		std::unordered_map<std::string, State> commands;	//These are commands that have been subscribed
 		std::unordered_map<std::string, State> states;		//These are states that have been registered
 		std::unordered_map<std::string, State> values;		//Single-publisher value topics
-		std::unordered_map<bool*, State> bitGroups;		//By-bit follower index backing resolveByBool()
+		std::unordered_map<bool*, State> boolGroups;		//By-bool follower index backing resolveByBool()
 
-		//By-bit index maintenance. Called only from the register/unregister paths, so the
+		//By-bool index maintenance. Called only from the register/unregister paths, so the
 		//index is frozen during cyclic operation and resolveByBool() is a pure read.
-		State* bitGroupFor( bool* commandBit );      //find-or-create a bit's group (register)
-		void   rebuildBitGroup( bool* commandBit );  //re-derive a bit's group from `commands` (unregister)
+		State* boolGroupFor( bool* commandBool );      //find-or-create a bool's group (register)
+		void   rebuildBoolGroup( bool* commandBool );  //re-derive a bool's group from `commands` (unregister)
 	
 		public:
 
@@ -57,13 +57,13 @@ namespace atn{
 		void addResourceBool( const std::string state, const std::string moduleName, unsigned long int *pResourceUid, bool *check, const std::string& taskName = "" );
 		
 		//Registers a bool to be automatically monitored, without full API support
-		void addCommandBool( const std::string command, const std::string moduleName, bool * commandBit, const std::string& taskName = "" );
+		void addCommandBool( const std::string command, const std::string moduleName, bool * commandBool, const std::string& taskName = "" );
 
 		//Registers a bool to be automatically monitored, without full API support
-		void addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, AtnPlcOpenStatus *status, const std::string& taskName = "" );
+		void addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBool, AtnPlcOpenStatus *status, const std::string& taskName = "" );
 
 		//Registers a bool to be automatically monitored, without full API support
-		void addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBit, AtnPlcOpenStatus *status,  void *_pParameters, size_t _sParameters, const std::string& taskName = "");
+		void addCommandPLCOpen( const std::string command, const std::string moduleName, bool * commandBool, AtnPlcOpenStatus *status,  void *_pParameters, size_t _sParameters, const std::string& taskName = "");
 
 		//Registers a behavior to an action
 		void addBehavior( const std::string action, AtnAPI_typ *behavior, void *_pParameters, size_t _sParameters, const std::string& taskName = "" );
@@ -72,10 +72,10 @@ namespace atn{
 		// Cyclic calls must be made to finish the action
 		void executeAction( const std::string actions, AtnApiStatus_typ* _pStatus, void *_pParameters, size_t _sParameters );
 
-		//Sets command bits that are registered to true
+		//Sets command bools that are registered to true
 		bool executeCommand( const std::string actions );
 
-		//reset command bits that are registered to true
+		//reset command bools that are registered to true
 		void resetCommand( const std::string actions );
 
 		//Search for a state
@@ -84,17 +84,17 @@ namespace atn{
 		//Search for a command
 		State *getCommand( const std::string cmd);
 
-		//Resolve, by command bit, the group of PLCOpen followers that share it.
+		//Resolve, by command bool, the group of PLCOpen followers that share it.
 		//Backs in-task PLCOpen calls (AtnPLCOpenLocal): the caller passes only the
-		//command bit and we return every follower registered against that exact bit
+		//command bool and we return every follower registered against that exact bool
 		//- so one local call drives them all and arbitrates against remote callers
 		//through their shared status structs, with no string lookup. Returns 0 when
-		//the bit has no registered followers. The by-bit index is built in the
-		//register/unregister paths, so this call never mutates bitGroups - it is a
+		//the bool has no registered followers. The by-bool index is built in the
+		//register/unregister paths, so this call never mutates boolGroups - it is a
 		//pure read. Concurrent local callers are therefore safe against each other
 		//without a lock PROVIDED registration/unregistration stay in _INIT/_EXIT (the
 		//ATN convention) so nothing mutates the index during cyclic operation.
-		State *resolveByBool( bool* commandBit );
+		State *resolveByBool( bool* commandBool );
 
 		//Single-publisher value topic (one producer per topic name)
 		bool addValue( const std::string state, const std::string moduleName, bool *valid, void *_pData, size_t _sData, size_t sReturn = 0, const std::string& taskName = "" );
