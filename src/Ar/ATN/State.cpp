@@ -16,7 +16,6 @@ using namespace atn;
 State::State( std:: string name ){
 
     this->name = name;
-	pStatus = 0;
 	pParameters = 0;
 	sParameters = 0;
 

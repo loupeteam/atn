@@ -11,6 +11,8 @@ install. They are **only** placed on the include path by the top-level
 | `atn.h`          | Copy of the AS-generated `ATN.h` (the C interface for `atn.fun`/`atn.typ`/`atn.var`). The sources `#include "atn.h"`, which AS normally generates into the gitignored `Temp/Includes/`, so a checked-in copy is needed off-target. |
 | `stringext.h`    | Empty stub — ATN lists StringExt as a dependency but calls none of its functions. |
 | `vartools.h`     | Empty stub — ATN lists VarTools as a dependency but calls none of its functions. |
+| `LogThat.h`      | Capture stub for the LogThat dependency: declares `logInfo`/`logWarning`/`logError`/`logSuccess` with the real signatures, plus test instrumentation (`logThatShimCalls`, `logThatShimCount`, `logThatShimReturn`, `logThatShimReset()`) so tests can assert on what ATN logged. |
+| `logthat_stub.cpp` | Implementation of the capture stub; compiled into the `atn` static library by the top-level `CMakeLists.txt`. |
 
 ## Refreshing `atn.h`
 
