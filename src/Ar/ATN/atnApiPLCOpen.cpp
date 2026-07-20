@@ -12,6 +12,7 @@
 #include "./includes/Director.h"
 #include <string>
 #include <cstring>
+#include <cstdio>
 #include <iostream>
 
 using namespace atn;
@@ -41,7 +42,7 @@ bool forCommandGetPLCOpenStatus(plcstring* state, signed short index, unsigned s
 
 	if( s ){
 		if( index < s->count() ){
-			PLCOpen state = s->PLCOpenState.at(index);
+			PLCOpen &state = s->PLCOpenState.at(index);
 
 			if( status ){
 				*status = state.PLCOpenStatus();
@@ -133,7 +134,16 @@ static void plcopenClaimAndWrite( State* command, AtnPlcOpenCall* self,
 		if( follower.pBypass && *follower.pBypass ){
 			continue;
 		}
-		follower.writeParameters( pParameters, sParameters );
+		if( follower.writeParameters( pParameters, sParameters ) == PLCOpen::WRITE_PARAMS_MISMATCH ){
+			//Report a genuine size mismatch once per onset; the latch lives in the
+			//follower, so this relies on the by-reference iteration above.
+			char msg[121];
+			std::snprintf( msg, sizeof(msg),
+				"PLCOpen parameter size mismatch: sender %lu B vs follower %lu B - write DROPPED",
+				(unsigned long)sParameters, (unsigned long)follower.sParameters );
+			globalDirector->raise( ATN_DIAG_WARNING, ATN_DIAG_CODE_PARAM_MISMATCH,
+				follower.name.c_str(), msg );
+		}
 		if( follower.pFirstCycle ){
 			*follower.pFirstCycle = 1;
 		}

@@ -32,6 +32,7 @@ namespace atn{
 
 		bool * pFirstCycle;
 		bool * pParameterWritten;
+		bool paramMismatchRaised;
 		//        struct AtnAPIState_typ* pCheck;
 		PLCOpen( );
         PLCOpen( std::string Name, bool * value );
@@ -42,7 +43,14 @@ namespace atn{
         void setDisableStatus();
         void setBusyStatus();
 		unsigned short PLCOpenStatus();
-		void writeParameters( void *pParameters, size_t parameterSize);
+
+		enum WriteParamsResult {
+			WRITE_PARAMS_CLEARED = 0,      //null src/dest: parametersWritten cleared (abort/cleanup path)
+			WRITE_PARAMS_WRITTEN,          //parameters copied; mismatch latch re-armed
+			WRITE_PARAMS_MISMATCH,         //size mismatch, first since armed - caller should report
+			WRITE_PARAMS_MISMATCH_LATCHED  //size mismatch, already reported
+		};
+		WriteParamsResult writeParameters( const void *pParameters, size_t parameterSize);
         bool set( bool value);
         void print( std::ostream & );
     };

@@ -2,42 +2,70 @@
  * File: Director.cpp
  * Copyright (c) 2023 Loupe
  * https://loupe.team
- * 
+ *
  * This file is part of All Together Now - ATN, licensed under the MIT License.
- * 
+ *
  */
 
 #include <iostream>
+#include <cstring>
+#include <cstdio>
 
 #include "./includes/Director.h"
+
+#ifdef __cplusplus
+	extern "C"
+	{
+#endif
+	#include "LogThat.h"
+#ifdef __cplusplus
+	};
+#endif
 
 using namespace atn;
 
 Director::Director(/* args */) : outstream(0)
 {
+	std::strcpy(diagLoggerName, "$arlogusr");
+	raiseCount = 0;
+}
+
+signed long Director::raise( AtnDiagSeverity_enum severity, unsigned short code, const char* source, const char* message )
+{
+	//Advisory counter: concurrent raises from preempting task classes may lose an
+	// increment; the logged entries themselves are serialized by the AR Logger service.
+	raiseCount++;
+
+	//320 matches LogThat's LOG_STRLEN_MESSAGE (the generated constant is a
+	// _GLOBAL_CONST on target and cannot be used as an array dimension here)
+	char msg[320];
+	std::snprintf(msg, sizeof(msg), "[%s] %s", source ? source : "", message ? message : "");
+
+	switch( severity ){
+		case ATN_DIAG_INFO:
+			return logInfo(diagLoggerName, code, msg, 0);
+		case ATN_DIAG_WARNING:
+			return logWarning(diagLoggerName, code, msg, 0);
+		case ATN_DIAG_ERROR:
+		default:
+			return logError(diagLoggerName, code, msg, 0);
+	}
+}
+
+unsigned long Director::diagnosticCount(){ return raiseCount; }
+
+signed long Director::setDiagnosticLogger( const char* loggerName )
+{
+	if( !loggerName || !loggerName[0] || std::strlen(loggerName) > DIAG_LOGGER_NAME_MAX ){
+		return -1;
+	}
+	std::strcpy(diagLoggerName, loggerName);
+	return 0;
 }
 
 Director::~Director()
 {
 
-}
-
-unsigned int Director::countActiveThreads(){
-    return threads.size();
-}
-
-void Director::addBehavior( const std::string action,  AtnAPI_typ* api, void *_pParameters, size_t _sParameters, const std::string& taskName ){
-
-    auto it = actions.find(action);
-
-    if (it != actions.end()){
-        it->second.subscribe( api,_pParameters, _sParameters, taskName);
-    }
-    else{
-        Action newAction(action);
-        newAction.subscribe(api,_pParameters, _sParameters, taskName);
-        actions.insert( std::pair<std::string, Action>(action, newAction));
-    }
 }
 
 void Director::addState( const std::string state,  AtnAPIState_typ* api, void *_pParameters, size_t _sParameters, const std::string& taskName ){
@@ -98,7 +126,7 @@ void Director::addResourceBool( const std::string state, const std::string name,
 		states.insert( std::pair<std::string, State>(state, newAction));
 	}
 }
-		
+
 
 
 void Director::addStateBool( const std::string state, const std::string name, bool* value,  void *_pParameters, size_t _sParameters, const std::string& taskName){
@@ -170,23 +198,6 @@ void Director::addCommandPLCOpen( const std::string command, const std::string m
 	}
 }
 
-void Director::executeAction( const std::string action,  AtnApiStatus_typ* _pStatus, void *_pParameters, size_t _sParameters){
-
-    auto it = actions.find(action);
-
-    if (it != actions.end()){
-        threads.push_back(it->second); 
-        ///TODO: check if it's OK to start
-        threads.back().start( _pStatus, _pParameters, _sParameters );
-    }
-    else{
-		if( this->outstream ){
-			*this->outstream << "Action not found\n";
-		}
-    }
-}
-
-
 bool Director::executeCommand( const std::string command ){
 
     auto it = commands.find(command);
@@ -197,7 +208,7 @@ bool Director::executeCommand( const std::string command ){
     }
     else{
 		if( this->outstream ){
-			*this->outstream << "Action not found\n";
+			*this->outstream << "Command not found\n";
 		}
 		return false;
 	}
@@ -212,7 +223,7 @@ void Director::resetCommand( const std::string command ){
     }
     else{
 		if( this->outstream ){
-			*this->outstream << "Action not found\n";
+			*this->outstream << "Command not found\n";
 		}
     }
 }
@@ -221,7 +232,7 @@ State * Director::getState( const std::string state ){
     auto it = states.find(state);
 
     if (it != states.end()){
-        return &it->second;        
+        return &it->second;
     }
     else{
         return 0;
@@ -360,11 +371,6 @@ unsigned int Director::removeRegistration( const std::string& name, const std::s
 		}
 	}
 
-	auto a = actions.find(name);
-	if( a != actions.end() ){
-		removed += a->second.removeTask(taskName);
-	}
-
 	return removed;
 }
 
@@ -386,49 +392,10 @@ unsigned int Director::removeAllForTask( const std::string& taskName ){
 	for( auto &kv : boolGroups ){
 		kv.second.removeTask(taskName);
 	}
-	for( auto &kv : actions ){
-		removed += kv.second.removeTask(taskName);
-	}
-	//In-flight actions hold copies of the registered behaviors.
-	// Sweep them too, but do not count them as additional registrations.
-	for( auto &thread : threads ){
-		thread.removeTask(taskName);
-	}
 
 	return removed;
 }
 
-void Director::cyclic(){
-
-    for (auto thread = threads.begin(); thread != threads.end(); ){
-        //Run thread
-        if( thread->update() ){
-            if( this->outstream ){
-                thread->print( *this->outstream );
-            }
-            //If it's done, remove it and advance to the next thread. erase()
-            //returns the iterator following the removed element; reusing the
-            //old iterator after erase() is undefined behavior.
-            thread = threads.erase( thread );
-        }
-        else {
-            ++thread;
-        }
-    }
-}
-
-void Director::printState( std::ostream &out ){
-    for (auto thread = threads.begin(); thread != threads.end(); ++thread){
-        thread->print( out );   
-    }
-}
-
-void Director::printActions( std::ostream &out ){
-    out << "\nActions:" << "\n";
-    for( auto action : actions ){
-        out << action.first << "\n";
-    }
-}
 void Director::printStates( std::ostream &out ){
     out << "\nStates:" << "\n";
     for( auto state : states ){
@@ -458,7 +425,7 @@ void Director::printSystemJson( std::ostream &out ){
 	out << "\"commands\":[";
 	comma = 0;
 	for( auto command : commands ){
-		if(comma) out << ","; 
+		if(comma) out << ",";
 		out << "\"" <<command.first << "\"";
 		comma = 1;
 	}
@@ -479,5 +446,5 @@ void Director::printSystemJson( std::ostream &out ){
 		comma = 1;
 	}
 	out << "]";
-	out << "}";	
+	out << "}";
 }

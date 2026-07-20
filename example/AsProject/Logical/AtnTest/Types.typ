@@ -17,7 +17,12 @@ TYPE
 		TEST_SEQ_UNREGISTER_UNKNOWN, (* 6 - unknown topic removes nothing *)
 		TEST_SEQ_SWEEP_TASK,         (* 7 - no-arg unregisterAll() sweeps all of this task's registrations *)
 		TEST_SEQ_VERIFY_EMPTY,       (* 8 - swept topics behave like never-created *)
-		TEST_SEQ_DONE                (* 9 *)
+		TEST_SEQ_DIAG_SUBSCRIBE,     (* 9 - subscribe an 8-byte PLCOpen follower; snapshot logbook + count *)
+		TEST_SEQ_DIAG_RAISE,         (* 10 - drive the FUB with a 4-byte sender to force a size mismatch *)
+		TEST_SEQ_DIAG_VERIFY,        (* 11 - a customer WARNING landed in $arlogusr and count advanced *)
+		TEST_SEQ_DIAG_LATCH,         (* 12 - re-executing the same mismatch does not raise again *)
+		TEST_SEQ_DIAG_CLEANUP,       (* 13 - remove the diagnostics fixture *)
+		TEST_SEQ_DONE                (* 14 *)
 		);
 	localInterfaceCommand_typ : 	STRUCT
 		run : BOOL; (* Run the self-test *)
@@ -52,5 +57,25 @@ TYPE
 		countResult : INT;
 		allTrueResult : BOOL;
 		execResult : BOOL;
+		(* --- diagnostics end-to-end fixture (steps 9-13) --- *)
+		diagFollowerParams : ARRAY[0..1] OF UDINT; (* 8-byte follower parameter buffer *)
+		diagSenderParams : UDINT;                  (* 4-byte sender -> deliberate size mismatch *)
+		diagCmdBit : BOOL;                          (* command bit for the DiagCmd PLCOpen follower *)
+		diagPlcStatus : AtnPlcOpenStatus;
+		fbDiagPlcOpen : AtnPLCOpenWithParameters;   (* drives the mismatched parameter write *)
+		diagCountBaseline : UDINT;                  (* atnDiagnosticCount before the raise *)
+		diagCountAfterRaise : UDINT;                (* atnDiagnosticCount after the first raise *)
+		diagStatusResult : DINT;                    (* atnSetDiagnosticLogger return *)
+		(* logbook read-back via ArEventLog *)
+		fbGetIdent : ArEventLogGetIdent;
+		fbGetLatest : ArEventLogGetLatestRecordID;
+		fbGetPrev : ArEventLogGetPreviousRecordID;
+		fbRead : ArEventLogRead;
+		usrIdent : ArEventLogIdentType;             (* $arlogusr logbook ident *)
+		baselineRecordID : ArEventLogRecordIDType;  (* latest record before the raise *)
+		walkRecordID : ArEventLogRecordIDType;      (* cursor while scanning new records *)
+		readEventID : DINT;
+		walkGuard : USINT;                          (* bounds the backward scan *)
+		foundCustomerWarning : BOOL;                (* a new customer-area warning was found *)
 	END_STRUCT;
 END_TYPE
