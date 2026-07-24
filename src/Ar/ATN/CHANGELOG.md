@@ -1,3 +1,4 @@
+2.1.0 - Add AtnPLCOpenLocal: an in-task PLCOpen caller bound by command bool instead of topic name (status resolved from the registration; mutual-cancel with remote callers through the shared status)
 2.0.0 - Remove deprecated Actions and Threads (breaking)
 		- Remove the Action/Behavior execution engine and Director thread handling
 		- Remove the action C-API (registerBehavior, executeAction, executeActionReport, oneShot, respond, readCallState)

@@ -338,6 +338,27 @@ FUNCTION_BLOCK AtnPLCOpenWithParameters
 		_call : AtnPlcOpenCall;
 	END_VAR
 END_FUNCTION_BLOCK
+
+FUNCTION_BLOCK AtnPLCOpenLocal (*In-task PLCOpen caller. Same handshake as AtnPLCOpen but bound by the command BOOL, not a name: the follower's status struct is resolved from the ATN registrations, so only the bool is wired (a mismatched status is impossible) and no string lookup runs. A local call owns only its own bool and status; if the same bool is registered more than once it drives all of those, but never a sibling bool under the same command name. Local and remote calls cancel each other automatically through the shared status. Parameters, when needed, are shared in-task. A bool that matches no registration is a hard Error (Status 50100), never a silent Done.*)
+	VAR_INPUT
+		Command : REFERENCE TO BOOL; (*the follower's command bool; its status struct is resolved automatically*)
+		Execute : BOOL;
+	END_VAR
+	VAR_OUTPUT
+		Status : DINT;
+		StatusMessage : ARRAY[0..9] OF STRING[80];
+		Busy : BOOL;
+		Done : BOOL;
+		Aborted : BOOL;
+		Error : BOOL;
+	END_VAR
+	VAR
+		_state : USINT;
+		_command : {REDUND_UNREPLICABLE} UDINT;
+		_execute : BOOL;
+		_call : AtnPlcOpenCall;
+	END_VAR
+END_FUNCTION_BLOCK
 (*Reading Status*)
 
 FUNCTION stateTrueStatus : BOOL
