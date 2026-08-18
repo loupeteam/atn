@@ -84,8 +84,12 @@ plcbit atnPLCOpenAbort(struct AtnPlcOpenStatus* status){
 
 		if( commandSrc != 0 ){
 			commandSrc->abort = 1;
-		}		
+		}
 		status->internal.fbk = 0;
+		//The detached caller never reaches CLEANUP (ABORTED goes straight to DONE), so
+		//nothing else will clear the name. Only on this branch: when trig is set below,
+		//activeCommand belongs to the caller arriving THIS scan, which is not detached.
+		status->activeCommand[0] = 0;
 		status->parametersWritten = false;
 	}
 	status->internal.trig = 0;
@@ -168,10 +172,12 @@ static void plcopenRelease( State* command, AtnPlcOpenCall* self ){
 			if( owner != 0 && owner == self ){
 				*follower.pCommandSource = 0;
 				follower.writeParameters( 0, 0 );
+				//Scoped to the owner: a caller that no longer holds the seat must not
+				//erase the name of whoever displaced it.
+				if( follower.pActiveCommand ){
+					*follower.pActiveCommand = 0;
+				}
 			}
-		}
-		if( follower.pActiveCommand ){
-			*follower.pActiveCommand = 0;
 		}
 	}
 }
