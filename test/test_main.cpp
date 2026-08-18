@@ -888,6 +888,60 @@ int main(int argc, char const *argv[]) try {
 		unregisterAll();
 	}
 
+	///TEST 25: aborting ONE follower must tear down the caller's whole claim. atnPLCOpenAbort
+	// detaches only the follower it was called on; the siblings in the same group are still
+	// claimed, so the aborted caller has to release them on its way out. Left set, a sibling
+	// keeps a back-pointer to a _call that has finished - and the next caller to claim that
+	// sibling would abort a command that ended long ago.
+	{
+		char name[]  = "Sib.Cmd";
+		char owner[] = "OwnerSib";
+		plcbit cmdA = false;
+		plcbit cmdB = false;
+		AtnPlcOpenStatus stAbort = {};                    // the follower the consumer aborts
+		AtnPlcOpenStatus stSib   = {};                    // its sibling in the same group
+		subscribePLCOpen( name, owner, &cmdA, &stAbort );
+		subscribePLCOpen( name, owner, &cmdB, &stSib );
+
+		AtnPLCOpen_typ a = {};
+		strcpy( a.Command, name );
+		a.Execute = true;
+		AtnPLCOpen( &a );                                 // A claims both followers
+		if( strcmp( stSib.activeCommand, name ) != 0 ){ throw "Sib: sibling was not claimed"; }
+
+		atnPLCOpenAbort( &stAbort );                      // trig == 1 -> guard: disarm only
+		atnPLCOpenAbort( &stAbort );                      // trig == 0 -> detach and abort A
+		AtnPLCOpen( &a );
+		if( !a.Aborted ){ throw "Sib: A was not aborted"; }
+		if( stSib.activeCommand[0] != 0 ){ throw "Sib: aborted caller left its name on a sibling follower"; }
+		if( stSib.internal.fbk != 0 ){ throw "Sib: aborted caller left a live back-pointer on a sibling follower"; }
+		unregisterAll();
+	}
+
+	///TEST 26: bypass is claim-time policy, not a release-time excuse. A follower bypassed
+	// AFTER it was claimed must still be released by its owner - skipping it strands the
+	// caller's name and back-pointer on a follower nobody will ever clean.
+	{
+		char name[]  = "BypRel.Cmd";
+		char owner[] = "OwnerBypRel";
+		plcbit cmd = false;
+		AtnPlcOpenStatus st = {};
+		subscribePLCOpen( name, owner, &cmd, &st );
+
+		AtnPLCOpen_typ fb = {};
+		strcpy( fb.Command, name );
+		fb.Execute = true;
+		AtnPLCOpen( &fb );                                // claimed while in play
+		if( (AtnPlcOpenCall*)st.internal.fbk != &fb._call ){ throw "BypRel: claim did not take the seat"; }
+
+		st.bypass = true;                                 // bypassed mid-command
+		AtnPLCOpen( &fb );                                // all-bypassed group reports Done -> CLEANUP
+		if( !fb.Done ){ throw "BypRel: expected Done once the only follower was bypassed"; }
+		if( st.internal.fbk != 0 ){ throw "BypRel: release skipped a bypassed follower it owned (stale back-pointer)"; }
+		if( st.activeCommand[0] != 0 ){ throw "BypRel: release skipped a bypassed follower it owned (stale name)"; }
+		unregisterAll();
+	}
+
 		return 0;
 	}
 
