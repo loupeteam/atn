@@ -84,8 +84,13 @@ plcbit atnPLCOpenAbort(struct AtnPlcOpenStatus* status){
 
 		if( commandSrc != 0 ){
 			commandSrc->abort = 1;
-		}		
+		}
 		status->internal.fbk = 0;
+		//The detached caller never reaches CLEANUP (ABORTED goes straight to DONE), so
+		//nothing else will clear the name. Only on this branch: trig is set at claim and
+		//cleared only here, so when it is set the name still belongs to the live fbk owner
+		//and this call spends the trigger without detaching anyone.
+		status->activeCommand[0] = 0;
 		status->parametersWritten = false;
 	}
 	status->internal.trig = 0;
@@ -157,21 +162,25 @@ static void plcopenClaimAndWrite( State* command, AtnPlcOpenCall* self,
 }
 
 //Release each follower that `self` still owns, clearing its command source.
+//No bypass skip here: bypass is claim-time policy, release is bookkeeping. A follower
+//bypassed after it was claimed still holds a back-pointer to `self`, and leaving it set
+//would let a later claimant abort `self` long after this command ended. The owner test
+//below is the sufficient guard - a follower this caller never claimed has a different
+//owner (or none) and is left alone either way.
 static void plcopenRelease( State* command, AtnPlcOpenCall* self ){
 	if( !command ) return;
 	for( auto& follower : command->PLCOpenState ){
-		if( follower.pBypass && *follower.pBypass ){
-			continue;
-		}
 		if( follower.pCommandSource ){
 			AtnPlcOpenCall* owner = (AtnPlcOpenCall*)( *follower.pCommandSource );
 			if( owner != 0 && owner == self ){
 				*follower.pCommandSource = 0;
 				follower.writeParameters( 0, 0 );
+				//Scoped to the owner: a caller that no longer holds the seat must not
+				//erase the name of whoever displaced it.
+				if( follower.pActiveCommand ){
+					*follower.pActiveCommand = 0;
+				}
 			}
-		}
-		if( follower.pActiveCommand ){
-			*follower.pActiveCommand = 0;
 		}
 	}
 }
@@ -216,6 +225,15 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 			inst->Done = false;
 			inst->Error = false;
 			inst->Aborted = false;
+			//A retrigger can land while this caller still holds a group: Execute dropped and
+			//raised again mid-command, possibly onto a different Command. Nothing else
+			//releases the old group, so its followers would keep this caller's name and a
+			//live back-pointer to _call. This also covers the lookup below failing and
+			//leaving _command 0. Retriggered onto the SAME command, the group is released
+			//and re-claimed within this call, so no other caller can see the gap.
+			if( inst->_command ){
+				plcopenRelease( (State*)inst->_command, &inst->_call );
+			}
 			inst->_command = (unsigned long)globalDirector->getCommand( inst->Command );
 			if( inst->_command ){
 				inst->_state = ATN_PLCOPEN_FUB_ABORT_OLD;
@@ -302,6 +320,12 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 			inst->Done = false;
 			inst->Error = false;
 			inst->Aborted = true;
+			//Release whatever this caller still owns. Only the follower that triggered the
+			//abort has been detached - siblings in the same group are still claimed, and
+			//without this they keep this caller's name and a live back-pointer to _call
+			//that a later claimant would use to abort a command that already ended.
+			//The owner test inside release leaves a displaced follower to its new owner.
+			plcopenRelease( command, &inst->_call );
 			inst->_command = 0;
 			inst->_state = ATN_PLCOPEN_FUB_DONE;
 			break;
@@ -357,6 +381,15 @@ void AtnPLCOpenLocal(AtnPLCOpenLocal_typ* inst){
 			inst->Done = false;
 			inst->Error = false;
 			inst->Aborted = false;
+			//A retrigger can land while this caller still holds a group: Execute dropped and
+			//raised again mid-command, possibly onto a different Command. Nothing else
+			//releases the old group, so its followers would keep this caller's name and a
+			//live back-pointer to _call. This also covers the lookup below failing and
+			//leaving _command 0. Retriggered onto the SAME command, the group is released
+			//and re-claimed within this call, so no other caller can see the gap.
+			if( inst->_command ){
+				plcopenRelease( (State*)inst->_command, &inst->_call );
+			}
 			inst->_command = (unsigned long)globalDirector->resolveByBool( (bool*)inst->Command );
 			if( inst->_command ){
 				inst->_state = ATN_PLCOPEN_FUB_ABORT_OLD;
@@ -449,6 +482,12 @@ void AtnPLCOpenLocal(AtnPLCOpenLocal_typ* inst){
 			inst->Done = false;
 			inst->Error = false;
 			inst->Aborted = true;
+			//Release whatever this caller still owns. Only the follower that triggered the
+			//abort has been detached - siblings in the same group are still claimed, and
+			//without this they keep this caller's name and a live back-pointer to _call
+			//that a later claimant would use to abort a command that already ended.
+			//The owner test inside release leaves a displaced follower to its new owner.
+			plcopenRelease( command, &inst->_call );
 			inst->_command = 0;
 			inst->_state = ATN_PLCOPEN_FUB_DONE;
 			break;
@@ -496,6 +535,15 @@ void AtnPLCOpenWithParameters(AtnPLCOpenWithParameters_typ* inst){
 			inst->Done = false;
 			inst->Error = false;
 			inst->Aborted = false;
+			//A retrigger can land while this caller still holds a group: Execute dropped and
+			//raised again mid-command, possibly onto a different Command. Nothing else
+			//releases the old group, so its followers would keep this caller's name and a
+			//live back-pointer to _call. This also covers the lookup below failing and
+			//leaving _command 0. Retriggered onto the SAME command, the group is released
+			//and re-claimed within this call, so no other caller can see the gap.
+			if( inst->_command ){
+				plcopenRelease( (State*)inst->_command, &inst->_call );
+			}
 			inst->_command = (unsigned long)globalDirector->getCommand( inst->Command );
 			if( inst->_command ){
 				inst->_state = ATN_PLCOPEN_FUB_ABORT_OLD;
@@ -582,6 +630,12 @@ void AtnPLCOpenWithParameters(AtnPLCOpenWithParameters_typ* inst){
 			inst->Done = false;
 			inst->Error = false;
 			inst->Aborted = true;
+			//Release whatever this caller still owns. Only the follower that triggered the
+			//abort has been detached - siblings in the same group are still claimed, and
+			//without this they keep this caller's name and a live back-pointer to _call
+			//that a later claimant would use to abort a command that already ended.
+			//The owner test inside release leaves a displaced follower to its new owner.
+			plcopenRelease( command, &inst->_call );
 			inst->_command = 0;
 			inst->_state = ATN_PLCOPEN_FUB_DONE;
 			break;

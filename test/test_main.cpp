@@ -714,15 +714,24 @@ int main(int argc, char const *argv[]) try {
 		remote.Execute = true;
 		AtnPLCOpen( &remote );                      // remote claims: fbk = &remote._call, trig = 1
 		if( !remote.Busy ){ throw "Fab: expected remote Busy after claim"; }
+		if( strcmp( st.activeCommand, name ) != 0 ){ throw "Fab: claim did not stamp activeCommand"; }
 
 		atnPLCOpenAbort( &st );                      // trig == 1 -> guard: disarm only, no abort
 		AtnPLCOpen( &remote );
 		if( remote.Aborted ){ throw "Fab: aborted a command on its guarded first cycle"; }
 		if( !remote.Busy ){ throw "Fab: remote should still be driving after the guarded call"; }
+		// The guarded branch does not detach, so the seat is still held - and the name on it
+		// belongs to the caller that arrived this scan. Clearing here would erase a live claim.
+		if( strcmp( st.activeCommand, name ) != 0 ){ throw "Fab: guarded abort cleared activeCommand of a still-active command"; }
 
 		atnPLCOpenAbort( &st );                      // trig == 0 -> abort the active command
+		// Detached with no successor: the seat is held by nobody, so the name must go with it.
+		// The aborted fub goes ABORTED -> DONE and never reaches CLEANUP, so this is the only
+		// place it can be cleared.
+		if( st.activeCommand[0] != 0 ){ throw "Fab: activeCommand left stale after abort detached the owner"; }
 		AtnPLCOpen( &remote );
 		if( !remote.Aborted ){ throw "Fab: atnPLCOpenAbort did not abort the active remote command"; }
+		if( st.activeCommand[0] != 0 ){ throw "Fab: activeCommand reappeared after the owner processed its abort"; }
 		unregisterAll();
 	}
 
@@ -738,13 +747,17 @@ int main(int argc, char const *argv[]) try {
 		AtnPLCOpenLocal_typ local = {};
 		local.Command = &cmd; local.Execute = true;
 		AtnPLCOpenLocal( &local );                  // local claims: fbk = &local._call, trig = 1
+		if( strcmp( st.activeCommand, "<local>" ) != 0 ){ throw "FabL: local claim did not stamp activeCommand"; }
 		atnPLCOpenAbort( &st );                      // guard: disarm (trig -> 0)
 		AtnPLCOpenLocal( &local );
 		if( local.Aborted ){ throw "FabL: aborted the local caller on its guarded first cycle"; }
+		if( strcmp( st.activeCommand, "<local>" ) != 0 ){ throw "FabL: guarded abort cleared activeCommand of a still-active local caller"; }
 
 		atnPLCOpenAbort( &st );                      // trig == 0 -> abort the local caller
+		if( st.activeCommand[0] != 0 ){ throw "FabL: activeCommand left stale after abort detached the local caller"; }
 		AtnPLCOpenLocal( &local );
 		if( !local.Aborted ){ throw "FabL: atnPLCOpenAbort did not abort the local caller"; }
+		if( st.activeCommand[0] != 0 ){ throw "FabL: activeCommand reappeared after the local caller processed its abort"; }
 		unregisterAll();
 	}
 
@@ -774,6 +787,192 @@ int main(int argc, char const *argv[]) try {
 		// Done proves the survivor (nameB/stB) is still in the group AND the removed one
 		// (nameA/stA, never completed) is gone - otherwise the group would hang or be empty.
 		if( !done ){ throw "Reg: single-topic unregister broke the by-bool index (lost survivor or kept the removed)"; }
+		unregisterAll();
+	}
+
+	///TEST 22: displacement keeps the SUCCESSOR's name. Two command names share one status
+	// struct, so both callers arbitrate over the same seat. B's claim aborts A and stamps its
+	// own name in the same fall-through; A then processes that abort. The name on the seat must
+	// read B throughout - A is gone, and a departing caller must not erase a live claim.
+	{
+		char nameA[] = "Disp.A";
+		char nameB[] = "Disp.B";
+		char owner[] = "OwnerDisp";
+		plcbit cmd = false;
+		AtnPlcOpenStatus st = {};
+		subscribePLCOpen( nameA, owner, &cmd, &st );
+		subscribePLCOpen( nameB, owner, &cmd, &st );    // two names, ONE follower status
+
+		AtnPLCOpen_typ a = {};
+		strcpy( a.Command, nameA );
+		a.Execute = true;
+		AtnPLCOpen( &a );                                // A claims the seat
+		if( strcmp( st.activeCommand, nameA ) != 0 ){ throw "Disp: A's claim did not stamp activeCommand"; }
+
+		AtnPLCOpen_typ b = {};
+		strcpy( b.Command, nameB );
+		b.Execute = true;
+		AtnPLCOpen( &b );                                // B displaces A: abortOthers + claim
+		if( strcmp( st.activeCommand, nameB ) != 0 ){ throw "Disp: displacement did not hand activeCommand to B"; }
+
+		AtnPLCOpen( &a );                                // A notices _call.abort -> ABORTED
+		if( !a.Aborted ){ throw "Disp: A was not aborted by B's claim"; }
+		if( strcmp( st.activeCommand, nameB ) != 0 ){ throw "Disp: the aborted caller erased the new owner's activeCommand"; }
+		unregisterAll();
+	}
+
+	///TEST 23: plcopenRelease clears activeCommand only for the caller that still OWNS the
+	// follower. Staged with bypass: A claims while the shared follower is bypassed (so it is
+	// skipped and A never owns it) but stays Busy on a second, non-bypassed follower. The
+	// shared one is then unbypassed and claimed by B. When A finally completes and releases,
+	// it walks a follower it does not own - and must leave B's name alone.
+	{
+		char nameA[]  = "Byp.A";
+		char nameB[]  = "Byp.B";
+		char owner[]  = "OwnerByp";
+		plcbit cmdA = false;
+		plcbit cmdB = false;
+		AtnPlcOpenStatus stShared = {};                  // contested by both callers
+		AtnPlcOpenStatus stHold   = {};                  // A-only, keeps A in WORKING
+		subscribePLCOpen( nameA, owner, &cmdA, &stShared );
+		subscribePLCOpen( nameA, owner, &cmdA, &stHold );
+		subscribePLCOpen( nameB, owner, &cmdB, &stShared );
+
+		stShared.bypass = true;                          // skipped by A's claim
+
+		AtnPLCOpen_typ a = {};
+		strcpy( a.Command, nameA );
+		a.Execute = true;
+		AtnPLCOpen( &a );                                 // setTrue marks stHold Busy -> A parks in WORKING
+		if( !a.Busy ){ throw "Byp: A should be Busy on the non-bypassed follower"; }
+		if( stShared.internal.fbk != 0 ){ throw "Byp: A claimed a bypassed follower"; }
+
+		stShared.bypass = false;                          // now in play
+
+		AtnPLCOpen_typ b = {};
+		strcpy( b.Command, nameB );
+		b.Execute = true;
+		AtnPLCOpen( &b );                                 // B claims the shared follower
+		if( strcmp( stShared.activeCommand, nameB ) != 0 ){ throw "Byp: B's claim did not stamp activeCommand"; }
+
+		stHold.status   = 0;                              // A's own follower finishes
+		stShared.status = 0;                              // B's follower reports Done; B has not run its cleanup
+		AtnPLCOpen( &a );                                 // -> STATUS -> CLEANUP -> plcopenRelease
+		if( !a.Done ){ throw "Byp: A did not complete"; }
+		if( strcmp( stShared.activeCommand, nameB ) != 0 ){ throw "Byp: release wiped activeCommand on a follower it did not own"; }
+		if( (AtnPlcOpenCall*)stShared.internal.fbk != &b._call ){ throw "Byp: release stole a follower it did not own"; }
+		unregisterAll();
+	}
+
+	///TEST 24: the ordinary completion path is unchanged - an owner that finishes normally
+	// releases its seat and takes its name with it.
+	{
+		char name[]  = "Cln.Cmd";
+		char owner[] = "OwnerCln";
+		plcbit cmd = false;
+		AtnPlcOpenStatus st = {};
+		subscribePLCOpen( name, owner, &cmd, &st );
+
+		AtnPLCOpen_typ fb = {};
+		strcpy( fb.Command, name );
+		fb.Execute = true;
+		AtnPLCOpen( &fb );                                // setTrue marks the follower Busy
+		if( !fb.Busy ){ throw "Cln: expected Busy while the follower runs"; }
+		if( strcmp( st.activeCommand, name ) != 0 ){ throw "Cln: claim did not stamp activeCommand"; }
+
+		st.status = 0;
+		AtnPLCOpen( &fb );                                // STATUS -> CLEANUP -> release
+		if( !fb.Done ){ throw "Cln: expected Done after the follower completed"; }
+		if( st.activeCommand[0] != 0 ){ throw "Cln: normal completion left activeCommand stale"; }
+		if( st.internal.fbk != 0 ){ throw "Cln: normal completion did not release the seat"; }
+		unregisterAll();
+	}
+
+	///TEST 25: aborting ONE follower must tear down the caller's whole claim. atnPLCOpenAbort
+	// detaches only the follower it was called on; the siblings in the same group are still
+	// claimed, so the aborted caller has to release them on its way out. Left set, a sibling
+	// keeps a back-pointer to a _call that has finished - and the next caller to claim that
+	// sibling would abort a command that ended long ago.
+	{
+		char name[]  = "Sib.Cmd";
+		char owner[] = "OwnerSib";
+		plcbit cmdA = false;
+		plcbit cmdB = false;
+		AtnPlcOpenStatus stAbort = {};                    // the follower the consumer aborts
+		AtnPlcOpenStatus stSib   = {};                    // its sibling in the same group
+		subscribePLCOpen( name, owner, &cmdA, &stAbort );
+		subscribePLCOpen( name, owner, &cmdB, &stSib );
+
+		AtnPLCOpen_typ a = {};
+		strcpy( a.Command, name );
+		a.Execute = true;
+		AtnPLCOpen( &a );                                 // A claims both followers
+		if( strcmp( stSib.activeCommand, name ) != 0 ){ throw "Sib: sibling was not claimed"; }
+
+		atnPLCOpenAbort( &stAbort );                      // trig == 1 -> guard: disarm only
+		atnPLCOpenAbort( &stAbort );                      // trig == 0 -> detach and abort A
+		AtnPLCOpen( &a );
+		if( !a.Aborted ){ throw "Sib: A was not aborted"; }
+		if( stSib.activeCommand[0] != 0 ){ throw "Sib: aborted caller left its name on a sibling follower"; }
+		if( stSib.internal.fbk != 0 ){ throw "Sib: aborted caller left a live back-pointer on a sibling follower"; }
+		unregisterAll();
+	}
+
+	///TEST 26: bypass is claim-time policy, not a release-time excuse. A follower bypassed
+	// AFTER it was claimed must still be released by its owner - skipping it strands the
+	// caller's name and back-pointer on a follower nobody will ever clean.
+	{
+		char name[]  = "BypRel.Cmd";
+		char owner[] = "OwnerBypRel";
+		plcbit cmd = false;
+		AtnPlcOpenStatus st = {};
+		subscribePLCOpen( name, owner, &cmd, &st );
+
+		AtnPLCOpen_typ fb = {};
+		strcpy( fb.Command, name );
+		fb.Execute = true;
+		AtnPLCOpen( &fb );                                // claimed while in play
+		if( (AtnPlcOpenCall*)st.internal.fbk != &fb._call ){ throw "BypRel: claim did not take the seat"; }
+
+		st.bypass = true;                                 // bypassed mid-command
+		AtnPLCOpen( &fb );                                // all-bypassed group reports Done -> CLEANUP
+		if( !fb.Done ){ throw "BypRel: expected Done once the only follower was bypassed"; }
+		if( st.internal.fbk != 0 ){ throw "BypRel: release skipped a bypassed follower it owned (stale back-pointer)"; }
+		if( st.activeCommand[0] != 0 ){ throw "BypRel: release skipped a bypassed follower it owned (stale name)"; }
+		unregisterAll();
+	}
+
+	///TEST 27: retriggering a caller onto a DIFFERENT command must not strand the group it
+	// still holds. The Execute edge jumps to NEW_COMMAND from any state, so a caller parked in
+	// WORKING can be retargeted mid-command; without a release the old followers keep this
+	// caller's name and a back-pointer to a _call that has moved on - and a later claimant on
+	// the old group would abort the command this caller is running NOW.
+	{
+		char nameX[] = "Ret.X";
+		char nameY[] = "Ret.Y";
+		char owner[] = "OwnerRet";
+		plcbit cmdX = false;
+		plcbit cmdY = false;
+		AtnPlcOpenStatus stX = {};
+		AtnPlcOpenStatus stY = {};
+		subscribePLCOpen( nameX, owner, &cmdX, &stX );
+		subscribePLCOpen( nameY, owner, &cmdY, &stY );
+
+		AtnPLCOpen_typ fb = {};
+		strcpy( fb.Command, nameX );
+		fb.Execute = true;
+		AtnPLCOpen( &fb );                                // claims X, parks in WORKING
+		if( (AtnPlcOpenCall*)stX.internal.fbk != &fb._call ){ throw "Ret: X was not claimed"; }
+
+		fb.Execute = false;
+		AtnPLCOpen( &fb );                                // edge memory cleared; still WORKING on X
+
+		strcpy( fb.Command, nameY );
+		fb.Execute = true;
+		AtnPLCOpen( &fb );                                // rising edge -> NEW_COMMAND, retargeted to Y
+		if( (AtnPlcOpenCall*)stY.internal.fbk != &fb._call ){ throw "Ret: Y was not claimed after retarget"; }
+		if( stX.internal.fbk != 0 ){ throw "Ret: retarget stranded a live back-pointer on the old command"; }
+		if( stX.activeCommand[0] != 0 ){ throw "Ret: retarget left the caller's name on the old command"; }
 		unregisterAll();
 	}
 
