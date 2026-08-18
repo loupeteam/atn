@@ -942,6 +942,40 @@ int main(int argc, char const *argv[]) try {
 		unregisterAll();
 	}
 
+	///TEST 27: retriggering a caller onto a DIFFERENT command must not strand the group it
+	// still holds. The Execute edge jumps to NEW_COMMAND from any state, so a caller parked in
+	// WORKING can be retargeted mid-command; without a release the old followers keep this
+	// caller's name and a back-pointer to a _call that has moved on - and a later claimant on
+	// the old group would abort the command this caller is running NOW.
+	{
+		char nameX[] = "Ret.X";
+		char nameY[] = "Ret.Y";
+		char owner[] = "OwnerRet";
+		plcbit cmdX = false;
+		plcbit cmdY = false;
+		AtnPlcOpenStatus stX = {};
+		AtnPlcOpenStatus stY = {};
+		subscribePLCOpen( nameX, owner, &cmdX, &stX );
+		subscribePLCOpen( nameY, owner, &cmdY, &stY );
+
+		AtnPLCOpen_typ fb = {};
+		strcpy( fb.Command, nameX );
+		fb.Execute = true;
+		AtnPLCOpen( &fb );                                // claims X, parks in WORKING
+		if( (AtnPlcOpenCall*)stX.internal.fbk != &fb._call ){ throw "Ret: X was not claimed"; }
+
+		fb.Execute = false;
+		AtnPLCOpen( &fb );                                // edge memory cleared; still WORKING on X
+
+		strcpy( fb.Command, nameY );
+		fb.Execute = true;
+		AtnPLCOpen( &fb );                                // rising edge -> NEW_COMMAND, retargeted to Y
+		if( (AtnPlcOpenCall*)stY.internal.fbk != &fb._call ){ throw "Ret: Y was not claimed after retarget"; }
+		if( stX.internal.fbk != 0 ){ throw "Ret: retarget stranded a live back-pointer on the old command"; }
+		if( stX.activeCommand[0] != 0 ){ throw "Ret: retarget left the caller's name on the old command"; }
+		unregisterAll();
+	}
+
 		return 0;
 	}
 

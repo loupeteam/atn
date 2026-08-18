@@ -87,8 +87,9 @@ plcbit atnPLCOpenAbort(struct AtnPlcOpenStatus* status){
 		}
 		status->internal.fbk = 0;
 		//The detached caller never reaches CLEANUP (ABORTED goes straight to DONE), so
-		//nothing else will clear the name. Only on this branch: when trig is set below,
-		//activeCommand belongs to the caller arriving THIS scan, which is not detached.
+		//nothing else will clear the name. Only on this branch: trig is set at claim and
+		//cleared only here, so when it is set the name still belongs to the live fbk owner
+		//and this call spends the trigger without detaching anyone.
 		status->activeCommand[0] = 0;
 		status->parametersWritten = false;
 	}
@@ -224,6 +225,15 @@ void AtnPLCOpen(AtnPLCOpen_typ* inst){
 			inst->Done = false;
 			inst->Error = false;
 			inst->Aborted = false;
+			//A retrigger can land while this caller still holds a group: Execute dropped and
+			//raised again mid-command, possibly onto a different Command. Nothing else
+			//releases the old group, so its followers would keep this caller's name and a
+			//live back-pointer to _call. This also covers the lookup below failing and
+			//leaving _command 0. Retriggered onto the SAME command, the group is released
+			//and re-claimed within this call, so no other caller can see the gap.
+			if( inst->_command ){
+				plcopenRelease( (State*)inst->_command, &inst->_call );
+			}
 			inst->_command = (unsigned long)globalDirector->getCommand( inst->Command );
 			if( inst->_command ){
 				inst->_state = ATN_PLCOPEN_FUB_ABORT_OLD;
@@ -371,6 +381,15 @@ void AtnPLCOpenLocal(AtnPLCOpenLocal_typ* inst){
 			inst->Done = false;
 			inst->Error = false;
 			inst->Aborted = false;
+			//A retrigger can land while this caller still holds a group: Execute dropped and
+			//raised again mid-command, possibly onto a different Command. Nothing else
+			//releases the old group, so its followers would keep this caller's name and a
+			//live back-pointer to _call. This also covers the lookup below failing and
+			//leaving _command 0. Retriggered onto the SAME command, the group is released
+			//and re-claimed within this call, so no other caller can see the gap.
+			if( inst->_command ){
+				plcopenRelease( (State*)inst->_command, &inst->_call );
+			}
 			inst->_command = (unsigned long)globalDirector->resolveByBool( (bool*)inst->Command );
 			if( inst->_command ){
 				inst->_state = ATN_PLCOPEN_FUB_ABORT_OLD;
@@ -516,6 +535,15 @@ void AtnPLCOpenWithParameters(AtnPLCOpenWithParameters_typ* inst){
 			inst->Done = false;
 			inst->Error = false;
 			inst->Aborted = false;
+			//A retrigger can land while this caller still holds a group: Execute dropped and
+			//raised again mid-command, possibly onto a different Command. Nothing else
+			//releases the old group, so its followers would keep this caller's name and a
+			//live back-pointer to _call. This also covers the lookup below failing and
+			//leaving _command 0. Retriggered onto the SAME command, the group is released
+			//and re-claimed within this call, so no other caller can see the gap.
+			if( inst->_command ){
+				plcopenRelease( (State*)inst->_command, &inst->_call );
+			}
 			inst->_command = (unsigned long)globalDirector->getCommand( inst->Command );
 			if( inst->_command ){
 				inst->_state = ATN_PLCOPEN_FUB_ABORT_OLD;
